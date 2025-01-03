@@ -1,0 +1,7 @@
+Library/
+Temp/
+Build/
+Logs/
+UserSettings/
+.vs/
+**/.DS_Store

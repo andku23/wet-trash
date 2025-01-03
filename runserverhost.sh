@@ -1,0 +1,1 @@
+./Build/wet-world.exe -mode host & ./Build/wet-world.exe -mode client

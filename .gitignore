@@ -5,3 +5,6 @@ Logs/
 UserSettings/
 .vs/
 **/.DS_Store
+.idea
+Bootstrap.csproj
+**/.csproj

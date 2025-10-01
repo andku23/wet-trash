@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -6,17 +7,12 @@ public class NetworkRandomColor : NetworkBehaviour
     [SerializeField] private Renderer _renderer;
     private NetworkVariable<Color> _playerColor = new NetworkVariable<Color>();
     
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    private void Awake()
+    public override void OnNetworkSpawn()
     {
         _playerColor.OnValueChanged += OnColorChanged;
-    }
-    
-    public override void  OnNetworkSpawn()
-    {
-        if (IsOwner)
+        if (IsServer)
         {
-            RequestServerColorChangeRpc();
+            _playerColor.Value = Random.ColorHSV();
         }
         else
         {
@@ -24,16 +20,9 @@ public class NetworkRandomColor : NetworkBehaviour
         }
         
     }
-
+    
     private void OnColorChanged(Color previous, Color newColor)
     {
         _renderer.material.SetColor("_Color", newColor);
-    }
-    
-    [Rpc(SendTo.Server)]
-    private void RequestServerColorChangeRpc()
-    {
-        _playerColor.Value = Random.ColorHSV();
-        
     }
 }

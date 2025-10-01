@@ -8,3 +8,7 @@ UserSettings/
 .idea
 Bootstrap.csproj
 **/.csproj
+**.csproj
+**.sln
+**.cache
+obj/Debug

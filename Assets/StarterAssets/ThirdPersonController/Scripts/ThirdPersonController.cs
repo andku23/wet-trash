@@ -23,6 +23,9 @@ namespace StarterAssets
 
         [Tooltip("Sprint speed of the character in m/s")]
         public float SprintSpeed = 5.335f;
+        
+        [Tooltip("Sprint Swim speed of the character in m/s")]
+        public float SprintSwimSpeed = 4.335f;
 
         [Tooltip("How fast the character turns to face movement direction")]
         [Range(0.0f, 0.3f)]
@@ -264,7 +267,7 @@ namespace StarterAssets
 
         private void MoveWater()
         {
-            float targetSpeed = MoveSpeed;
+            float targetSpeed = _input.sprint ? SprintSwimSpeed : MoveSpeed;
             Vector3 cameraForward = CinemachineCameraTarget.transform.forward;
             float currentSpeed = new Vector3(_controller.velocity.x, _controller.velocity.y, _controller.velocity.z).magnitude;
             Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
@@ -292,7 +295,7 @@ namespace StarterAssets
                 _speed = targetSpeed;
             }
 
-            _speed = Mathf.Clamp(_speed, 0, MaxSwimmingSpeed);
+            _speed = Mathf.Clamp(_speed, 0, _input.sprint ? SprintSwimSpeed : MaxSwimmingSpeed);
             
             if (_input.move != Vector2.zero)
             {
@@ -309,8 +312,7 @@ namespace StarterAssets
             Vector3 cameraEuler = CinemachineCameraTarget.transform.forward;
 
            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
-            
-           Debug.Log("idir: " + inputDirection.magnitude);
+           
             // move the player
             _controller.Move(targetDirection.normalized * (inputDirection.magnitude * (_speed * Time.deltaTime)) +
                              new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);

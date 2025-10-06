@@ -8,7 +8,7 @@ public class NetworkLoot : NetworkBehaviour
     [SerializeField] private GameObject dropInstructions;
 
     private ClientStateMachine _stateMachine;
-    
+
     enum States
     {
         Default = 0,

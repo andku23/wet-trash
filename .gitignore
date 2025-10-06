@@ -12,3 +12,4 @@ Bootstrap.csproj
 **.sln
 **.cache
 obj/Debug
+Build.zip

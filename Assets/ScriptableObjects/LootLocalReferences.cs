@@ -9,7 +9,12 @@ public class LootLocalReferences : ScriptableObject
 [System.Serializable]
 public class LocalNetworkPrefabPair
 {
-    public string id;
+    public LootType id;
     public GameObject network;
     public GameObject local;
+}
+
+public enum LootType
+{
+    Default = 0
 }

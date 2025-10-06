@@ -274,7 +274,6 @@ namespace StarterAssets
             
             float speedOffset = 0.1f;
             float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
-            Debug.Log("Input: " + targetSpeed);
             
             
             if (currentSpeed < targetSpeed - speedOffset ||
@@ -319,7 +318,6 @@ namespace StarterAssets
             
             if (_hasAnimator)
             {
-                Debug.Log("speed " + _speed);
                 _animator.SetFloat(_animIDSpeed, _animationBlend);
                 _animator.SetFloat(_animIDMotionSpeed, _speed);
             }
@@ -399,7 +397,6 @@ namespace StarterAssets
             {
                 if (_input.jump)
                 {
-                    Debug.Log("is jumping");
                     // the square root of H * -2 * G = how much velocity needed to reach desired height
                     _verticalVelocity = 2.0f;
                 }

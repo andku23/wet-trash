@@ -111,6 +111,7 @@ namespace StarterAssets
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
         private int _animIDIsSwimming;
+        private int _animIDIsCarrying;
 
 #if ENABLE_INPUT_SYSTEM 
         private PlayerInput _playerInput;
@@ -196,6 +197,7 @@ namespace StarterAssets
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
             _animIDIsSwimming = Animator.StringToHash("IsSwimming");
+            _animIDIsCarrying = Animator.StringToHash("IsCarrying");
         }
 
         private void GroundedCheck()
@@ -228,6 +230,14 @@ namespace StarterAssets
             {
                 _animator.SetBool(_animIDIsSwimming, InWater);
                 _animator.SetBool(_animIDGrounded, Grounded);
+            }
+        }
+
+        public void ToggleCarrying(bool isCarrying)
+        {
+            if (_hasAnimator)
+            {
+                _animator.SetBool(_animIDIsCarrying, isCarrying);
             }
         }
 
@@ -318,8 +328,9 @@ namespace StarterAssets
             
             if (_hasAnimator)
             {
+                float dampTime = 0.2f;
                 _animator.SetFloat(_animIDSpeed, _animationBlend);
-                _animator.SetFloat(_animIDMotionSpeed, _speed);
+                _animator.SetFloat(_animIDMotionSpeed, _speed, dampTime, Time.deltaTime);
             }
         }
         private void MoveLand()
@@ -398,11 +409,11 @@ namespace StarterAssets
                 if (_input.jump)
                 {
                     // the square root of H * -2 * G = how much velocity needed to reach desired height
-                    _verticalVelocity = 2.0f;
+                    _verticalVelocity = 5.0f;
                 }
                 else if (_input.descend)
                 {
-                    _verticalVelocity = -2.0f;
+                    _verticalVelocity = -5.0f;
                 }
                 else
                 {

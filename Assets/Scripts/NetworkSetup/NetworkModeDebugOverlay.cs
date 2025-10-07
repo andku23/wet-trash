@@ -15,6 +15,7 @@ public class NetworkModeDebugOverlay : MonoBehaviour
     
     [SerializeField] private TextMeshProUGUI joinCodeText;
     [SerializeField] private GameObject connectionButtons;
+    [SerializeField] private UnityTransport transport;
     
     public void OnInputEnd(string joinCode)
     {
@@ -23,12 +24,28 @@ public class NetworkModeDebugOverlay : MonoBehaviour
 
     public void StartHost()
     {
-        StartHostAsync();
+        if (transport.Protocol == UnityTransport.ProtocolType.UnityTransport)
+        {
+            NetworkManager.Singleton.StartHost();
+            OnConnectionFinished();
+        }
+        else
+        {
+            StartHostAsync();
+        }
     }
 
     public void StartClient()
     {
-        StartClientAsync();
+        if (transport.Protocol == UnityTransport.ProtocolType.UnityTransport)
+        {
+            NetworkManager.Singleton.StartClient();
+            OnConnectionFinished();
+        }
+        else
+        {
+            StartClientAsync();
+        }
     }
 
     private void OnConnectionFinished()

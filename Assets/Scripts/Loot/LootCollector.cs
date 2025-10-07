@@ -11,7 +11,7 @@ public class LootCollector : NetworkBehaviour
     [SerializeField] private LayerMask layerMask;
     [SerializeField] private Transform grabbedLootConnectPoint;
     [SerializeField] private NetworkObject networkObject;
-    [SerializeField] private LootLocalReferences lootLocalReferences;
+    [SerializeField] private ThirdPersonController thirdPersonController;
     
 #if ENABLE_INPUT_SYSTEM 
     private PlayerInput _playerInput;
@@ -20,6 +20,7 @@ public class LootCollector : NetworkBehaviour
     private StarterAssetsInputs _input;
     private NetworkLoot lastClosestLoot;
     private GameObject heldLoot;
+    private const float MAX_DROP_DISTANCE = 1.5f;
     
     public override void OnNetworkSpawn()
     {
@@ -41,12 +42,14 @@ public class LootCollector : NetworkBehaviour
         go.transform.localRotation = Quaternion.identity;
         go.transform.localScale = Vector3.one;
         heldLoot = go;
+        thirdPersonController.ToggleCarrying(true);
     }
 
     public void DestroyHeldObject()
     {
         Destroy(heldLoot);
         heldLoot = null;
+        thirdPersonController.ToggleCarrying(false);
     }
     
     void Update()
@@ -73,7 +76,7 @@ public class LootCollector : NetworkBehaviour
 
         if (closestCollider != null)
         {
-            NetworkLoot loot = closestCollider.GetComponent<NetworkLoot>();
+            NetworkLoot loot = closestCollider.GetComponent<ColliderReference>().reference.GetComponent<NetworkLoot>();
             if (loot != null && loot != lastClosestLoot)
             {
                 loot.TrySetClosestLoot(true);
@@ -99,15 +102,23 @@ public class LootCollector : NetworkBehaviour
         {
             if (_input.interact)
             {
-                LootController.Instance.RequestDrop(
-                    new Vector3(heldLoot.transform.position.x, 0, heldLoot.transform.position.z), heldLoot.gameObject);
+                Physics.Raycast(heldLoot.transform.position, -Vector3.up, out RaycastHit hit);
+                if (hit.collider != null)
+                {
+                    if (hit.distance < MAX_DROP_DISTANCE)
+                    {
+                        LootManager.Instance.RequestDrop(
+                            new Vector3(hit.point.x, hit.point.y + 0.3f, hit.point.z), heldLoot.gameObject);
+                    }
+                    
+                }
             }
         }
         else
         {
             if (_input.interact && lastClosestLoot != null)
             {
-                LootController.Instance.RequestPickup(lastClosestLoot);
+                LootManager.Instance.RequestPickup(lastClosestLoot);
                 lastClosestLoot = null; //Get rid of this if i plan on having it be carried
             }
         }

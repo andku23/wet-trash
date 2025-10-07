@@ -7,12 +7,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
 
-public class LootController : NetworkBehaviour
+public class LootManager : NetworkBehaviour
 {
-    public static LootController Instance;
+    public static LootManager Instance;
     
-    [SerializeField] private GameObject _lootPrefab;
-    [SerializeField] private GameObject _localLootPrefab;
     [SerializeField] private int _numLoot;
     [SerializeField] private LootLocalReferences lootLocalReferences;
     
@@ -31,15 +29,23 @@ public class LootController : NetworkBehaviour
 
     private void SpawnLoot()
     {
+        List<int> networkLootPrefabs = new List<int>();
+        // Create spawn probability table
+        for (int i = 0; i < lootLocalReferences.pairs.Length; i++)
+        {
+            for (int j = 0; j < lootLocalReferences.pairs[i].spawnRate; j++)
+            {
+                networkLootPrefabs.Add(i);
+            }
+        }
+        
         for (int i = 0; i < _numLoot; i++)
         {
-            GameObject go = Instantiate(_lootPrefab,
-                new Vector3(Random.Range(-5f, 5f), 0.5f, Random.Range(-5f, 5f)),
+            GameObject go = Instantiate(lootLocalReferences.pairs[networkLootPrefabs[Random.Range(0, networkLootPrefabs.Count)]].network,
+                new Vector3(Random.Range(-5f, 5f), 0.5f, Random.Range(-5f, 5f)) + transform.position,
                 Quaternion.identity);
             NetworkObject networkObject = go.GetComponent<NetworkObject>();
             networkObject.Spawn();
-            NetworkLoot loot = go.GetComponent<NetworkLoot>();
-            //loot.lootID.Value = lootLocalReferences.pairs[0].id;
         }
     }
 
@@ -58,14 +64,17 @@ public class LootController : NetworkBehaviour
     
     public LocalNetworkPrefabPair LocalPrefabtoID(GameObject prefabInstance)
     {
-        //GameObject prefabAsset = PrefabUtility.GetCorrespondingObjectFromSource(prefabInstance);
-        //for (int i = 0; i < lootLocalReferences.pairs.Length; i++)
-        //{
-        //    if (prefabAsset == lootLocalReferences.pairs[i].local)
-        //    {
-        //        return lootLocalReferences.pairs[i];
-        //    }
-        //}
+        LootBaseData lootData = prefabInstance.GetComponent<LootBaseData>();
+        if (lootData != null)
+        {
+            for (int i = 0; i < lootLocalReferences.pairs.Length; i++)
+            {
+                if (lootData.lootType == lootLocalReferences.pairs[i].id)
+                {
+                    return lootLocalReferences.pairs[i];
+                }
+            }
+        }
 
         return null;
     }
@@ -123,7 +132,7 @@ public class LootController : NetworkBehaviour
     public void Drop_ServerRpc(ulong targetPlayerNetworkObjectId, Vector3 position, LootType lootID)
     {
        
-        GameObject go = Instantiate(_lootPrefab, position, Quaternion.identity);
+        GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
         networkObject.Spawn();
         

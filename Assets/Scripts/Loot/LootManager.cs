@@ -13,13 +13,12 @@ public class LootManager : NetworkBehaviour
     
     [SerializeField] private int _numLoot;
     [SerializeField] private LootLocalReferences lootLocalReferences;
+
+    private List<NetworkObject> _loots = new List<NetworkObject>();
     
     public override void OnNetworkSpawn()
     {
-        if (IsServer)
-        {
-            SpawnLoot();
-        }
+        base.OnNetworkSpawn();
 
         if (Instance == null)
         {
@@ -27,7 +26,7 @@ public class LootManager : NetworkBehaviour
         }
     }
 
-    private void SpawnLoot()
+    public void SpawnLoot()
     {
         List<int> networkLootPrefabs = new List<int>();
         // Create spawn probability table
@@ -46,7 +45,17 @@ public class LootManager : NetworkBehaviour
                 Quaternion.identity);
             NetworkObject networkObject = go.GetComponent<NetworkObject>();
             networkObject.Spawn();
+            _loots.Add(networkObject);
         }
+    }
+
+    public void DeleteAllLoot()
+    {
+        for (int i = 0; i < _loots.Count; i++)
+        {
+            _loots[i].Despawn();
+        }
+        _loots.Clear();
     }
 
     public LocalNetworkPrefabPair IDtoPrefabs(LootType id)

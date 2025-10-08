@@ -1,21 +1,22 @@
 using Unity.Netcode;
-using Unity.Netcode.Components;
 using UnityEngine;
+using UnityEngine.Events;
 
-public class NetworkLoot : NetworkBehaviour, IInteractable
+public class NetworkedSwitch : NetworkBehaviour, IInteractable
 {
-    [SerializeField] private GameObject instructions;
-    [SerializeField] private GameObject dropInstructions;
 
+    [SerializeField] private GameObject instructions;
+    [SerializeField] private UnityEvent onInteract;
+    
     private ClientStateMachine _stateMachine;
 
     enum States
     {
         Default = 0,
-        ClosestItem = 1,
-        PickedUp = 2
+        ClosestItem = 1
     };
     
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -28,22 +29,12 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
         BaseState closestItemState = new BaseState(OnClosestItemStateEnter, OnClosestItemStateUpdate, OnClosestItemStateExit);
         _stateMachine.AddState((int)States.ClosestItem, closestItemState);
         
-        BaseState pickedUpState = new BaseState(OnPickedUpStateEnter, OnPickedUpStateUpdate, OnPickedUpStateExit);
-        _stateMachine.AddState((int)States.PickedUp, pickedUpState);
-        
         _stateMachine.ChangeState((int)States.Default);
     }
 
-    public void SetAsInteractable(bool isInteractable)
+    public void Interact()
     {
-        if (isInteractable)
-        {
-            _stateMachine.ChangeState((int)States.ClosestItem);
-        }
-        else
-        {
-            _stateMachine.ChangeState((int)States.Default);
-        }
+        onInteract.Invoke();
     }
     
     #region States
@@ -51,7 +42,6 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
     private void OnDefaultStateEnter()
     {
         instructions.SetActive(false);
-        dropInstructions.SetActive(false);
     }
     
     private void OnDefaultStateUpdate()
@@ -78,24 +68,17 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
         instructions.SetActive(false);
     }
     
-    private void OnPickedUpStateEnter()
-    {
-        dropInstructions.SetActive(true);
-    }
-    
-    private void OnPickedUpStateUpdate()
-    {
-    }
-    
-    private void OnPickedUpStateExit()
-    {
-        dropInstructions.SetActive(false);
-    }
-    
     #endregion
-    
-    private void Update()
+
+    public void SetAsInteractable(bool isInteractable)
     {
-        _stateMachine.Update();
+        if (isInteractable)
+        {
+            _stateMachine.ChangeState((int)States.ClosestItem);
+        }
+        else
+        {
+            _stateMachine.ChangeState((int)States.Default);
+        }
     }
 }

@@ -58,6 +58,9 @@ namespace StarterAssets
         
         [Header("In Water")]
         public bool InWater = true;
+        
+        [Header("If youre on the water surface")]
+        public bool InWaterOnSurface = false;
 
 
         [Tooltip("Useful for rough ground")]
@@ -66,6 +69,15 @@ namespace StarterAssets
         [Tooltip("The radius of the grounded check. Should match the radius of the CharacterController")]
         public float GroundedRadius = 0.28f;
 
+        [Tooltip("The radius of the water check. Should match the radius of the CharacterController")]
+        public float WaterRadius = 0.1f;
+
+        [Tooltip("Center of water check")]
+        public GameObject WaterCheckCenter;
+        
+        [Tooltip("Used to check if your head is out of the water")]
+        public GameObject WaterCheckTop;
+        
         [Tooltip("What layers the character uses as ground")]
         public LayerMask GroundLayers;
         
@@ -219,12 +231,22 @@ namespace StarterAssets
         private void InWaterCheck()
         {
             // set sphere position, with offset
-            Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset,
-                transform.position.z);
-            InWater = Physics.CheckSphere(spherePosition, GroundedRadius, WaterLayers,
+            Vector3 spherePosition = WaterCheckCenter.transform.position;
+            InWater = Physics.CheckSphere(spherePosition, WaterRadius, WaterLayers,
                 QueryTriggerInteraction.Collide);
+
+            if (InWater)
+            {
+                Vector3 topSpherePosition = WaterCheckTop.transform.position;
+                InWaterOnSurface = !Physics.CheckSphere(topSpherePosition, 0.01f, WaterLayers,
+                    QueryTriggerInteraction.Collide);
+                Grounded = false;
+            }
+            else
+            {
+                InWaterOnSurface = false;
+            }
             
-            if (InWater) Grounded = false;
             // update animator if using character
             if (_hasAnimator && (InWater != _animator.GetBool(_animIDIsSwimming)))
             {
@@ -408,8 +430,15 @@ namespace StarterAssets
             {
                 if (_input.jump)
                 {
-                    // the square root of H * -2 * G = how much velocity needed to reach desired height
-                    _verticalVelocity = 5.0f;
+                    if (InWaterOnSurface)
+                    {
+                        _verticalVelocity = 10.0f;
+                    }
+                    else
+                    {
+                        _verticalVelocity = 5.0f;
+                        
+                    }
                 }
                 else if (_input.descend)
                 {

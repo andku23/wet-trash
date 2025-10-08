@@ -18,12 +18,13 @@ public class LootCollector : NetworkBehaviour
 #endif
     
     private StarterAssetsInputs _input;
-    private NetworkLoot lastClosestLoot;
+    private IInteractable lastClosestLoot;
     private GameObject heldLoot;
     private const float MAX_DROP_DISTANCE = 1.5f;
     
     public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
         if (!IsOwner) return;
         if(Instance == null) Instance = this;
         _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
@@ -32,7 +33,7 @@ public class LootCollector : NetworkBehaviour
 #else
 			Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
-        base.OnNetworkSpawn();
+        
     }
     
     public void AttachToPoint(GameObject loot)
@@ -76,14 +77,15 @@ public class LootCollector : NetworkBehaviour
 
         if (closestCollider != null)
         {
-            NetworkLoot loot = closestCollider.GetComponent<ColliderReference>().reference.GetComponent<NetworkLoot>();
+            // Expects collider reference
+            GameObject parentHitObject = closestCollider.GetComponent<ColliderReference>().reference;
+            IInteractable loot = parentHitObject.GetComponent<IInteractable>();
             if (loot != null && loot != lastClosestLoot)
             {
-                loot.TrySetClosestLoot(true);
+                loot.SetAsInteractable(true);
                 if (lastClosestLoot != null)
                 {
-                    NetworkLoot lastLoot = lastClosestLoot.GetComponent<NetworkLoot>();
-                    lastLoot.TrySetClosestLoot(false);
+                    lastClosestLoot.SetAsInteractable(false);
                 }
                 lastClosestLoot = loot;
             }
@@ -92,8 +94,7 @@ public class LootCollector : NetworkBehaviour
         {
             if (lastClosestLoot != null)
             {
-                NetworkLoot lastLoot = lastClosestLoot.GetComponent<NetworkLoot>();
-                lastLoot.TrySetClosestLoot(false);
+                lastClosestLoot.SetAsInteractable(false);
                 lastClosestLoot = null;
             }
         }
@@ -118,8 +119,19 @@ public class LootCollector : NetworkBehaviour
         {
             if (_input.interact && lastClosestLoot != null)
             {
-                LootManager.Instance.RequestPickup(lastClosestLoot);
-                lastClosestLoot = null; //Get rid of this if i plan on having it be carried
+                NetworkLoot loot = lastClosestLoot.gameObject.GetComponent<NetworkLoot>();
+                if (loot != null)
+                {
+                    _input.interact = false;
+                    LootManager.Instance.RequestPickup(loot);
+                    lastClosestLoot = null; //Get rid of this if i plan on having it be carried
+                }
+                else
+                {
+                    _input.interact = false;
+                    lastClosestLoot.Interact();
+                }
+                
             }
         }
         

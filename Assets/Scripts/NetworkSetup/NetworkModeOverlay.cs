@@ -10,6 +10,7 @@ public class NetworkModeOverlay : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        base.OnNetworkSpawn();
         if (NetworkManager.Singleton.IsServer)
         {
             textMesh.text = "Server";

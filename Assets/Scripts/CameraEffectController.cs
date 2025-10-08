@@ -7,7 +7,6 @@ public class CameraEffectController : MonoBehaviour
     
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("collide with water");
         postProcessVolume.weight = 1.0f;
     }
 

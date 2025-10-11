@@ -1,4 +1,5 @@
 using StarterAssets;
+using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
@@ -18,7 +19,7 @@ public class LootCollector : NetworkBehaviour
 #endif
     
     private StarterAssetsInputs _input;
-    private IInteractable lastClosestLoot;
+    private IInteractable lastClosestInteractable;
     private GameObject heldLoot;
     private const float MAX_DROP_DISTANCE = 1.5f;
     
@@ -44,6 +45,7 @@ public class LootCollector : NetworkBehaviour
         go.transform.localScale = Vector3.one;
         heldLoot = go;
         thirdPersonController.ToggleCarrying(true);
+        lastClosestInteractable = null;
     }
 
     public void DestroyHeldObject()
@@ -51,6 +53,7 @@ public class LootCollector : NetworkBehaviour
         Destroy(heldLoot);
         heldLoot = null;
         thirdPersonController.ToggleCarrying(false);
+        lastClosestInteractable = null;
     }
     
     void Update()
@@ -64,7 +67,8 @@ public class LootCollector : NetworkBehaviour
         foreach (Collider collider in hitColliders)
         {
             // Optionally, exclude self if the script is on an object with a collider
-            if (collider.gameObject == gameObject) continue; 
+            if (collider.gameObject == gameObject) continue;
+            if (heldLoot != null && heldLoot.gameObject == collider.gameObject) continue;
 
             float distance = Vector3.Distance(transform.position, collider.transform.position); 
 
@@ -74,67 +78,92 @@ public class LootCollector : NetworkBehaviour
                 closestCollider = collider;
             }
         }
-
+        
+        //Calculate closest interactable
         if (closestCollider != null)
         {
             // Expects collider reference
             GameObject parentHitObject = closestCollider.GetComponent<ColliderReference>().reference;
-            IInteractable loot = parentHitObject.GetComponent<IInteractable>();
-            if (loot != null && loot != lastClosestLoot)
+            IInteractable interactable = parentHitObject.GetComponent<IInteractable>();
+            if (interactable != null && interactable != lastClosestInteractable)
             {
-                loot.SetAsInteractable(true);
-                if (lastClosestLoot != null)
+                if (interactable.gameObject.GetComponent<LootDeposit>() != null && heldLoot != null)
                 {
-                    lastClosestLoot.SetAsInteractable(false);
-                }
-                lastClosestLoot = loot;
-            }
-        }
-        else
-        {
-            if (lastClosestLoot != null)
-            {
-                lastClosestLoot.SetAsInteractable(false);
-                lastClosestLoot = null;
-            }
-        }
-
-        if (heldLoot != null)
-        {
-            if (_input.interact)
-            {
-                Physics.Raycast(heldLoot.transform.position, -Vector3.up, out RaycastHit hit);
-                if (hit.collider != null)
-                {
-                    if (hit.distance < MAX_DROP_DISTANCE)
+                    interactable.SetAsInteractable(true);
+                    if (lastClosestInteractable != null)
                     {
-                        LootManager.Instance.RequestDrop(
-                            new Vector3(hit.point.x, hit.point.y + 0.3f, hit.point.z), heldLoot.gameObject);
+                        lastClosestInteractable.SetAsInteractable(false);
                     }
-                    
+                    lastClosestInteractable = interactable;
                 }
-            }
-        }
-        else
-        {
-            if (_input.interact && lastClosestLoot != null)
-            {
-                NetworkLoot loot = lastClosestLoot.gameObject.GetComponent<NetworkLoot>();
-                if (loot != null)
+                else if(heldLoot == null)
                 {
-                    _input.interact = false;
-                    LootManager.Instance.RequestPickup(loot);
-                    lastClosestLoot = null; //Get rid of this if i plan on having it be carried
-                }
-                else
-                {
-                    _input.interact = false;
-                    lastClosestLoot.Interact();
+                    interactable.SetAsInteractable(true);
+                    if (lastClosestInteractable != null)
+                    {
+                        lastClosestInteractable.SetAsInteractable(false);
+                    }
+                    lastClosestInteractable = interactable;
                 }
                 
             }
         }
-        
-        _input.interact = false;
+        else
+        {
+            if (lastClosestInteractable != null)
+            {
+                lastClosestInteractable.SetAsInteractable(false);
+                lastClosestInteractable = null;
+            }
+        }
+
+        if (_input.interact)
+        {
+            //Turn it off immediately so we don't get double events
+            _input.interact = false;
+            
+            NetworkLoot loot = null;
+            LootDeposit deposit = null;
+            if (lastClosestInteractable != null)
+            {
+                loot = lastClosestInteractable.gameObject.GetComponent<NetworkLoot>();
+                deposit = lastClosestInteractable.gameObject.GetComponent<LootDeposit>();
+            }
+            
+            
+            if (heldLoot != null)
+            {
+                if (deposit != null)
+                {
+                    LootManager.Instance.RequestDeposit(deposit, heldLoot);
+                }
+                else
+                {
+                    Physics.Raycast(heldLoot.transform.position, -Vector3.up, out RaycastHit hit);
+                    if (hit.collider != null)
+                    {
+                        if (hit.distance < MAX_DROP_DISTANCE)
+                        {
+                            LootManager.Instance.RequestDrop(
+                                new Vector3(hit.point.x, hit.point.y + 0.3f, hit.point.z), heldLoot);
+                        }
+                    
+                    }
+                }
+            }
+            else
+            {
+                if (loot != null)
+                {
+                    LootManager.Instance.RequestPickup(loot);
+                    lastClosestInteractable = null;
+                }
+                else
+                {
+                    lastClosestInteractable.Interact();
+                }
+            }
+            
+        }
     }
 }

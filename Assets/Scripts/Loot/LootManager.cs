@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using StarterAssets;
+using TMPro;
 using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
@@ -13,8 +14,12 @@ public class LootManager : NetworkBehaviour
     
     [SerializeField] private int _numLoot;
     [SerializeField] private LootLocalReferences lootLocalReferences;
+    [SerializeField] private TextMeshProUGUI moneyText;
 
     private List<NetworkObject> _loots = new List<NetworkObject>();
+    private Dictionary<int, List<NetworkObject>> _deposits = new Dictionary<int, List<NetworkObject>>();
+    private NetworkVariable<int> award = new NetworkVariable<int>(0);
+    
     
     public override void OnNetworkSpawn()
     {
@@ -24,6 +29,13 @@ public class LootManager : NetworkBehaviour
         {
             Instance = this;
         }
+
+        award.OnValueChanged += UpdateScore;
+    }
+
+    private void UpdateScore(int prev, int next)
+    {
+        moneyText.text = $"${next}";
     }
 
     public void SpawnLoot()
@@ -114,7 +126,29 @@ public class LootManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void Pickup_ServerRpc(ulong targetPlayerNetworkObjectId, ulong networkObjectId, LootType lootID)
     {
-        Debug.Log(lootID);
+        int depositNum = -1;
+        List<NetworkObject> list = null;
+        
+        //Check if its in one of the deposits so we can subtract cost
+        foreach (KeyValuePair<int, List<NetworkObject>> entry in _deposits)
+        {
+            for (int i = 0; i < entry.Value.Count; i++)
+            {
+                if (networkObjectId == entry.Value[i].NetworkObjectId)
+                {
+                    depositNum = i;
+                    list = entry.Value;
+                }
+            }
+        }
+
+        if (list != null)
+        {
+            list.RemoveAt(depositNum);
+            award.Value -= 200;
+        }
+        
+        
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject networkLootObject))
         {
             networkLootObject.Despawn();
@@ -154,6 +188,29 @@ public class LootManager : NetworkBehaviour
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
         LootCollector pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<LootCollector>();
         pickupPlayerCollector.DestroyHeldObject();
+    }
+
+    public void RequestDeposit(LootDeposit deposit, GameObject loot)
+    {
+        Deposit_ServerRpc(NetworkManager.Singleton.LocalClientId, deposit.ID, loot.GetComponent<LootBaseData>().lootType, deposit.GetRandomPosition());
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void Deposit_ServerRpc(ulong targetPlayerNetworkObjectId, int depositID, LootType lootID, Vector3 position)
+    {
+        if (!_deposits.ContainsKey(depositID))
+        {
+            _deposits[depositID] = new List<NetworkObject>();
+        }
+        
+        GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
+        NetworkObject networkObject = go.GetComponent<NetworkObject>();
+        networkObject.Spawn();
+        award.Value += 200;
+        
+        _deposits[depositID].Add(networkObject);
+        
+        Drop_ClientRpc(targetPlayerNetworkObjectId);
     }
     
 }

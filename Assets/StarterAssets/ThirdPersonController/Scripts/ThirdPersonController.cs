@@ -59,6 +59,9 @@ namespace StarterAssets
         [Header("In Water")]
         public bool InWater = true;
         
+        [Header("Is Driving")]
+        public bool IsDriving = false;
+        
         [Header("If youre on the water surface")]
         public bool InWaterOnSurface = false;
 
@@ -124,6 +127,7 @@ namespace StarterAssets
         private int _animIDMotionSpeed;
         private int _animIDIsSwimming;
         private int _animIDIsCarrying;
+        private int _animIDIsDriving;
 
 #if ENABLE_INPUT_SYSTEM 
         private PlayerInput _playerInput;
@@ -210,6 +214,7 @@ namespace StarterAssets
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
             _animIDIsSwimming = Animator.StringToHash("IsSwimming");
             _animIDIsCarrying = Animator.StringToHash("IsCarrying");
+            _animIDIsDriving = Animator.StringToHash("IsDriving");
         }
 
         private void GroundedCheck()
@@ -262,6 +267,15 @@ namespace StarterAssets
                 _animator.SetBool(_animIDIsCarrying, isCarrying);
             }
         }
+        
+        public void ToggleDriving(bool isDriving)
+        {
+            IsDriving = isDriving;
+            if (_hasAnimator)
+            {
+                _animator.SetBool(_animIDIsDriving, IsDriving);
+            }
+        }
 
         private void CameraRotation()
         {
@@ -287,6 +301,7 @@ namespace StarterAssets
 
         private void Move()
         {
+            if (IsDriving) return;
             if (InWater)
             {
                 MoveWater();

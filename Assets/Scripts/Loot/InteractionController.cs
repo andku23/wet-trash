@@ -5,9 +5,9 @@ using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class LootCollector : NetworkBehaviour
+public class InteractionController : NetworkBehaviour
 {
-    public static LootCollector Instance;
+    public static InteractionController Instance;
     
     [SerializeField] private LayerMask layerMask;
     [SerializeField] private Transform grabbedLootConnectPoint;
@@ -64,9 +64,10 @@ public class LootCollector : NetworkBehaviour
         float minDistance = Mathf.Infinity;
         Collider closestCollider = null;
 
+        //Calculate closest interactable
         foreach (Collider collider in hitColliders)
         {
-            // Optionally, exclude self if the script is on an object with a collider
+            // Exclude self if the script is on an object with a collider
             if (collider.gameObject == gameObject) continue;
             if (heldLoot != null && heldLoot.gameObject == collider.gameObject) continue;
 
@@ -79,7 +80,6 @@ public class LootCollector : NetworkBehaviour
             }
         }
         
-        //Calculate closest interactable
         if (closestCollider != null)
         {
             // Expects collider reference
@@ -147,7 +147,6 @@ public class LootCollector : NetworkBehaviour
                             LootManager.Instance.RequestDrop(
                                 new Vector3(hit.point.x, hit.point.y + 0.3f, hit.point.z), heldLoot);
                         }
-                    
                     }
                 }
             }
@@ -160,7 +159,10 @@ public class LootCollector : NetworkBehaviour
                 }
                 else
                 {
-                    lastClosestInteractable.Interact();
+                    if (lastClosestInteractable != null)
+                    {
+                        lastClosestInteractable.Interact();
+                    }
                 }
             }
             

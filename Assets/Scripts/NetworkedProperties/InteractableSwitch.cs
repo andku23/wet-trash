@@ -2,13 +2,21 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class NetworkedSwitch : NetworkBehaviour, IInteractable
+public class InteractableSwitch : MonoBehaviour, IInteractable
 {
 
     [SerializeField] private GameObject instructions;
-    [SerializeField] private UnityEvent onInteract;
+    [SerializeField] private bool isToggleButton;
+    [SerializeField] private UnityEvent onPressed;
+    [SerializeField] private UnityEvent<bool> onToggled;
+    [SerializeField] private Animator animator;
     
     private ClientStateMachine _stateMachine;
+    private bool _isToggled;
+    
+    // animation IDs
+    private int _animIDPress;
+    private int _animIDIsToggled;
 
     enum States
     {
@@ -17,10 +25,8 @@ public class NetworkedSwitch : NetworkBehaviour, IInteractable
     };
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public override void OnNetworkSpawn()
+    public void Start()
     {
-        base.OnNetworkSpawn();
-        
         _stateMachine = new ClientStateMachine();
         
         BaseState defaultState = new BaseState(OnDefaultStateEnter, OnDefaultStateUpdate, OnDefaultStateExit);
@@ -30,11 +36,24 @@ public class NetworkedSwitch : NetworkBehaviour, IInteractable
         _stateMachine.AddState((int)States.ClosestItem, closestItemState);
         
         _stateMachine.ChangeState((int)States.Default);
+        
+        _animIDPress = Animator.StringToHash("Press");
+        _animIDIsToggled = Animator.StringToHash("IsToggled");
     }
 
     public void Interact()
     {
-        onInteract.Invoke();
+        if (isToggleButton)
+        {
+            _isToggled = !_isToggled;
+            onToggled?.Invoke(_isToggled);
+            animator.SetBool(_animIDIsToggled, _isToggled);
+        }
+        else
+        {
+            onPressed?.Invoke();
+            animator.SetTrigger(_animIDPress);
+        }
     }
     
     #region States

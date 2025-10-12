@@ -162,7 +162,7 @@ public class LootManager : NetworkBehaviour
         // Lookup who picked it up and get the client for it
         GameObject localLootPrefab = IDtoPrefabs(lootID).local;
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
-        LootCollector pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<LootCollector>();
+        InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
         pickupPlayerCollector.AttachToPoint(localLootPrefab);
     }
 
@@ -186,7 +186,7 @@ public class LootManager : NetworkBehaviour
     public void Drop_ClientRpc(ulong targetPlayerNetworkObjectId)
     {
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
-        LootCollector pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<LootCollector>();
+        InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
         pickupPlayerCollector.DestroyHeldObject();
     }
 

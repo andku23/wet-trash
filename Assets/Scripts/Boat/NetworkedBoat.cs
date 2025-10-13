@@ -1,5 +1,7 @@
+using Cinemachine;
 using StarterAssets;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,9 +9,14 @@ public class NetworkedBoat : NetworkBehaviour
 {
     [SerializeField] private GameObject _driverSeat;
     [SerializeField] private Rigidbody _rb;
+    [SerializeField] private CinemachineVirtualCamera _boatVirtualCamera;
+    [SerializeField] private float RotationSmoothTime = 0.12f;
+    [SerializeField] private float BoatSpeed = 2.0f;
     
     private NetworkVariable<bool> _hasDriver = new NetworkVariable<bool>(false);
     private NetworkVariable<ulong> _driverID = new NetworkVariable<ulong>(0);
+    private float _targetRotation = 0.0f;
+    private float _rotationVelocity;
     
 #if ENABLE_INPUT_SYSTEM 
     private PlayerInput _playerInput;
@@ -30,7 +37,26 @@ public class NetworkedBoat : NetworkBehaviour
         if (IsOwner && _hasDriver.Value)
         {
             //transform.position += new Vector3(_input.move.x * Time.deltaTime * 3.0f, 0.0f, _input.move.y * Time.deltaTime * 3.0f);
-            _rb.AddForce(_input.move.x * 3f, 0.0f, _input.move.y * 3f);
+            if (_input.move != Vector2.zero)
+            {
+                Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
+                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                                  _boatVirtualCamera.transform.eulerAngles.y;
+                float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
+                    RotationSmoothTime);
+
+                // rotate to face input direction relative to camera position
+                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+
+                if (_input.move.y != 0.0f)
+                {
+                    _rb.AddForce(targetDirection.normalized * BoatSpeed, ForceMode.Impulse);
+                }
+            }
+            
+            
+            
         }
     }
 
@@ -53,6 +79,7 @@ public class NetworkedBoat : NetworkBehaviour
         _hasDriver.Value = true;
         _driverID.Value = playerNetworkObjectId;
         GetComponent<NetworkObject>().ChangeOwnership(playerNetworkObjectId);
+        GetComponent<NetworkTransformFixed>().ForceApplyAuthoritativeState();
         RequestToDrive_ClientRpc(playerNetworkObjectId);
     }
     
@@ -69,6 +96,11 @@ public class NetworkedBoat : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     public void RequestToDrive_ClientRpc(ulong playerNetworkObjectId)
     {
+        if (playerNetworkObjectId == NetworkManager.Singleton.LocalClientId)
+        {
+            _boatVirtualCamera.Priority = 20;
+        }
+        
         NetworkClient requestedDrivePlayer = NetworkManager.Singleton.ConnectedClients[playerNetworkObjectId];
         requestedDrivePlayer.PlayerObject.SynchronizeTransform = false;
         requestedDrivePlayer.PlayerObject.GetComponent<ThirdPersonController>().ToggleDriving(true);
@@ -78,6 +110,11 @@ public class NetworkedBoat : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     public void RequestToUndrive_ClientRpc(ulong playerNetworkObjectId)
     {
+        if (playerNetworkObjectId == NetworkManager.Singleton.LocalClientId)
+        {
+            _boatVirtualCamera.Priority = 0;
+        }
+        
         NetworkClient requestedDrivePlayer = NetworkManager.Singleton.ConnectedClients[playerNetworkObjectId];
         requestedDrivePlayer.PlayerObject.SynchronizeTransform = true;
         requestedDrivePlayer.PlayerObject.GetComponent<ThirdPersonController>().ToggleDriving(false);

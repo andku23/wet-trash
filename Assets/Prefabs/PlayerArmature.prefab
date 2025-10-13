@@ -833,6 +833,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 7020345050695949160}
   - {fileID: 8093596084994602531}
   m_Father: {fileID: 8973794547637258924}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -865,11 +866,11 @@ Transform:
   m_GameObject: {fileID: 2743617430894743844}
   serializedVersion: 2
   m_LocalRotation: {x: 0.4684344, y: 0.16628537, z: 0.2902738, w: 0.81771606}
-  m_LocalPosition: {x: 0, y: 0.56599987, z: 0}
-  m_LocalScale: {x: 0.13461615, y: 0.13461615, z: 0.13461615}
+  m_LocalPosition: {x: 0, y: 0.901672, z: 0.014681594}
+  m_LocalScale: {x: 0.13461617, y: 0.13461614, z: 0.13461615}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2171826594892858639}
+  m_Father: {fileID: 3279638955686891889}
   m_LocalEulerAnglesHint: {x: 42.033, y: 47.076, z: 58.089}
 --- !u!33 &8035679479475523340
 MeshFilter:
@@ -1077,7 +1078,7 @@ MonoBehaviour:
   SceneMigrationSynchronization: 1
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  AutoObjectParentSync: 0
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
 --- !u!114 &1091257655826559655
@@ -2873,8 +2874,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 1.375, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 7020345050695949160}
+  m_Children: []
   m_Father: {fileID: 2354101969921336760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8619225726321608324

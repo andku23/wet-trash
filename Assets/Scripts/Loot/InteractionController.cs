@@ -82,8 +82,12 @@ public class InteractionController : NetworkBehaviour
         
         if (closestCollider != null)
         {
+            GameObject parentHitObject = closestCollider.gameObject;
             // Expects collider reference
-            GameObject parentHitObject = closestCollider.GetComponent<ColliderReference>().reference;
+            if (closestCollider.GetComponent<ColliderReference>() != null)
+            {
+                parentHitObject = closestCollider.GetComponent<ColliderReference>().reference;
+            }
             IInteractable interactable = parentHitObject.GetComponent<IInteractable>();
             if (interactable != null && interactable != lastClosestInteractable)
             {
@@ -124,6 +128,7 @@ public class InteractionController : NetworkBehaviour
             
             NetworkLoot loot = null;
             LootDeposit deposit = null;
+            
             if (lastClosestInteractable != null)
             {
                 loot = lastClosestInteractable.gameObject.GetComponent<NetworkLoot>();

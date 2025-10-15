@@ -1,13 +1,10 @@
 using Unity.Netcode.Components;
 using UnityEngine;
 
-public class NetworkTransformFixed : NetworkTransform
+public class NetworkRigidbodyFixed : NetworkRigidbody
 {
     public void ForceApplyAuthoritativeState()
     {
-        //ApplyAuthoritativeState();
-        // OnTransformUpdated();
-        Initialize();
         InternalOnNetworkSessionSynchronized();
     }
 }

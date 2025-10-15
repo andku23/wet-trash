@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 #if ENABLE_INPUT_SYSTEM 
 using UnityEngine.InputSystem;
 #endif
@@ -56,6 +57,8 @@ namespace StarterAssets
         [Tooltip("If the character is grounded or not. Not part of the CharacterController built in grounded check")]
         public bool Grounded = true;
         
+        public bool VehicleParented = false;
+        
         [Header("In Water")]
         public bool InWater = true;
         
@@ -102,6 +105,8 @@ namespace StarterAssets
 
         [Tooltip("For locking the camera position on all axis")]
         public bool LockCameraPosition = false;
+        
+        public NetworkHandleParenting NetworkHandleParenting;
 
         // cinemachine
         private float _cinemachineTargetYaw;
@@ -223,14 +228,40 @@ namespace StarterAssets
             // set sphere position, with offset
             Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset,
                 transform.position.z);
-            Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers,
-                QueryTriggerInteraction.Ignore);
-
+            
+            Collider[] hitColliders = Physics.OverlapSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
+            Grounded = hitColliders.Length > 0;
+            
             // update animator if using character
             if (_hasAnimator)
             {
                 _animator.SetBool(_animIDGrounded, Grounded);
             }
+
+            if (Grounded)
+            {
+                Collider closestCollider = hitColliders[0];
+            
+                // Don't do anything if its already in the same state
+                if (VehicleParented == closestCollider.CompareTag("Boat")) return;
+                VehicleParented = closestCollider.CompareTag("Boat");
+                if (VehicleParented)
+                {
+                    GameObject parent = closestCollider.GetComponent<ColliderReference>().reference;
+                    NetworkHandleParenting.RequestParentTo(NetworkManager.Singleton.LocalClientId, parent.GetComponent<NetworkTransform>().NetworkObjectId);
+                    //transform.SetParent(closestCollider.GetComponent<ColliderReference>().reference.transform);
+                }
+                else
+                {
+                    NetworkHandleParenting.RequestUnparentTo(NetworkManager.Singleton.LocalClientId);
+                }
+            }
+            else
+            {
+                NetworkHandleParenting.RequestUnparentTo(NetworkManager.Singleton.LocalClientId);
+            }
+            
+            
         }
         
         private void InWaterCheck()

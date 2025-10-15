@@ -15,9 +15,11 @@ public class LootManager : NetworkBehaviour
     [SerializeField] private int _numLoot;
     [SerializeField] private LootLocalReferences lootLocalReferences;
     [SerializeField] private TextMeshProUGUI moneyText;
+    [SerializeField] LootDeposit[] _lootDeposits;
+    
 
     private List<NetworkObject> _loots = new List<NetworkObject>();
-    private Dictionary<int, List<NetworkObject>> _deposits = new Dictionary<int, List<NetworkObject>>();
+    //private Dictionary<int, int> _deposits = new Dictionary<int, int>(); //desposit index to size
     private NetworkVariable<int> award = new NetworkVariable<int>(0);
     
     
@@ -53,7 +55,7 @@ public class LootManager : NetworkBehaviour
         for (int i = 0; i < _numLoot; i++)
         {
             GameObject go = Instantiate(lootLocalReferences.pairs[networkLootPrefabs[Random.Range(0, networkLootPrefabs.Count)]].network,
-                new Vector3(Random.Range(-5f, 5f), 0.5f, Random.Range(-5f, 5f)) + transform.position,
+                new Vector3(Random.Range(-15f, 15f), 0.5f, Random.Range(-15f, 15f)) + transform.position,
                 Quaternion.identity);
             NetworkObject networkObject = go.GetComponent<NetworkObject>();
             networkObject.Spawn();
@@ -130,23 +132,23 @@ public class LootManager : NetworkBehaviour
         List<NetworkObject> list = null;
         
         //Check if its in one of the deposits so we can subtract cost
-        foreach (KeyValuePair<int, List<NetworkObject>> entry in _deposits)
-        {
-            for (int i = 0; i < entry.Value.Count; i++)
-            {
-                if (networkObjectId == entry.Value[i].NetworkObjectId)
-                {
-                    depositNum = i;
-                    list = entry.Value;
-                }
-            }
-        }
+        // foreach (KeyValuePair<int, int> entry in _deposits)
+        // {
+        //     for (int i = 0; i < entry.Value.Count; i++)
+        //     {
+        //         if (networkObjectId == entry.Value[i].NetworkObjectId)
+        //         {
+        //             depositNum = i;
+        //             list = entry.Value;
+        //         }
+        //     }
+        // }
 
-        if (list != null)
-        {
-            list.RemoveAt(depositNum);
-            award.Value -= 200;
-        }
+        //if (list != null)
+        //{
+        //    list.RemoveAt(depositNum);
+        //    award.Value -= 200;
+        //}
         
         
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject networkLootObject))
@@ -154,6 +156,13 @@ public class LootManager : NetworkBehaviour
             networkLootObject.Despawn();
             Pickup_ClientRpc(targetPlayerNetworkObjectId, lootID);
         }
+    }
+
+    private void DestroyLootInHand(ulong targetPlayerNetworkObjectId)
+    {
+        NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
+        InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
+        pickupPlayerCollector.DestroyHeldObject();
     }
 
     [ClientRpc(RequireOwnership = false)]
@@ -185,32 +194,49 @@ public class LootManager : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     public void Drop_ClientRpc(ulong targetPlayerNetworkObjectId)
     {
-        NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
-        InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
-        pickupPlayerCollector.DestroyHeldObject();
+        DestroyLootInHand(targetPlayerNetworkObjectId);
     }
 
     public void RequestDeposit(LootDeposit deposit, GameObject loot)
     {
-        Deposit_ServerRpc(NetworkManager.Singleton.LocalClientId, deposit.ID, loot.GetComponent<LootBaseData>().lootType, deposit.GetRandomPosition());
+        int id = -1;
+        for (int i = 0; i < _lootDeposits.Length; i++)
+        {
+            if (_lootDeposits[i] == deposit)
+            {
+                id = i;
+            }
+        }
+
+        if (id >= 0)
+        {
+            Deposit_ServerRpc(NetworkManager.Singleton.LocalClientId, id, loot.GetComponent<LootBaseData>().lootType);
+        }
     }
     
     [ServerRpc(RequireOwnership = false)]
-    public void Deposit_ServerRpc(ulong targetPlayerNetworkObjectId, int depositID, LootType lootID, Vector3 position)
+    public void Deposit_ServerRpc(ulong targetPlayerNetworkObjectId, int depositID, LootType lootID)
     {
-        if (!_deposits.ContainsKey(depositID))
-        {
-            _deposits[depositID] = new List<NetworkObject>();
-        }
+        //if (!_deposits.ContainsKey(depositID))
+        //{
+        //    _deposits[depositID] = 0;
+        //}
         
-        GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
-        NetworkObject networkObject = go.GetComponent<NetworkObject>();
-        networkObject.Spawn();
+        //GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
+        //NetworkObject networkObject = go.GetComponent<NetworkObject>();
+        //networkObject.Spawn();
         award.Value += 200;
         
-        _deposits[depositID].Add(networkObject);
+        //_deposits[depositID]++;
         
-        Drop_ClientRpc(targetPlayerNetworkObjectId);
+        Deposit_ClientRpc(targetPlayerNetworkObjectId, depositID);
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void Deposit_ClientRpc(ulong targetPlayerNetworkObjectId, int depositID)
+    {
+        DestroyLootInHand(targetPlayerNetworkObjectId);
+        _lootDeposits[depositID].PlaceLootAtNextPosition();
     }
     
 }

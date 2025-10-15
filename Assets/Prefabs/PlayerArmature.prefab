@@ -981,6 +981,7 @@ GameObject:
   - component: {fileID: 3817229071060700491}
   - component: {fileID: 7733629718943813994}
   - component: {fileID: -5723443840750851045}
+  - component: {fileID: 8149868342962994308}
   m_Layer: 8
   m_Name: PlayerArmature
   m_TagString: Player
@@ -1118,6 +1119,7 @@ MonoBehaviour:
   JumpTimeout: 0.3
   FallTimeout: 0.15
   Grounded: 1
+  VehicleParented: 0
   InWater: 1
   IsDriving: 0
   InWaterOnSurface: 0
@@ -1137,6 +1139,7 @@ MonoBehaviour:
   BottomClamp: -30
   CameraAngleOverride: 0
   LockCameraPosition: 0
+  NetworkHandleParenting: {fileID: 8149868342962994308}
 --- !u!114 &2817466044568710389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1169,7 +1172,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkTransformExpanded: 0
   AuthorityMode: 1
-  TickSyncChildren: 0
+  TickSyncChildren: 1
   UseUnreliableDeltas: 0
   SyncPositionX: 1
   SyncPositionY: 1
@@ -1186,7 +1189,7 @@ MonoBehaviour:
   UseQuaternionSynchronization: 0
   UseQuaternionCompression: 0
   UseHalfFloatPrecision: 0
-  InLocalSpace: 0
+  InLocalSpace: 1
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
@@ -1254,6 +1257,19 @@ MonoBehaviour:
   useRotation: 1
   useScale: 1
   target: {fileID: 0}
+--- !u!114 &8149868342962994308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3110835940448346143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2268aa7ef9ce52840865222a8b6f7935, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkHandleParenting
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &3133240687885047721
 GameObject:
   m_ObjectHideFlags: 0

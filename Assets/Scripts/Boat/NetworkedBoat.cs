@@ -46,7 +46,11 @@ public class NetworkedBoat : NetworkBehaviour
                     RotationSmoothTime);
 
                 // rotate to face input direction relative to camera position
-                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                //transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                
+                float torqueMagnitude = 500f; // Adjust this value for desired rotational speed
+                _rb.AddTorque(transform.up * torqueMagnitude * _input.move.x); 
+                
                 Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
 
                 if (_input.move.y != 0.0f)
@@ -54,9 +58,6 @@ public class NetworkedBoat : NetworkBehaviour
                     _rb.AddForce(targetDirection.normalized * BoatSpeed, ForceMode.Impulse);
                 }
             }
-            
-            
-            
         }
     }
 
@@ -100,6 +101,11 @@ public class NetworkedBoat : NetworkBehaviour
         {
             _boatVirtualCamera.Priority = 20;
         }
+
+        // if (IsOwner)
+        // {
+        //     GetComponent<NetworkTransformFixed>().ForceApplyAuthoritativeState();
+        // }
         
         NetworkClient requestedDrivePlayer = NetworkManager.Singleton.ConnectedClients[playerNetworkObjectId];
         requestedDrivePlayer.PlayerObject.SynchronizeTransform = false;

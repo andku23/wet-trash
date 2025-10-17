@@ -238,30 +238,27 @@ namespace StarterAssets
                 _animator.SetBool(_animIDGrounded, Grounded);
             }
 
-            if (Grounded)
+            Collider boatColliderInRange = null;
+            for (int i = 0; i < hitColliders.Length; i++)
             {
-                Collider closestCollider = hitColliders[0];
-            
-                // Don't do anything if its already in the same state
-                if (VehicleParented == closestCollider.CompareTag("Boat")) return;
-                VehicleParented = closestCollider.CompareTag("Boat");
-                if (VehicleParented)
+                if (hitColliders[i].CompareTag("Boat"))
                 {
-                    GameObject parent = closestCollider.GetComponent<ColliderReference>().reference;
-                    NetworkHandleParenting.RequestParentTo(NetworkManager.Singleton.LocalClientId, parent.GetComponent<NetworkTransform>().NetworkObjectId);
-                    //transform.SetParent(closestCollider.GetComponent<ColliderReference>().reference.transform);
+                    boatColliderInRange = hitColliders[i];
                 }
-                else
-                {
-                    NetworkHandleParenting.RequestUnparentTo(NetworkManager.Singleton.LocalClientId);
-                }
+            }
+        
+            // Don't do anything if its already in the same state
+            if (VehicleParented == (boatColliderInRange != null)) return;
+            VehicleParented = (boatColliderInRange != null);
+            if (VehicleParented)
+            {
+                GameObject parent = boatColliderInRange.GetComponent<ColliderReference>().reference;
+                NetworkHandleParenting.RequestParentTo(NetworkManager.Singleton.LocalClientId, parent.GetComponent<NetworkTransform>().NetworkObjectId);
             }
             else
             {
                 NetworkHandleParenting.RequestUnparentTo(NetworkManager.Singleton.LocalClientId);
             }
-            
-            
         }
         
         private void InWaterCheck()

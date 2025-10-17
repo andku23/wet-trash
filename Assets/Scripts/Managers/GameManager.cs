@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class GameController : NetworkBehaviour
+public class GameManager : NetworkBehaviour
 {
     [SerializeField] private LootManager _lootManager;
     

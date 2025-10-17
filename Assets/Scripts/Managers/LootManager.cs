@@ -20,8 +20,6 @@ public class LootManager : NetworkBehaviour
 
     private List<NetworkObject> _loots = new List<NetworkObject>();
     //private Dictionary<int, int> _deposits = new Dictionary<int, int>(); //desposit index to size
-    private NetworkVariable<int> award = new NetworkVariable<int>(0);
-    
     
     public override void OnNetworkSpawn()
     {
@@ -31,8 +29,6 @@ public class LootManager : NetworkBehaviour
         {
             Instance = this;
         }
-
-        award.OnValueChanged += UpdateScore;
     }
 
     private void UpdateScore(int prev, int next)
@@ -225,7 +221,7 @@ public class LootManager : NetworkBehaviour
         //GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
         //NetworkObject networkObject = go.GetComponent<NetworkObject>();
         //networkObject.Spawn();
-        award.Value += 200;
+        MoneyManager.Instance.AddCash(200);
         
         //_deposits[depositID]++;
         

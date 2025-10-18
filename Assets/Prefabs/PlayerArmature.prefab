@@ -1314,9 +1314,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDeath
   _controller: {fileID: 1091257655826559655}
   _animator: {fileID: 1597806622317787050}
-  BREATH_FULL_AMOUNT: 7
+  BREATH_FULL_AMOUNT: 10
   BREATH_DEPLETE_RATE: 1
-  BREATH_REPLENISH_RATE: 1
+  BREATH_REPLENISH_RATE: 2
 --- !u!1 &3133240687885047721
 GameObject:
   m_ObjectHideFlags: 0

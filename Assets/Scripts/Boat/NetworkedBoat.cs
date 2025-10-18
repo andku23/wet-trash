@@ -30,6 +30,7 @@ public class NetworkedBoat : NetworkBehaviour
         _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
 #else
 #endif
+        
     }
 
     private void FixedUpdate()
@@ -40,8 +41,7 @@ public class NetworkedBoat : NetworkBehaviour
             if (_input.move != Vector2.zero)
             {
                 Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
-                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                  _boatVirtualCamera.transform.eulerAngles.y;
+                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg;
                 float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
                     RotationSmoothTime);
 
@@ -51,7 +51,7 @@ public class NetworkedBoat : NetworkBehaviour
                 float torqueMagnitude = 500f; // Adjust this value for desired rotational speed
                 _rb.AddTorque(transform.up * torqueMagnitude * _input.move.x); 
                 
-                Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+                Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * transform.forward;
 
                 if (_input.move.y != 0.0f)
                 {

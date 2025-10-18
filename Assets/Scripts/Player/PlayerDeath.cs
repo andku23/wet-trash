@@ -3,7 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class PlayerDeath : MonoBehaviour
+public class PlayerDeath : NetworkBehaviour
 {
     private int _animIDIsDead;
     [SerializeField] private ThirdPersonController _controller;
@@ -15,7 +15,7 @@ public class PlayerDeath : MonoBehaviour
     private float _breath;
     private StarterAssetsInputs _input;
     
-    private void Start()
+    public override void OnNetworkSpawn()
     {
         _animIDIsDead = Animator.StringToHash("IsDead");
         _breath = BREATH_FULL_AMOUNT;
@@ -25,6 +25,7 @@ public class PlayerDeath : MonoBehaviour
 
     private void Update()
     {
+        if (!IsOwner) return;
         if (_controller.InWater && !_controller.InWaterOnSurface)
         {
             _breath -= Time.deltaTime * BREATH_REPLENISH_RATE;
@@ -35,6 +36,7 @@ public class PlayerDeath : MonoBehaviour
             _breath += Time.deltaTime * BREATH_DEPLETE_RATE;
             _breath = Mathf.Clamp(_breath, 0, BREATH_FULL_AMOUNT);
         }
+
         GameManager.Instance.OnBreathUpdated.Invoke(_breath/BREATH_FULL_AMOUNT);
         if (_breath <= 0.0f && !_controller.IsDead)
         {

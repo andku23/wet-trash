@@ -159,7 +159,6 @@ public class LootManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void Drop_ServerRpc(ulong targetPlayerNetworkObjectId, Vector3 position, LootType lootID)
     {
-       
         GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
         networkObject.Spawn();

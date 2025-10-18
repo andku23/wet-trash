@@ -1,5 +1,6 @@
 using System.Collections;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -9,13 +10,21 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private float _timeFullDaySeconds;
     [SerializeField] private UnityEvent<int> _timeUpdatedEvent;
     [SerializeField] private UnityEvent _timeFinishedEvent;
+    [SerializeField] public UnityEvent<float> OnBreathUpdated;
     
     private bool _isDayStarted = false;
     private Coroutine _co_TimerCountdown;
     
+    public static GameManager Instance;
+    
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        
+        if (Instance == null)
+        {
+            Instance = this;
+        }
     }
 
     public void RequestToggleDay()
@@ -32,10 +41,43 @@ public class GameManager : NetworkBehaviour
     {
         ToggleBeginDay_ServerRpc(false);
     }
-    
-    public void RequestSpawnLoot()
+
+    public void RequestPlayerDeath()
     {
-        SpawnLoot_ServerRpc();
+        PlayerDeath_ServerRpc(NetworkManager.Singleton.LocalClientId);
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void PlayerDeath_ServerRpc(ulong targetPlayerNetworkObjectId)
+    {
+        PlayerDeath_ClientRpc(targetPlayerNetworkObjectId);
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void PlayerDeath_ClientRpc(ulong targetPlayerNetworkObjectId)
+    {
+        NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
+        pickupPlayerClient.PlayerObject.GetComponent<PlayerDeath>().KillPlayerLocal();
+    }
+    
+    public void RequestPlayerRevive()
+    {
+        PlayerRevive_ServerRpc(NetworkManager.Singleton.LocalClientId);
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void PlayerRevive_ServerRpc(ulong targetPlayerNetworkObjectId)
+    {
+        PlayerRevive_ClientRpc(targetPlayerNetworkObjectId);
+        NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
+        pickupPlayerClient.PlayerObject.transform.position = Vector3.zero;
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void PlayerRevive_ClientRpc(ulong targetPlayerNetworkObjectId)
+    {
+        NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
+        pickupPlayerClient.PlayerObject.GetComponent<PlayerDeath>().RevivePlayerLocal();
     }
     
     [ServerRpc(RequireOwnership = false)]

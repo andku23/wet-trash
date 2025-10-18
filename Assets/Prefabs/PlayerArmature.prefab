@@ -122,7 +122,7 @@ Transform:
   m_GameObject: {fileID: 461986369682977334}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.07, z: 0}
+  m_LocalPosition: {x: 0, y: 1.777, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -983,6 +983,7 @@ GameObject:
   - component: {fileID: -5723443840750851045}
   - component: {fileID: 8149868342962994308}
   - component: {fileID: 2769912353978620577}
+  - component: {fileID: 9122417569400039749}
   m_Layer: 8
   m_Name: PlayerArmature
   m_TagString: Player
@@ -1070,7 +1071,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3994523073
+  GlobalObjectIdHash: 94792807
   InScenePlacedSourceGlobalObjectIdHash: 3994523073
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1123,6 +1124,7 @@ MonoBehaviour:
   VehicleParented: 0
   InWater: 1
   IsDriving: 0
+  IsDead: 0
   InWaterOnSurface: 0
   GroundedOffset: -0.14
   GroundedRadius: 0.28
@@ -1298,6 +1300,23 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 80
   m_CollisionDetection: 0
+--- !u!114 &9122417569400039749
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3110835940448346143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d5eda9f60ee4e64c997842506da260c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeath
+  _controller: {fileID: 1091257655826559655}
+  _animator: {fileID: 1597806622317787050}
+  BREATH_FULL_AMOUNT: 10
+  BREATH_DEPLETE_RATE: 1
+  BREATH_REPLENISH_RATE: 1
 --- !u!1 &3133240687885047721
 GameObject:
   m_ObjectHideFlags: 0

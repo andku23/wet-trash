@@ -14,6 +14,7 @@ namespace StarterAssets
 		public bool descend;
 		public bool sprint;
 		public bool interact;
+		public bool respawn;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -55,6 +56,11 @@ namespace StarterAssets
 		{
 			InteractInput(value.isPressed);
 		}
+		
+		public void OnRespawn(InputValue value)
+		{
+			RespawnInput(value.isPressed);
+		}
 #endif
 
 
@@ -86,6 +92,11 @@ namespace StarterAssets
 		public void InteractInput(bool newSprintState)
 		{
 			interact = newSprintState;
+		}
+		
+		public void RespawnInput(bool newState)
+		{
+			respawn = newState;
 		}
 
 		private void OnApplicationFocus(bool hasFocus)

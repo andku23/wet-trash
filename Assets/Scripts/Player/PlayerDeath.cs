@@ -1,3 +1,4 @@
+using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -11,14 +12,15 @@ public class PlayerDeath : MonoBehaviour
     [SerializeField] private float BREATH_DEPLETE_RATE;
     [SerializeField] private float BREATH_REPLENISH_RATE;
     
-    
     private float _breath;
+    private StarterAssetsInputs _input;
     
     private void Start()
     {
         _animIDIsDead = Animator.StringToHash("IsDead");
-        
         _breath = BREATH_FULL_AMOUNT;
+        
+        _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
     }
 
     private void Update()
@@ -36,8 +38,14 @@ public class PlayerDeath : MonoBehaviour
         GameManager.Instance.OnBreathUpdated.Invoke(_breath/BREATH_FULL_AMOUNT);
         if (_breath <= 0.0f && !_controller.IsDead)
         {
-            
             GameManager.Instance.RequestPlayerDeath();
+        } else if (_controller.IsDead)
+        {
+            if (_input.respawn)
+            {
+                GameManager.Instance.RequestPlayerRevive();
+                _input.respawn = false;
+            }
         } 
     }
     
@@ -51,6 +59,7 @@ public class PlayerDeath : MonoBehaviour
     // Client Rpc Callback
     public void RevivePlayerLocal()
     {
+        _breath = BREATH_FULL_AMOUNT;
         _animator.SetBool(_animIDIsDead, false);
         _controller.IsDead = false;
     }

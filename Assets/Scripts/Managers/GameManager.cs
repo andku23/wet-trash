@@ -68,9 +68,9 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void PlayerRevive_ServerRpc(ulong targetPlayerNetworkObjectId)
     {
-        PlayerRevive_ClientRpc(targetPlayerNetworkObjectId);
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
         pickupPlayerClient.PlayerObject.transform.position = Vector3.zero;
+        PlayerRevive_ClientRpc(targetPlayerNetworkObjectId);
     }
     
     [ClientRpc(RequireOwnership = false)]

@@ -133,6 +133,7 @@ namespace StarterAssets
         private int _animIDIsSwimming;
         private int _animIDIsCarrying;
         private int _animIDIsDriving;
+        private int _animIDIsDead;
 
 #if ENABLE_INPUT_SYSTEM 
         private PlayerInput _playerInput;
@@ -220,6 +221,7 @@ namespace StarterAssets
             _animIDIsSwimming = Animator.StringToHash("IsSwimming");
             _animIDIsCarrying = Animator.StringToHash("IsCarrying");
             _animIDIsDriving = Animator.StringToHash("IsDriving");
+            _animIDIsDead = Animator.StringToHash("IsDead");
         }
 
         private void GroundedCheck()

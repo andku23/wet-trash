@@ -19,7 +19,6 @@ public class LootManager : NetworkBehaviour
     
 
     private List<NetworkObject> _loots = new List<NetworkObject>();
-    //private Dictionary<int, int> _deposits = new Dictionary<int, int>(); //desposit index to size
     
     public override void OnNetworkSpawn()
     {
@@ -127,26 +126,6 @@ public class LootManager : NetworkBehaviour
         int depositNum = -1;
         List<NetworkObject> list = null;
         
-        //Check if its in one of the deposits so we can subtract cost
-        // foreach (KeyValuePair<int, int> entry in _deposits)
-        // {
-        //     for (int i = 0; i < entry.Value.Count; i++)
-        //     {
-        //         if (networkObjectId == entry.Value[i].NetworkObjectId)
-        //         {
-        //             depositNum = i;
-        //             list = entry.Value;
-        //         }
-        //     }
-        // }
-
-        //if (list != null)
-        //{
-        //    list.RemoveAt(depositNum);
-        //    award.Value -= 200;
-        //}
-        
-        
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject networkLootObject))
         {
             _loots.Remove(networkLootObject);
@@ -214,18 +193,7 @@ public class LootManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void Deposit_ServerRpc(ulong targetPlayerNetworkObjectId, int depositID, LootType lootID)
     {
-        //if (!_deposits.ContainsKey(depositID))
-        //{
-        //    _deposits[depositID] = 0;
-        //}
-        
-        //GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
-        //NetworkObject networkObject = go.GetComponent<NetworkObject>();
-        //networkObject.Spawn();
         MoneyManager.Instance.AddCash(200);
-        
-        //_deposits[depositID]++;
-        
         Deposit_ClientRpc(targetPlayerNetworkObjectId, depositID);
     }
     

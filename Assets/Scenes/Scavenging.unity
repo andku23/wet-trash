@@ -362,7 +362,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameController
   ShowTopMostFoldoutHeaderGroup: 1
   _lootManager: {fileID: 1379245673}
-  _timeFullDaySeconds: 60
+  _timeFullDaySeconds: 300
   _timeUpdatedEvent:
     m_PersistentCalls:
       m_Calls:
@@ -378,6 +378,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  _timeFinishedEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &105108002
 Transform:
   m_ObjectHideFlags: 0

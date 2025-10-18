@@ -149,6 +149,7 @@ public class LootManager : NetworkBehaviour
         
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject networkLootObject))
         {
+            _loots.Remove(networkLootObject);
             networkLootObject.Despawn();
             Pickup_ClientRpc(targetPlayerNetworkObjectId, lootID);
         }
@@ -183,7 +184,7 @@ public class LootManager : NetworkBehaviour
         GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
         networkObject.Spawn();
-        
+        _loots.Add(networkObject);     
         Drop_ClientRpc(targetPlayerNetworkObjectId);
     }
     

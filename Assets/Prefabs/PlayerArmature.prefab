@@ -973,17 +973,18 @@ GameObject:
   - component: {fileID: 2354101969921336760}
   - component: {fileID: 1597806622317787050}
   - component: {fileID: 3805221031419803609}
+  - component: {fileID: 2769912353978620577}
   - component: {fileID: 3884127068506848302}
+  - component: {fileID: 6917001156733653180}
   - component: {fileID: 1091257655826559655}
   - component: {fileID: 2817466044568710389}
-  - component: {fileID: 6917001156733653180}
   - component: {fileID: 87750376639109315}
   - component: {fileID: 3817229071060700491}
   - component: {fileID: 7733629718943813994}
   - component: {fileID: -5723443840750851045}
   - component: {fileID: 8149868342962994308}
-  - component: {fileID: 2769912353978620577}
   - component: {fileID: 9122417569400039749}
+  - component: {fileID: 7303158058568402417}
   m_Layer: 8
   m_Name: PlayerArmature
   m_TagString: Player
@@ -1059,6 +1060,33 @@ CharacterController:
   m_SkinWidth: 0.02
   m_MinMoveDistance: 0
   m_Center: {x: 0, y: 0.93, z: 0}
+--- !u!54 &2769912353978620577
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3110835940448346143}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 80
+  m_CollisionDetection: 0
 --- !u!114 &3884127068506848302
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1071,7 +1099,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3994523073
+  GlobalObjectIdHash: 94792807
   InScenePlacedSourceGlobalObjectIdHash: 3994523073
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1084,82 +1112,6 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 0
   AllowOwnerToParent: 1
---- !u!114 &1091257655826559655
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3110835940448346143}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26e54e5a728a9234ab24fcf1460ed8a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  MoveSpeed: 2
-  MaxSwimmingSpeed: 2
-  SprintSpeed: 5.335
-  SprintSwimSpeed: 5.335
-  RotationSmoothTime: 0.12
-  SpeedChangeRate: 10
-  LandingAudioClip: {fileID: 8300000, guid: ff697d3070687ce4583faa0561a145a2, type: 3}
-  FootstepAudioClips:
-  - {fileID: 8300000, guid: 72f526a6a9890f643a88e85a61c86c8a, type: 3}
-  - {fileID: 8300000, guid: 85016e0f2b01da248b9663dd49a161b0, type: 3}
-  - {fileID: 8300000, guid: 186de84b3207156479abe98f4958fed0, type: 3}
-  - {fileID: 8300000, guid: 1a91fcd19acf1e54bba0945d9f390849, type: 3}
-  - {fileID: 8300000, guid: 14e8a8d2158bec840b56c54f5266e692, type: 3}
-  - {fileID: 8300000, guid: 29841e7d5bbfb5b419c9ad16ca8bc4c1, type: 3}
-  - {fileID: 8300000, guid: dd1af302b8902684d9381de1f2d3a5af, type: 3}
-  - {fileID: 8300000, guid: 67c8b33e424ccdc4486edf538ab91c5a, type: 3}
-  - {fileID: 8300000, guid: 274649b0e221539409070ebf6c18918b, type: 3}
-  - {fileID: 8300000, guid: a3194b8bbc96ef84fab1f98f4b7dae3e, type: 3}
-  FootstepAudioVolume: 0.3
-  JumpHeight: 1.2
-  Gravity: -15
-  JumpTimeout: 0.3
-  FallTimeout: 0.15
-  Grounded: 1
-  VehicleParented: 0
-  InWater: 1
-  IsDriving: 0
-  IsDead: 0
-  InWaterOnSurface: 0
-  GroundedOffset: -0.14
-  GroundedRadius: 0.28
-  WaterRadius: 0.1
-  WaterCheckCenter: {fileID: 3992596717348239197}
-  WaterCheckTop: {fileID: 461986369682977334}
-  GroundLayers:
-    serializedVersion: 2
-    m_Bits: 1
-  WaterLayers:
-    serializedVersion: 2
-    m_Bits: 16
-  CinemachineCameraTarget: {fileID: 8538798349280464950}
-  TopClamp: 70
-  BottomClamp: -30
-  CameraAngleOverride: 0
-  LockCameraPosition: 0
-  NetworkHandleParenting: {fileID: 8149868342962994308}
---- !u!114 &2817466044568710389
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3110835940448346143}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 909d917d73a63f940ac158d02e936645, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pushLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  canPush: 0
-  strength: 1.1
 --- !u!114 &6917001156733653180
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1196,6 +1148,70 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 1
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &1091257655826559655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3110835940448346143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26e54e5a728a9234ab24fcf1460ed8a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  playerState: {fileID: 7303158058568402417}
+  LandingAudioClip: {fileID: 8300000, guid: ff697d3070687ce4583faa0561a145a2, type: 3}
+  FootstepAudioClips:
+  - {fileID: 8300000, guid: 72f526a6a9890f643a88e85a61c86c8a, type: 3}
+  - {fileID: 8300000, guid: 85016e0f2b01da248b9663dd49a161b0, type: 3}
+  - {fileID: 8300000, guid: 186de84b3207156479abe98f4958fed0, type: 3}
+  - {fileID: 8300000, guid: 1a91fcd19acf1e54bba0945d9f390849, type: 3}
+  - {fileID: 8300000, guid: 14e8a8d2158bec840b56c54f5266e692, type: 3}
+  - {fileID: 8300000, guid: 29841e7d5bbfb5b419c9ad16ca8bc4c1, type: 3}
+  - {fileID: 8300000, guid: dd1af302b8902684d9381de1f2d3a5af, type: 3}
+  - {fileID: 8300000, guid: 67c8b33e424ccdc4486edf538ab91c5a, type: 3}
+  - {fileID: 8300000, guid: 274649b0e221539409070ebf6c18918b, type: 3}
+  - {fileID: 8300000, guid: a3194b8bbc96ef84fab1f98f4b7dae3e, type: 3}
+  FootstepAudioVolume: 0.3
+  Gravity: -15
+  JumpTimeout: 0.3
+  FallTimeout: 0.15
+  GroundedOffset: -0.14
+  GroundedRadius: 0.28
+  WaterRadius: 0.1
+  WaterCheckCenter: {fileID: 3992596717348239197}
+  WaterCheckTop: {fileID: 461986369682977334}
+  GroundLayers:
+    serializedVersion: 2
+    m_Bits: 1
+  WaterLayers:
+    serializedVersion: 2
+    m_Bits: 16
+  CinemachineCameraTarget: {fileID: 8538798349280464950}
+  TopClamp: 70
+  BottomClamp: -30
+  CameraAngleOverride: 0
+  LockCameraPosition: 0
+  NetworkHandleParenting: {fileID: 8149868342962994308}
+--- !u!114 &2817466044568710389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3110835940448346143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 909d917d73a63f940ac158d02e936645, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pushLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  canPush: 0
+  strength: 1.1
 --- !u!114 &87750376639109315
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1273,33 +1289,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkHandleParenting
   ShowTopMostFoldoutHeaderGroup: 1
---- !u!54 &2769912353978620577
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3110835940448346143}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 80
-  m_CollisionDetection: 0
 --- !u!114 &9122417569400039749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1312,11 +1301,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d5eda9f60ee4e64c997842506da260c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDeath
-  _controller: {fileID: 1091257655826559655}
+  ShowTopMostFoldoutHeaderGroup: 1
+  playerState: {fileID: 7303158058568402417}
   _animator: {fileID: 1597806622317787050}
   BREATH_FULL_AMOUNT: 10
   BREATH_DEPLETE_RATE: 1
   BREATH_REPLENISH_RATE: 2
+--- !u!114 &7303158058568402417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3110835940448346143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7d8c1b1dc70921409390ac9a96f65b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerState
+  MoveSpeed: 2
+  MaxSwimmingSpeed: 2
+  SprintSpeed: 5.335
+  SprintSwimSpeed: 4.335
+  RotationSmoothTime: 0.12
+  SpeedChangeRate: 10
+  JumpHeight: 1.2
+  Grounded: 1
+  VehicleParented: 0
+  InWater: 0
+  IsDriving: 0
+  IsDead: 0
+  InWaterOnSurface: 0
 --- !u!1 &3133240687885047721
 GameObject:
   m_ObjectHideFlags: 0

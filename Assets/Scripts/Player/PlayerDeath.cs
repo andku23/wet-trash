@@ -6,7 +6,7 @@ using UnityEngine.Events;
 public class PlayerDeath : NetworkBehaviour
 {
     private int _animIDIsDead;
-    [SerializeField] private ThirdPersonController _controller;
+    [SerializeField] private PlayerState playerState;
     [SerializeField] private Animator _animator;
     [SerializeField] private float BREATH_FULL_AMOUNT;
     [SerializeField] private float BREATH_DEPLETE_RATE;
@@ -26,22 +26,22 @@ public class PlayerDeath : NetworkBehaviour
     private void Update()
     {
         if (!IsOwner) return;
-        if (_controller.InWater && !_controller.InWaterOnSurface)
+        if (playerState.InWater && !playerState.InWaterOnSurface)
         {
-            _breath -= Time.deltaTime * BREATH_REPLENISH_RATE;
+            _breath -= Time.deltaTime * BREATH_DEPLETE_RATE;
             _breath = Mathf.Clamp(_breath, 0, BREATH_FULL_AMOUNT);
         }
         else
         {
-            _breath += Time.deltaTime * BREATH_DEPLETE_RATE;
+            _breath += Time.deltaTime * BREATH_REPLENISH_RATE;
             _breath = Mathf.Clamp(_breath, 0, BREATH_FULL_AMOUNT);
         }
 
         GameManager.Instance.OnBreathUpdated.Invoke(_breath/BREATH_FULL_AMOUNT);
-        if (_breath <= 0.0f && !_controller.IsDead)
+        if (_breath <= 0.0f && !playerState.IsDead)
         {
             GameManager.Instance.RequestPlayerDeath();
-        } else if (_controller.IsDead)
+        } else if (playerState.IsDead)
         {
             if (_input.respawn)
             {
@@ -55,7 +55,7 @@ public class PlayerDeath : NetworkBehaviour
     public void KillPlayerLocal()
     {
         _animator.SetBool(_animIDIsDead, true);
-        _controller.IsDead = true;
+        playerState.IsDead = true;
     }
     
     // Client Rpc Callback
@@ -63,6 +63,6 @@ public class PlayerDeath : NetworkBehaviour
     {
         _breath = BREATH_FULL_AMOUNT;
         _animator.SetBool(_animIDIsDead, false);
-        _controller.IsDead = false;
+        playerState.IsDead = false;
     }
 }

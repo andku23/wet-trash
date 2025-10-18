@@ -15,33 +15,36 @@ using UnityEngine.InputSystem;
 
 public class ThirdPersonController : NetworkBehaviour
 {
-    [Header("Player")]
+    /*[Header("Player")]
     [Tooltip("Move speed of the character in m/s")]
-    public float MoveSpeed = 2.0f;
+    public float playerState.MoveSpeed = 2.0f;
     
     [Tooltip("Max Swimming Speed in m/s")]
-    public float MaxSwimmingSpeed = 2.0f;
+    public float playerState.MaxSwimmingSpeed = 2.0f;
 
     [Tooltip("Sprint speed of the character in m/s")]
-    public float SprintSpeed = 5.335f;
+    public float playerState.SprintSpeed = 5.335f;
     
     [Tooltip("Sprint Swim speed of the character in m/s")]
-    public float SprintSwimSpeed = 4.335f;
+    public float playerState.SprintSwimSpeed = 4.335f;
 
     [Tooltip("How fast the character turns to face movement direction")]
     [Range(0.0f, 0.3f)]
-    public float RotationSmoothTime = 0.12f;
+    public float playerState.RotationSmoothTime = 0.12f;
 
     [Tooltip("Acceleration and deceleration")]
-    public float SpeedChangeRate = 10.0f;
+    public float playerState.SpeedChangeRate = 10.0f;*/
+
+    public PlayerState playerState;
 
     public AudioClip LandingAudioClip;
     public AudioClip[] FootstepAudioClips;
     [Range(0, 1)] public float FootstepAudioVolume = 0.5f;
 
-    [Space(10)]
+    /*[Space(10)]
     [Tooltip("The height the player can jump")]
-    public float JumpHeight = 1.2f;
+    public float playerState.JumpHeight = 1.2f;
+    */
 
     [Tooltip("The character uses its own gravity value. The engine default is -9.81f")]
     public float Gravity = -15.0f;
@@ -53,29 +56,29 @@ public class ThirdPersonController : NetworkBehaviour
     [Tooltip("Time required to pass before entering the fall state. Useful for walking down stairs")]
     public float FallTimeout = 0.15f;
 
-    [Header("Player Grounded")]
-    [Tooltip("If the character is grounded or not. Not part of the CharacterController built in grounded check")]
-    public bool Grounded = true;
+    /*[Header("Player playerState.Grounded")]
+    [Tooltip("If the character is playerState.Grounded or not. Not part of the CharacterController built in playerState.Grounded check")]
+    public bool playerState.Grounded = true;
     
-    public bool VehicleParented = false;
+    public bool playerState.VehicleParented = false;
     
     [Header("In Water")]
-    public bool InWater = true;
+    public bool playerState.InWater = true;
     
     [Header("Is Driving")]
-    public bool IsDriving = false;
+    public bool playerState.IsDriving = false;
     
     [Header("Is Dead")]
-    public bool IsDead = false;
+    public bool playerState.IsDead = false;
     
     [Header("If youre on the water surface")]
-    public bool InWaterOnSurface = false;
+    public bool playerState.InWaterOnSurface = false;*/
 
 
     [Tooltip("Useful for rough ground")]
     public float GroundedOffset = -0.14f;
 
-    [Tooltip("The radius of the grounded check. Should match the radius of the CharacterController")]
+    [Tooltip("The radius of the playerState.Grounded check. Should match the radius of the CharacterController")]
     public float GroundedRadius = 0.28f;
 
     [Tooltip("The radius of the water check. Should match the radius of the CharacterController")]
@@ -205,7 +208,7 @@ public class ThirdPersonController : NetworkBehaviour
         JumpAndGravity();
         GroundedCheck();
         InWaterCheck();
-        if (!IsDead)
+        if (!playerState.IsDead)
         {
             Move();
         }
@@ -237,12 +240,12 @@ public class ThirdPersonController : NetworkBehaviour
             transform.position.z);
         
         Collider[] hitColliders = Physics.OverlapSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
-        Grounded = hitColliders.Length > 0;
+        playerState.Grounded = hitColliders.Length > 0;
         
         // update animator if using character
         if (_hasAnimator)
         {
-            _animator.SetBool(_animIDGrounded, Grounded);
+            _animator.SetBool(_animIDGrounded, playerState.Grounded);
         }
 
         Collider boatColliderInRange = null;
@@ -255,9 +258,9 @@ public class ThirdPersonController : NetworkBehaviour
         }
     
         // Don't do anything if its already in the same state
-        if (VehicleParented == (boatColliderInRange != null)) return;
-        VehicleParented = (boatColliderInRange != null);
-        if (VehicleParented)
+        if (playerState.VehicleParented == (boatColliderInRange != null)) return;
+        playerState.VehicleParented = (boatColliderInRange != null);
+        if (playerState.VehicleParented)
         {
             GameObject parent = boatColliderInRange.GetComponent<ColliderReference>().reference;
             NetworkHandleParenting.RequestParentTo(NetworkManager.Singleton.LocalClientId, parent.GetComponent<NetworkTransform>().NetworkObjectId);
@@ -272,26 +275,26 @@ public class ThirdPersonController : NetworkBehaviour
     {
         // set sphere position, with offset
         Vector3 spherePosition = WaterCheckCenter.transform.position;
-        InWater = Physics.CheckSphere(spherePosition, WaterRadius, WaterLayers,
+        playerState.InWater = Physics.CheckSphere(spherePosition, WaterRadius, WaterLayers,
             QueryTriggerInteraction.Collide);
 
-        if (InWater)
+        if (playerState.InWater)
         {
             Vector3 topSpherePosition = WaterCheckTop.transform.position;
-            InWaterOnSurface = !Physics.CheckSphere(topSpherePosition, 0.01f, WaterLayers,
+            playerState.InWaterOnSurface = !Physics.CheckSphere(topSpherePosition, 0.01f, WaterLayers,
                 QueryTriggerInteraction.Collide);
-            Grounded = false;
+            playerState.Grounded = false;
         }
         else
         {
-            InWaterOnSurface = false;
+            playerState.InWaterOnSurface = false;
         }
         
         // update animator if using character
-        if (_hasAnimator && (InWater != _animator.GetBool(_animIDIsSwimming)))
+        if (_hasAnimator && (playerState.InWater != _animator.GetBool(_animIDIsSwimming)))
         {
-            _animator.SetBool(_animIDIsSwimming, InWater);
-            _animator.SetBool(_animIDGrounded, Grounded);
+            _animator.SetBool(_animIDIsSwimming, playerState.InWater);
+            _animator.SetBool(_animIDGrounded, playerState.Grounded);
         }
     }
 
@@ -303,12 +306,12 @@ public class ThirdPersonController : NetworkBehaviour
         }
     }
     
-    public void ToggleDriving(bool isDriving)
+    public void ToggleDriving(bool IsDriving)
     {
-        IsDriving = isDriving;
+        playerState.IsDriving = IsDriving;
         if (_hasAnimator)
         {
-            _animator.SetBool(_animIDIsDriving, IsDriving);
+            _animator.SetBool(_animIDIsDriving, playerState.IsDriving);
         }
     }
 
@@ -336,8 +339,8 @@ public class ThirdPersonController : NetworkBehaviour
 
     private void Move()
     {
-        if (IsDriving) return;
-        if (InWater)
+        if (playerState.IsDriving) return;
+        if (playerState.InWater)
         {
             MoveWater();
         }
@@ -349,7 +352,7 @@ public class ThirdPersonController : NetworkBehaviour
 
     private void MoveWater()
     {
-        float targetSpeed = _input.sprint ? SprintSwimSpeed : MoveSpeed;
+        float targetSpeed = _input.sprint ? playerState.SprintSwimSpeed : playerState.MoveSpeed;
         Vector3 cameraForward = CinemachineCameraTarget.transform.forward;
         float currentSpeed = new Vector3(_controller.velocity.x, _controller.velocity.y, _controller.velocity.z).magnitude;
         Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
@@ -365,7 +368,7 @@ public class ThirdPersonController : NetworkBehaviour
             // creates curved result rather than a linear one giving a more organic speed change
             // note T in Lerp is clamped, so we don't need to clamp our speed
             _speed = Mathf.Lerp(currentSpeed, targetSpeed * inputMagnitude,
-                Time.deltaTime * SpeedChangeRate);
+                Time.deltaTime * playerState.SpeedChangeRate);
 
             // round speed to 3 decimal places
             _speed = Mathf.Round(_speed * 1000f) / 1000f;
@@ -376,14 +379,14 @@ public class ThirdPersonController : NetworkBehaviour
             _speed = targetSpeed;
         }
 
-        _speed = Mathf.Clamp(_speed, 0, _input.sprint ? SprintSwimSpeed : MaxSwimmingSpeed);
+        _speed = Mathf.Clamp(_speed, 0, _input.sprint ? playerState.SprintSwimSpeed : playerState.MaxSwimmingSpeed);
         
         if (_input.move != Vector2.zero)
         {
             _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
                               _mainCamera.transform.eulerAngles.y;
             float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
-                RotationSmoothTime);
+                playerState.RotationSmoothTime);
 
             // rotate to face input direction relative to camera position
             transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
@@ -408,7 +411,7 @@ public class ThirdPersonController : NetworkBehaviour
     private void MoveLand()
     {
         // set target speed based on move speed, sprint speed and if sprint is pressed
-        float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
+        float targetSpeed = _input.sprint ? playerState.SprintSpeed : playerState.MoveSpeed;
 
         // a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
@@ -429,7 +432,7 @@ public class ThirdPersonController : NetworkBehaviour
             // creates curved result rather than a linear one giving a more organic speed change
             // note T in Lerp is clamped, so we don't need to clamp our speed
             _speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed * inputMagnitude,
-                Time.deltaTime * SpeedChangeRate);
+                Time.deltaTime * playerState.SpeedChangeRate);
 
             // round speed to 3 decimal places
             _speed = Mathf.Round(_speed * 1000f) / 1000f;
@@ -439,7 +442,7 @@ public class ThirdPersonController : NetworkBehaviour
             _speed = targetSpeed;
         }
 
-        _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
+        _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * playerState.SpeedChangeRate);
         if (_animationBlend < 0.01f) _animationBlend = 0f;
 
         // normalise input direction
@@ -452,7 +455,7 @@ public class ThirdPersonController : NetworkBehaviour
             _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
                               _mainCamera.transform.eulerAngles.y;
             float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
-                RotationSmoothTime);
+                playerState.RotationSmoothTime);
 
             // rotate to face input direction relative to camera position
             transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
@@ -476,13 +479,13 @@ public class ThirdPersonController : NetworkBehaviour
 
     private void JumpAndGravity()
     {
-        if (InWater)
+        if (playerState.InWater)
         {
             if (_input.jump)
             {
-                if (InWaterOnSurface)
+                if (playerState.InWaterOnSurface)
                 {
-                    _verticalVelocity = 10.0f;
+                    _verticalVelocity = playerState.WaterSurfaceJumpHeight;
                 }
                 else
                 {
@@ -500,7 +503,7 @@ public class ThirdPersonController : NetworkBehaviour
                 _verticalVelocity = 0.0f;
             }
         }
-        else if (Grounded)
+        else if (playerState.Grounded)
         {
             // reset the fall timeout timer
             _fallTimeoutDelta = FallTimeout;
@@ -512,7 +515,7 @@ public class ThirdPersonController : NetworkBehaviour
                 _animator.SetBool(_animIDFreeFall, false);
             }
 
-            // stop our velocity dropping infinitely when grounded
+            // stop our velocity dropping infinitely when playerState.Grounded
             if (_verticalVelocity < 0.0f)
             {
                 _verticalVelocity = -2f;
@@ -522,7 +525,7 @@ public class ThirdPersonController : NetworkBehaviour
             if (_input.jump && _jumpTimeoutDelta <= 0.0f)
             {
                 // the square root of H * -2 * G = how much velocity needed to reach desired height
-                _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
+                _verticalVelocity = Mathf.Sqrt(playerState.JumpHeight * -2f * Gravity);
 
                 // update animator if using character
                 if (_hasAnimator)
@@ -556,12 +559,12 @@ public class ThirdPersonController : NetworkBehaviour
                 }
             }
 
-            // if we are not grounded, do not jump
+            // if we are not playerState.Grounded, do not jump
             _input.jump = false;
         }
 
         // apply gravity over time if under terminal (multiply by delta time twice to linearly speed up over time)
-        if (_verticalVelocity < _terminalVelocity && !InWater)
+        if (_verticalVelocity < _terminalVelocity && !playerState.InWater)
         {
             _verticalVelocity += Gravity * Time.deltaTime;
         }
@@ -579,10 +582,10 @@ public class ThirdPersonController : NetworkBehaviour
         Color transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);
         Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.35f);
 
-        if (Grounded) Gizmos.color = transparentGreen;
+        if (playerState.Grounded) Gizmos.color = transparentGreen;
         else Gizmos.color = transparentRed;
 
-        // when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
+        // when selected, draw a gizmo in the position of, and matching radius of, the playerState.Grounded collider
         Gizmos.DrawSphere(
             new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z),
             GroundedRadius);

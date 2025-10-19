@@ -11,11 +11,10 @@ public class LootList : ScriptableObject
 [System.Serializable]
 public class LootData
 {
-    public LootType id;
-    public GameObject network;
-    public GameObject local;
+    public LootType lootType;
     public GameObject model;
     public int spawnRate;
+    public int price;
 }
 
 public enum LootType

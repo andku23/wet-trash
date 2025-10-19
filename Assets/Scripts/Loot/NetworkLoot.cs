@@ -6,7 +6,8 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
 {
     [SerializeField] private GameObject instructions;
     [SerializeField] private GameObject dropInstructions;
-
+    
+    public NetworkVariable<int> lootIndex;
     private ClientStateMachine _stateMachine;
 
     enum States
@@ -19,6 +20,8 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        
+        GetComponent<LootInstanceData>().LoadLootNetwork(lootIndex.Value);
         
         _stateMachine = new ClientStateMachine();
         

@@ -12,14 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c670ac190e27f3449900995299af1fe9, type: 3}
   m_Name: LootList
   m_EditorClassIdentifier: 
+  networkLootPrefab: {fileID: 3978986903696649880, guid: e7cca34d3af719c4f91b5b1e71669f71,
+    type: 3}
+  localLootPrefab: {fileID: 4063985066711555290, guid: a0e142cad1aa8e24da947b89441bf7b2,
+    type: 3}
   pairs:
   - id: 0
     network: {fileID: 6153564509991722005, guid: bad780af0a360e240a71f3f069fbb4cb,
       type: 3}
     local: {fileID: 4514942197399855640, guid: acc826aacf126c94ea3e14a9dfa7877f, type: 3}
+    model: {fileID: 8553116992996838160, guid: c4e634d38da91a94587a113bcec7442f, type: 3}
     spawnRate: 4
   - id: 1
     network: {fileID: 6153564509991722005, guid: 500c3b807d3b4034da2a6316e062a9f0,
       type: 3}
     local: {fileID: 4514942197399855640, guid: 3bd3ad79bda743b46be6529a0b323c1f, type: 3}
+    model: {fileID: 8553116992996838160, guid: 1f69a8b1aeb60254388031fec04f9564, type: 3}
     spawnRate: 2

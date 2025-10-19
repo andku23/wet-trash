@@ -14,12 +14,17 @@ public class LootManager : NetworkBehaviour
     public static LootManager Instance;
     
     [SerializeField] private int _numLoot;
-    [FormerlySerializedAs("lootLocalReferences")] [SerializeField] private LootList lootList;
+    [SerializeField] private LootList lootList;
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] LootDeposit[] _lootDeposits;
     
 
     private List<NetworkObject> _loots = new List<NetworkObject>();
+    
+    public LootList LootList
+    {
+        get { return lootList; }
+    }
     
     public override void OnNetworkSpawn()
     {
@@ -50,13 +55,22 @@ public class LootManager : NetworkBehaviour
         
         for (int i = 0; i < _numLoot; i++)
         {
-            GameObject go = Instantiate(lootList.pairs[networkLootPrefabs[Random.Range(0, networkLootPrefabs.Count)]].network,
+            GameObject go = Instantiate(lootList.networkLootPrefab,
                 new Vector3(Random.Range(-15f, 15f), 0.5f, Random.Range(-15f, 15f)) + transform.position,
                 Quaternion.identity);
+            LootBaseData lootBaseData = go.GetComponent<LootBaseData>();
+            LootData randomlySelectedData = lootList.pairs[networkLootPrefabs[Random.Range(0, networkLootPrefabs.Count)]];
+            lootBaseData.LoadLoot(randomlySelectedData);
+            
             NetworkObject networkObject = go.GetComponent<NetworkObject>();
             networkObject.Spawn();
             _loots.Add(networkObject);
         }
+    }
+
+    private void SpawnAndLoadLoot()
+    {
+        
     }
 
     public void DeleteAllLoot()
@@ -146,10 +160,15 @@ public class LootManager : NetworkBehaviour
     public void Pickup_ClientRpc(ulong targetPlayerNetworkObjectId, LootType lootID)
     {
         // Lookup who picked it up and get the client for it
-        GameObject localLootPrefab = IDtoPrefabs(lootID).local;
+        GameObject localLootPrefab = lootList.localLootPrefab;
+        
+            
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
         InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
-        pickupPlayerCollector.AttachToPoint(localLootPrefab);
+        GameObject attachedLoot = pickupPlayerCollector.AttachToPoint(localLootPrefab);
+        
+        LootBaseData lootBaseData = attachedLoot.GetComponent<LootBaseData>();
+        lootBaseData.LoadLoot(IDtoPrefabs(lootID));
     }
 
     public void RequestDrop(Vector3 position, GameObject loot)
@@ -160,8 +179,11 @@ public class LootManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void Drop_ServerRpc(ulong targetPlayerNetworkObjectId, Vector3 position, LootType lootID)
     {
-        GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
+        // GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
+        GameObject go = Instantiate(lootList.networkLootPrefab, position, Quaternion.identity);
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
+        LootBaseData lootBaseData = go.GetComponent<LootBaseData>();
+        lootBaseData.LoadLoot(IDtoPrefabs(lootID));
         networkObject.Spawn();
         _loots.Add(networkObject);     
         Drop_ClientRpc(targetPlayerNetworkObjectId);

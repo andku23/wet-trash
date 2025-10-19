@@ -3963,8 +3963,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   _numLoot: 10
-  lootLocalReferences: {fileID: 11400000, guid: 4623b85544d214945bd6f8e8f852d1ce,
-    type: 2}
+  lootList: {fileID: 11400000, guid: 4623b85544d214945bd6f8e8f852d1ce, type: 2}
   moneyText: {fileID: 1420962018}
   _lootDeposits:
   - {fileID: 541294956}
@@ -3977,7 +3976,7 @@ Transform:
   m_GameObject: {fileID: 1379245671}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -12.64, z: 8.71}
+  m_LocalPosition: {x: 0, y: 0, z: -9.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

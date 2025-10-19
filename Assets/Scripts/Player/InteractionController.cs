@@ -37,7 +37,7 @@ public class InteractionController : NetworkBehaviour
         
     }
     
-    public void AttachToPoint(GameObject loot)
+    public GameObject AttachToPoint(GameObject loot)
     {
         GameObject go = Instantiate(loot, grabbedLootConnectPoint.transform);
         go.transform.localPosition = Vector3.zero;
@@ -46,6 +46,8 @@ public class InteractionController : NetworkBehaviour
         heldLoot = go;
         thirdPersonController.ToggleCarrying(true);
         lastClosestInteractable = null;
+
+        return go;
     }
 
     public void DestroyHeldObject()

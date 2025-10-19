@@ -3,6 +3,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "LootList", menuName = "Scriptable Objects/LootList")]
 public class LootList : ScriptableObject
 {
+    public GameObject networkLootPrefab;
+    public GameObject localLootPrefab;
     public LootData[] pairs;
 }
 
@@ -12,6 +14,7 @@ public class LootData
     public LootType id;
     public GameObject network;
     public GameObject local;
+    public GameObject model;
     public int spawnRate;
 }
 

@@ -6,6 +6,7 @@ using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class LootManager : NetworkBehaviour
@@ -13,7 +14,7 @@ public class LootManager : NetworkBehaviour
     public static LootManager Instance;
     
     [SerializeField] private int _numLoot;
-    [SerializeField] private LootLocalReferences lootLocalReferences;
+    [FormerlySerializedAs("lootLocalReferences")] [SerializeField] private LootList lootList;
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] LootDeposit[] _lootDeposits;
     
@@ -39,9 +40,9 @@ public class LootManager : NetworkBehaviour
     {
         List<int> networkLootPrefabs = new List<int>();
         // Create spawn probability table
-        for (int i = 0; i < lootLocalReferences.pairs.Length; i++)
+        for (int i = 0; i < lootList.pairs.Length; i++)
         {
-            for (int j = 0; j < lootLocalReferences.pairs[i].spawnRate; j++)
+            for (int j = 0; j < lootList.pairs[i].spawnRate; j++)
             {
                 networkLootPrefabs.Add(i);
             }
@@ -49,7 +50,7 @@ public class LootManager : NetworkBehaviour
         
         for (int i = 0; i < _numLoot; i++)
         {
-            GameObject go = Instantiate(lootLocalReferences.pairs[networkLootPrefabs[Random.Range(0, networkLootPrefabs.Count)]].network,
+            GameObject go = Instantiate(lootList.pairs[networkLootPrefabs[Random.Range(0, networkLootPrefabs.Count)]].network,
                 new Vector3(Random.Range(-15f, 15f), 0.5f, Random.Range(-15f, 15f)) + transform.position,
                 Quaternion.identity);
             NetworkObject networkObject = go.GetComponent<NetworkObject>();
@@ -67,29 +68,29 @@ public class LootManager : NetworkBehaviour
         _loots.Clear();
     }
 
-    public LocalNetworkPrefabPair IDtoPrefabs(LootType id)
+    public LootData IDtoPrefabs(LootType id)
     {
-        for (int i = 0; i < lootLocalReferences.pairs.Length; i++)
+        for (int i = 0; i < lootList.pairs.Length; i++)
         {
-            if (id == lootLocalReferences.pairs[i].id)
+            if (id == lootList.pairs[i].id)
             {
-                return lootLocalReferences.pairs[i];
+                return lootList.pairs[i];
             }
         }
 
         return null;
     }
     
-    public LocalNetworkPrefabPair LocalPrefabtoID(GameObject prefabInstance)
+    public LootData LocalPrefabtoID(GameObject prefabInstance)
     {
         LootBaseData lootData = prefabInstance.GetComponent<LootBaseData>();
         if (lootData != null)
         {
-            for (int i = 0; i < lootLocalReferences.pairs.Length; i++)
+            for (int i = 0; i < lootList.pairs.Length; i++)
             {
-                if (lootData.lootType == lootLocalReferences.pairs[i].id)
+                if (lootData.lootType == lootList.pairs[i].id)
                 {
-                    return lootLocalReferences.pairs[i];
+                    return lootList.pairs[i];
                 }
             }
         }
@@ -97,16 +98,16 @@ public class LootManager : NetworkBehaviour
         return null;
     }
     
-    public LocalNetworkPrefabPair NetworkPrefabtoID(GameObject prefabInstance)
+    public LootData NetworkPrefabtoID(GameObject prefabInstance)
     {
         LootBaseData lootData = prefabInstance.GetComponent<LootBaseData>();
         if (lootData != null)
         {
-            for (int i = 0; i < lootLocalReferences.pairs.Length; i++)
+            for (int i = 0; i < lootList.pairs.Length; i++)
             {
-                if (lootData.lootType == lootLocalReferences.pairs[i].id)
+                if (lootData.lootType == lootList.pairs[i].id)
                 {
-                    return lootLocalReferences.pairs[i];
+                    return lootList.pairs[i];
                 }
             }
         }

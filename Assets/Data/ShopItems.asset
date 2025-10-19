@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c86ad78cfbe27de45ae5775c91825657, type: 3}
+  m_Name: ShopItems
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItems
+  items:
+  - id: 0
+    name: Item 0
+    price: 100
+  - id: 1
+    name: Item 1
+    price: 200
+  - id: 2
+    name: Item 2
+    price: 400
+  - id: 3
+    name: Item 3
+    price: 500
+  - id: 4
+    name: Item 4
+    price: 800
+  - id: 5
+    name: Item 5
+    price: 800

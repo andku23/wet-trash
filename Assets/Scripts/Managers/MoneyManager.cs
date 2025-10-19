@@ -9,6 +9,8 @@ public class MoneyManager : NetworkBehaviour
     private NetworkVariable<int> _cash = new NetworkVariable<int>(0);
     public UnityEvent<int> OnCashChanged = new UnityEvent<int>();
     
+    public int Cash {get{return _cash.Value;}}
+    
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();

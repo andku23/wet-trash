@@ -27,6 +27,10 @@ public class PlayerState : MonoBehaviour
     public float JumpHeight = 1.2f;
     public float WaterSurfaceJumpHeight = 10.0f;
     
+    public float BreathFullAmount;
+    public float BreathDepleteRate;
+    public float BreathReplenishRate;
+    
     
     [Header("Dynamic Continuous Values")]
     

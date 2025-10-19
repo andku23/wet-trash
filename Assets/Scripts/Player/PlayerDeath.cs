@@ -8,9 +8,6 @@ public class PlayerDeath : NetworkBehaviour
     private int _animIDIsDead;
     [SerializeField] private PlayerState playerState;
     [SerializeField] private Animator _animator;
-    [SerializeField] private float BREATH_FULL_AMOUNT;
-    [SerializeField] private float BREATH_DEPLETE_RATE;
-    [SerializeField] private float BREATH_REPLENISH_RATE;
     
     private float _breath;
     private StarterAssetsInputs _input;
@@ -18,7 +15,7 @@ public class PlayerDeath : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         _animIDIsDead = Animator.StringToHash("IsDead");
-        _breath = BREATH_FULL_AMOUNT;
+        _breath = playerState.BreathFullAmount;
         
         _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
     }
@@ -28,16 +25,16 @@ public class PlayerDeath : NetworkBehaviour
         if (!IsOwner) return;
         if (playerState.InWater && !playerState.InWaterOnSurface)
         {
-            _breath -= Time.deltaTime * BREATH_DEPLETE_RATE;
-            _breath = Mathf.Clamp(_breath, 0, BREATH_FULL_AMOUNT);
+            _breath -= Time.deltaTime * playerState.BreathDepleteRate;
+            _breath = Mathf.Clamp(_breath, 0, playerState.BreathFullAmount);
         }
         else
         {
-            _breath += Time.deltaTime * BREATH_REPLENISH_RATE;
-            _breath = Mathf.Clamp(_breath, 0, BREATH_FULL_AMOUNT);
+            _breath += Time.deltaTime * playerState.BreathReplenishRate;
+            _breath = Mathf.Clamp(_breath, 0, playerState.BreathFullAmount);
         }
 
-        GameManager.Instance.OnBreathUpdated.Invoke(_breath/BREATH_FULL_AMOUNT);
+        GameManager.Instance.OnBreathUpdated.Invoke(_breath/playerState.BreathFullAmount);
         if (_breath <= 0.0f && !playerState.IsDead)
         {
             GameManager.Instance.RequestPlayerDeath();
@@ -61,7 +58,7 @@ public class PlayerDeath : NetworkBehaviour
     // Client Rpc Callback
     public void RevivePlayerLocal()
     {
-        _breath = BREATH_FULL_AMOUNT;
+        _breath = playerState.BreathFullAmount;
         _animator.SetBool(_animIDIsDead, false);
         playerState.IsDead = false;
     }

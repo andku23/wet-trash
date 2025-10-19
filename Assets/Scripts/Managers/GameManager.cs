@@ -12,7 +12,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private UnityEvent _timeFinishedEvent;
     [SerializeField] public UnityEvent<float> OnBreathUpdated;
     
-    private bool _isDayStarted = false;
+    private bool _isDayActive = false;
     private Coroutine _co_TimerCountdown;
     
     public static GameManager Instance;
@@ -29,7 +29,7 @@ public class GameManager : NetworkBehaviour
 
     public void RequestToggleDay()
     {
-        ToggleBeginDay_ServerRpc(!_isDayStarted);
+        ToggleBeginDay_ServerRpc(!_isDayActive);
     }
 
     public void RequestStartDay()
@@ -83,9 +83,9 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void ToggleBeginDay_ServerRpc(bool isDayStarted)
     {
-        if (_isDayStarted == isDayStarted) return;
-        _isDayStarted = isDayStarted;
-        if (_isDayStarted)
+        if (_isDayActive == isDayStarted) return;
+        _isDayActive = isDayStarted;
+        if (_isDayActive)
         {
             SpawnLoot();
         }
@@ -99,7 +99,7 @@ public class GameManager : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     private void ToggleBeginDay_ClientRpc(bool isDayStarted)
     {
-        _isDayStarted = isDayStarted;
+        _isDayActive = isDayStarted;
         if (isDayStarted)
         {
             StartCountdown();

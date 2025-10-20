@@ -25,6 +25,12 @@ public class MoneyManager : NetworkBehaviour
 
     public void AddCash(int addAmount)
     {
+        AddCash_ServerRpc(addAmount);
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void AddCash_ServerRpc(int addAmount)
+    {
         _cash.Value += addAmount;
     }
     
@@ -37,5 +43,4 @@ public class MoneyManager : NetworkBehaviour
     {
         OnCashChanged.Invoke(next);
     }
-    
 }

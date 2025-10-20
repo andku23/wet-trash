@@ -13,21 +13,23 @@ MonoBehaviour:
   m_Name: ShopItems
   m_EditorClassIdentifier: Assembly-CSharp::ShopItems
   items:
-  - id: 0
-    name: Item 0
-    price: 100
-  - id: 1
-    name: Item 1
+  - id: run-speed-up
+    type: 1
+    name: Run Speed +1
     price: 200
-  - id: 2
-    name: Item 2
+  - id: breath-up
+    type: 1
+    name: Breath +1
+    price: 200
+  - id: swim-speed-up
+    type: 1
+    name: Swim Speed +1
     price: 400
   - id: 3
-    name: Item 3
+    type: 0
+    name: UNUSED
     price: 500
   - id: 4
-    name: Item 4
-    price: 800
-  - id: 5
-    name: Item 5
+    type: 0
+    name: UNUSED
     price: 800

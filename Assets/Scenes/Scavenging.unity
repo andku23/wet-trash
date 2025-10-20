@@ -339,7 +339,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 105108002}
-  - component: {fileID: 105108003}
   - component: {fileID: 105108001}
   m_Layer: 0
   m_Name: GameManager
@@ -411,31 +410,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 752020455}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &105108003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 105108000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3721545109
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 0
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 0
-  SyncOwnerTransformWhenParented: 0
-  AllowOwnerToParent: 0
 --- !u!1 &139635860
 GameObject:
   m_ObjectHideFlags: 0
@@ -2003,6 +1977,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 752020455}
+  - component: {fileID: 752020456}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -2029,6 +2004,31 @@ Transform:
   - {fileID: 1810889993}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &752020456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 752020454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 1764804908
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 0
+  SyncOwnerTransformWhenParented: 0
+  AllowOwnerToParent: 0
 --- !u!1 &812709391
 GameObject:
   m_ObjectHideFlags: 0
@@ -3915,7 +3915,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1379245674}
-  - component: {fileID: 1379245672}
   - component: {fileID: 1379245673}
   m_Layer: 0
   m_Name: LootManager
@@ -3924,31 +3923,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1379245672
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1379245671}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1332679231
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 0
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 0
-  SyncOwnerTransformWhenParented: 0
-  AllowOwnerToParent: 0
 --- !u!114 &1379245673
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4158,7 +4132,6 @@ MonoBehaviour:
   shopContent: {fileID: 1170467472}
   shopItemPrefab: {fileID: 3634254978499184189, guid: a5c0b80aa40253e4e9eef2c272e660d7,
     type: 3}
-  shopList: {fileID: 11400000, guid: 9dc59e6a45a756943b16d5aa59af29e4, type: 2}
 --- !u!114 &1493138547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4919,7 +4892,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1756804301}
-  - component: {fileID: 1756804302}
   - component: {fileID: 1756804303}
   m_Layer: 0
   m_Name: MoneyManager
@@ -4943,31 +4915,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 752020455}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1756804302
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1756804300}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2388311837
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 0
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 0
-  SyncOwnerTransformWhenParented: 0
-  AllowOwnerToParent: 0
 --- !u!114 &1756804303
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5332,6 +5279,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShopManager
   ShowTopMostFoldoutHeaderGroup: 1
   ui: {fileID: 1493138546}
+  shopList: {fileID: 11400000, guid: 9dc59e6a45a756943b16d5aa59af29e4, type: 2}
 --- !u!1 &1814090200
 GameObject:
   m_ObjectHideFlags: 0

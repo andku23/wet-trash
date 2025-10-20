@@ -379,7 +379,7 @@ public class ThirdPersonController : NetworkBehaviour
             _speed = targetSpeed;
         }
 
-        _speed = Mathf.Clamp(_speed, 0, _input.sprint ? playerState.SprintSwimSpeed : playerState.MaxSwimmingSpeed);
+        _speed = Mathf.Clamp(_speed, 0, playerState.SprintSwimSpeed);
         
         if (_input.move != Vector2.zero)
         {

@@ -12,13 +12,11 @@ public class UI : MonoBehaviour
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private RectTransform shopContent;
     [SerializeField] private GameObject shopItemPrefab;
-    [SerializeField] private ShopItems shopList;
 
     private List<UIShopItem> uiShopItems = new List<UIShopItem>();
     
     private void Start()
     {
-        SpawnShopContent();
         shopPanel.SetActive(false);
     }
     
@@ -44,12 +42,12 @@ public class UI : MonoBehaviour
     
     public void SpawnShopContent()
     {
-        for (int i = 0; i < shopList.items.Length; i++)
+        for (int i = 0; i < ShopManager.Instance.shopList.items.Length; i++)
         {
             int index = i;
             UIShopItem uiShopItem = Instantiate(shopItemPrefab, shopContent).GetComponent<UIShopItem>();
-            uiShopItem.name.text = shopList.items[i].name;
-            uiShopItem.price.text = "$"+shopList.items[i].price.ToString();
+            uiShopItem.name.text = ShopManager.Instance.shopList.items[i].name;
+            uiShopItem.price.text = "$"+ShopManager.Instance.shopList.items[i].price.ToString();
             uiShopItem.button.onClick.AddListener(() =>
             {
                 OnShopButtonClick(index);
@@ -60,10 +58,11 @@ public class UI : MonoBehaviour
     
     public void OnShopButtonClick(int index)
     {
-        ShopItem shopItem = shopList.items[index];
+        ShopItem shopItem = ShopManager.Instance.shopList.items[index];
         if (MoneyManager.Instance.Cash >= shopItem.price)
         {
             MoneyManager.Instance.SubtractCash(shopItem.price);
+            ShopManager.Instance.PurchaseItem(shopItem);
         }
     }
     

@@ -12,9 +12,13 @@ public class PlayerState : MonoBehaviour
     [Tooltip("Sprint speed of the character in m/s")]
     public float SprintSpeed = 5.335f;
     
+    public float SprintSpeed_UpgradeIncrement = 0.5f;
+    
     [Tooltip("Sprint Swim speed of the character in m/s")]
     public float SprintSwimSpeed = 4.335f;
 
+    public float SprintSwimSpeed_UpgradeIncrement = 0.5f;
+    
     [Tooltip("How fast the character turns to face movement direction")]
     [Range(0.0f, 0.3f)]
     public float RotationSmoothTime = 0.12f;
@@ -28,6 +32,7 @@ public class PlayerState : MonoBehaviour
     public float WaterSurfaceJumpHeight = 10.0f;
     
     public float BreathFullAmount;
+    public float BreathFullAmount_UpgradeIncrement = 1f;
     public float BreathDepleteRate;
     public float BreathReplenishRate;
     

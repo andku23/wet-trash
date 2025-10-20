@@ -9,7 +9,14 @@ public class ShopItems : ScriptableObject
 [System.Serializable]
 public class ShopItem
 {
-    public int id;
+    public string id;
+    public ShopItemType type;
     public string name;
     public int price;
+}
+
+public enum ShopItemType
+{
+    Default = 0,
+    PlayerPowerUp = 1
 }

@@ -7,6 +7,7 @@ public class UI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI cashText;
     [SerializeField] private TextMeshProUGUI timeText;
+    [SerializeField] private TextMeshProUGUI dayText;
     [SerializeField] private RectTransform breathParent;
     [SerializeField] private Image breathFill;
     [SerializeField] private GameObject shopPanel;
@@ -28,6 +29,11 @@ public class UI : MonoBehaviour
     public void UpdateCountdownText(int timeLeft)
     {
         timeText.text = Mathf.FloorToInt(timeLeft/60f).ToString("00") + ":" + Mathf.FloorToInt(timeLeft%60).ToString("00");
+    }
+    
+    public void UpdateDayText(int day)
+    {
+        dayText.text = "Day: " + day.ToString();
     }
     
     public void UpdateBreathBar(float percentage)

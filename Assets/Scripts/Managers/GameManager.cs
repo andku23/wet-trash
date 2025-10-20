@@ -7,13 +7,23 @@ using UnityEngine.Events;
 public class GameManager : NetworkBehaviour
 {
     [SerializeField] private LootManager _lootManager;
+    [SerializeField] private UI _ui;
     [SerializeField] private float _timeFullDaySeconds;
     [SerializeField] private UnityEvent<int> _timeUpdatedEvent;
     [SerializeField] private UnityEvent _timeFinishedEvent;
+    [SerializeField] private UnityEvent<int> _onDayUpdatedEvent;
     [SerializeField] public UnityEvent<float> OnBreathUpdated;
     
-    private bool _isDayActive = false;
+    private TimeState _timeState;
     private Coroutine _co_TimerCountdown;
+    private int _day = 0;
+    
+    public enum TimeState
+    {
+        None = 0,
+        DayActive = 1,
+        BetweenDays = 2
+    }
     
     public static GameManager Instance;
     
@@ -29,7 +39,16 @@ public class GameManager : NetworkBehaviour
 
     public void RequestToggleDay()
     {
-        ToggleBeginDay_ServerRpc(!_isDayActive);
+        switch (_timeState)
+        {
+            case TimeState.DayActive:
+                ToggleBeginDay_ServerRpc(false);
+                break;
+            case TimeState.BetweenDays:
+            case TimeState.None:
+                ToggleBeginDay_ServerRpc(true);
+                break;
+        }
     }
 
     public void RequestStartDay()
@@ -42,6 +61,7 @@ public class GameManager : NetworkBehaviour
         ToggleBeginDay_ServerRpc(false);
     }
 
+    #region Player Death
     public void RequestPlayerDeath()
     {
         PlayerDeath_ServerRpc(NetworkManager.Singleton.LocalClientId);
@@ -79,32 +99,37 @@ public class GameManager : NetworkBehaviour
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
         pickupPlayerClient.PlayerObject.GetComponent<PlayerDeath>().RevivePlayerLocal();
     }
+    #endregion
     
     [ServerRpc(RequireOwnership = false)]
-    private void ToggleBeginDay_ServerRpc(bool isDayStarted)
+    private void ToggleBeginDay_ServerRpc(bool startDay)
     {
-        if (_isDayActive == isDayStarted) return;
-        _isDayActive = isDayStarted;
-        if (_isDayActive)
+        if (startDay && _timeState == TimeState.DayActive) return;
+        if (!startDay && _timeState == TimeState.BetweenDays) return;
+        _timeState = startDay ? TimeState.DayActive : TimeState.BetweenDays;
+        
+        if (_timeState == TimeState.DayActive)
         {
+            _day++;
             SpawnLoot();
         }
-        else
+        else if (_timeState == TimeState.BetweenDays)
         {
             DeleteLoot();
         }
-        ToggleBeginDay_ClientRpc(isDayStarted);
+        ToggleBeginDay_ClientRpc(_timeState, _day);
     }
     
     [ClientRpc(RequireOwnership = false)]
-    private void ToggleBeginDay_ClientRpc(bool isDayStarted)
+    private void ToggleBeginDay_ClientRpc(TimeState timeState, int day)
     {
-        _isDayActive = isDayStarted;
-        if (isDayStarted)
+        _timeState = timeState;
+        _day = day;
+        if (_timeState == TimeState.DayActive)
         {
             StartCountdown();
         }
-        else
+        else if (_timeState == TimeState.BetweenDays)
         {
             StopCountdown();
         }
@@ -131,6 +156,7 @@ public class GameManager : NetworkBehaviour
     private void StartCountdown()
     {
         StopCountdown();
+        _onDayUpdatedEvent.Invoke(_day);
         _co_TimerCountdown = StartCoroutine(Co_TimerCountdown());
     }
     

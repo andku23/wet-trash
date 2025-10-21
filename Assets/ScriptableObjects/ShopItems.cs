@@ -18,5 +18,6 @@ public class ShopItem
 public enum ShopItemType
 {
     Default = 0,
-    PlayerPowerUp = 1
+    PlayerPowerUp = 1,
+    InventoryItem = 2
 }

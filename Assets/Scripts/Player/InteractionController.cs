@@ -14,6 +14,14 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private NetworkObject networkObject;
     [SerializeField] private ThirdPersonController thirdPersonController;
     
+    private InteractionMode _interactionMode;
+
+    public enum InteractionMode
+    {
+        Default = 0,
+        BoatBuilding = 1
+    }
+    
 #if ENABLE_INPUT_SYSTEM 
     private PlayerInput _playerInput;
 #endif
@@ -58,7 +66,20 @@ public class InteractionController : NetworkBehaviour
         lastClosestInteractable = null;
     }
     
-    void Update()
+    private void Update()
+    {
+        switch (_interactionMode)
+        {
+            case InteractionMode.Default:
+                DoInteractionStandard();
+                break;
+            case InteractionMode.BoatBuilding:
+                DoInteractionBuilding();
+                break;
+        }
+    }
+
+    private void DoInteractionStandard()
     {
         if (!IsOwner) return;
         
@@ -172,7 +193,11 @@ public class InteractionController : NetworkBehaviour
                     }
                 }
             }
-            
         }
+    }
+
+    private void DoInteractionBuilding()
+    {
+        
     }
 }

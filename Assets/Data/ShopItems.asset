@@ -25,11 +25,11 @@ MonoBehaviour:
     type: 1
     name: Swim Speed +1
     price: 400
-  - id: 3
-    type: 0
-    name: UNUSED
-    price: 500
-  - id: 4
-    type: 0
-    name: UNUSED
-    price: 800
+  - id: item-0
+    type: 2
+    name: Item 0
+    price: 100
+  - id: item-1
+    type: 2
+    name: Item 1
+    price: 150

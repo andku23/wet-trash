@@ -6,6 +6,7 @@ TagManager:
   tags:
   - CinemachineTarget
   - Boat
+  - AttachmentPoint
   layers:
   - Default
   - TransparentFX

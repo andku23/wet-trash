@@ -56,6 +56,7 @@ public class UI : MonoBehaviour
             uiShopItem.price.text = "$"+ShopManager.Instance.shopList.items[i].price.ToString();
             uiShopItem.button.onClick.AddListener(() =>
             {
+                // TODO when I change this to be randomized, make sure the indexes are correct
                 OnShopButtonClick(index);
             });
             uiShopItems.Add(uiShopItem);
@@ -68,7 +69,7 @@ public class UI : MonoBehaviour
         if (MoneyManager.Instance.Cash >= shopItem.price)
         {
             MoneyManager.Instance.SubtractCash(shopItem.price);
-            ShopManager.Instance.PurchaseItem(shopItem);
+            ShopManager.Instance.PurchaseItem(shopItem, index);
         }
     }
     

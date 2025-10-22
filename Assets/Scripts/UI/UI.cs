@@ -13,12 +13,17 @@ public class UI : MonoBehaviour
     [SerializeField] private GameObject shopPanel;
     [SerializeField] private RectTransform shopContent;
     [SerializeField] private GameObject shopItemPrefab;
+    
+    [SerializeField] private GameObject sharedInventoryPanel;
+    [SerializeField] private RectTransform sharedInventoryContent;
+    [SerializeField] private GameObject sharedInventoryPrefab;
 
     private List<UIShopItem> uiShopItems = new List<UIShopItem>();
     
     private void Start()
     {
         shopPanel.SetActive(false);
+        sharedInventoryPanel.SetActive(false);
     }
     
     public void UpdateCashText(int amount)
@@ -46,7 +51,36 @@ public class UI : MonoBehaviour
         shopPanel.SetActive(isVisible);
     }
     
-    public void SpawnShopContent()
+    public void ShowSharedInventoryPanel(bool isVisible)
+    {
+        sharedInventoryPanel.SetActive(isVisible);
+    }
+    
+    public void ClearSharedInventoryUI()
+    {
+        for (int i = sharedInventoryContent.transform.childCount - 1; i >= 0; i--)
+        {
+            Destroy(sharedInventoryContent.transform.GetChild(i).gameObject);
+        }
+    }
+
+    public void PopulateSharedInventoryUI(List<int> boughtItems)
+    {
+        for (int i = 0; i < boughtItems.Count; i++)
+        {
+            int index = boughtItems[i];
+            UIShopItem uiShopItem = Instantiate(sharedInventoryPrefab, sharedInventoryContent).GetComponent<UIShopItem>();
+            uiShopItem.name.text = ShopManager.Instance.shopList.items[index].name;
+            uiShopItem.price.text = "$"+ShopManager.Instance.shopList.items[index].price.ToString();
+            uiShopItem.button.onClick.AddListener(() =>
+            {
+                OnSharedInventoryButtonClick(index);
+            });
+            uiShopItems.Add(uiShopItem);
+        }
+    }
+    
+    public void PopulateShopContent()
     {
         for (int i = 0; i < ShopManager.Instance.shopList.items.Length; i++)
         {
@@ -71,6 +105,16 @@ public class UI : MonoBehaviour
             MoneyManager.Instance.SubtractCash(shopItem.price);
             ShopManager.Instance.PurchaseItem(shopItem, index);
         }
+    }
+    
+    public void OnSharedInventoryButtonClick(int index)
+    {
+        //ShopItem shopItem = ShopManager.Instance.shopList.items[index];
+        //if (MoneyManager.Instance.Cash >= shopItem.price)
+        //{
+        //    MoneyManager.Instance.SubtractCash(shopItem.price);
+        //    ShopManager.Instance.PurchaseItem(shopItem, index);
+        //}
     }
     
     public void ClearShopContent()

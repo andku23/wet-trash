@@ -22,7 +22,14 @@ public class ShopManager : NetworkBehaviour
             Instance = this;
         }
         
-        ui.SpawnShopContent();
+        ui.PopulateShopContent();
+    }
+
+    public void ViewBoughtItems()
+    {
+        ui.ClearSharedInventoryUI();
+        ui.PopulateSharedInventoryUI(boughtItems);
+        ui.ShowSharedInventoryPanel(true);
     }
     
     public void ViewInventory()

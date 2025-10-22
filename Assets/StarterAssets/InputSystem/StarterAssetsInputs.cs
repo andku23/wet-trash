@@ -15,6 +15,7 @@ namespace StarterAssets
 		public bool sprint;
 		public bool interact;
 		public bool respawn;
+		public bool inventory;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -61,6 +62,11 @@ namespace StarterAssets
 		{
 			RespawnInput(value.isPressed);
 		}
+		
+		public void OnInventory(InputValue value)
+		{
+			InventoryInput(value.isPressed);
+		}
 #endif
 
 
@@ -98,6 +104,12 @@ namespace StarterAssets
 		{
 			respawn = newState;
 		}
+		
+		public void InventoryInput(bool newState)
+		{
+			inventory = newState;
+		}
+
 
 		private void OnApplicationFocus(bool hasFocus)
 		{

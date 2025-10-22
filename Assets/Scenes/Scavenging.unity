@@ -326,6 +326,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  attachmentPoints:
+  - {fileID: 767847477}
 --- !u!4 &105108002
 Transform:
   m_ObjectHideFlags: 0
@@ -998,7 +1000,7 @@ PrefabInstance:
     - target: {fileID: 7261415058023802445, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
       propertyPath: onPressed.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ViewInventory
+      value: ViewShop
       objectReference: {fileID: 0}
     - target: {fileID: 7261415058023802445, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
@@ -1860,7 +1862,7 @@ PrefabInstance:
     - target: {fileID: 7261415058023802445, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
       propertyPath: onPressed.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ViewBoughtItems
+      value: ViewBoughtInventory
       objectReference: {fileID: 0}
     - target: {fileID: 7261415058023802445, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
@@ -2658,6 +2660,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 767847476}
+  - component: {fileID: 767847477}
+  - component: {fileID: 767847478}
   m_Layer: 0
   m_Name: BoatAttachmentPoint
   m_TagString: AttachmentPoint
@@ -2674,13 +2678,50 @@ Transform:
   m_GameObject: {fileID: 767847475}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.898, y: 0.497, z: -1.73}
+  m_LocalPosition: {x: -1.898, y: 0.497, z: -1.569}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1843644261}
   m_Father: {fileID: 480123326}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &767847477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 767847475}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3667ab957a760d4f93ce03b23baa20f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoatAttachmentPoint
+--- !u!114 &767847478
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 767847475}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 717030896
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!1 &812709391
 GameObject:
   m_ObjectHideFlags: 0
@@ -4293,7 +4334,7 @@ Transform:
   m_GameObject: {fileID: 1379245671}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -10.35, z: 10.34}
+  m_LocalPosition: {x: 0, y: 0, z: 10.34}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5917,6 +5958,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   ui: {fileID: 1493138546}
   shopList: {fileID: 11400000, guid: 9dc59e6a45a756943b16d5aa59af29e4, type: 2}
+  boughtItems: 
 --- !u!1 &1814090200
 GameObject:
   m_ObjectHideFlags: 0

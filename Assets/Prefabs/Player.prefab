@@ -983,8 +983,9 @@ GameObject:
   - component: {fileID: 7733629718943813994}
   - component: {fileID: -5723443840750851045}
   - component: {fileID: 8149868342962994308}
-  - component: {fileID: 9122417569400039749}
   - component: {fileID: 7303158058568402417}
+  - component: {fileID: 9122417569400039749}
+  - component: {fileID: -216991404366805312}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -1217,7 +1218,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3110835940448346143}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 909d917d73a63f940ac158d02e936645, type: 3}
   m_Name: 
@@ -1289,21 +1290,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkHandleParenting
   ShowTopMostFoldoutHeaderGroup: 1
---- !u!114 &9122417569400039749
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3110835940448346143}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5d5eda9f60ee4e64c997842506da260c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeath
-  ShowTopMostFoldoutHeaderGroup: 1
-  playerState: {fileID: 7303158058568402417}
-  _animator: {fileID: 1597806622317787050}
 --- !u!114 &7303158058568402417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1319,12 +1305,15 @@ MonoBehaviour:
   MoveSpeed: 2
   MaxSwimmingSpeed: 2
   SprintSpeed: 5.335
+  SprintSpeed_UpgradeIncrement: 0.5
   SprintSwimSpeed: 4.335
+  SprintSwimSpeed_UpgradeIncrement: 0.5
   RotationSmoothTime: 0.12
   SpeedChangeRate: 10
   JumpHeight: 1.2
   WaterSurfaceJumpHeight: 10
   BreathFullAmount: 10
+  BreathFullAmount_UpgradeIncrement: 1
   BreathDepleteRate: 1
   BreathReplenishRate: 2
   Grounded: 1
@@ -1333,6 +1322,33 @@ MonoBehaviour:
   IsDriving: 0
   IsDead: 0
   InWaterOnSurface: 0
+--- !u!114 &9122417569400039749
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3110835940448346143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d5eda9f60ee4e64c997842506da260c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeath
+  ShowTopMostFoldoutHeaderGroup: 1
+  playerState: {fileID: 7303158058568402417}
+  _animator: {fileID: 1597806622317787050}
+--- !u!114 &-216991404366805312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3110835940448346143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b0453ce696ade2419599929c7d0d999, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MenuInputControl
 --- !u!1 &3133240687885047721
 GameObject:
   m_ObjectHideFlags: 0

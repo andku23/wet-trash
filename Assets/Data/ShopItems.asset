@@ -17,19 +17,31 @@ MonoBehaviour:
     type: 1
     name: Run Speed +1
     price: 50
+    placePrefab: {fileID: 0}
   - id: breath-up
     type: 1
     name: Breath +1
     price: 200
+    placePrefab: {fileID: 0}
   - id: swim-speed-up
     type: 1
     name: Swim Speed +1
     price: 400
+    placePrefab: {fileID: 0}
   - id: item-0
     type: 2
     name: Item 0
     price: 100
+    placePrefab: {fileID: 5312557331888019442, guid: 36a597f8860d4f84ebfa84b795564eae,
+      type: 3}
   - id: item-1
     type: 2
     name: Item 1
     price: 150
+    placePrefab: {fileID: 2262298787450423886, guid: 99dfd308a07e07549ba519da6ae8bcac,
+      type: 3}
+  itemsTypesToNames:
+  - type: 2
+    name: Inventory Item
+  - type: 3
+    name: Boat Part

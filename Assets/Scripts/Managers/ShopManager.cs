@@ -10,8 +10,9 @@ public class ShopManager : NetworkBehaviour
     
     public ShopItems shopList;
     
-    private List<int> boughtItems = new List<int>();
-    
+    public List<int> boughtItems = new List<int>();
+
+    public Dictionary<ShopItemType, string> ShopItemTypeLookup = new Dictionary<ShopItemType, string>();
     
     public override void OnNetworkSpawn()
     {
@@ -21,18 +22,28 @@ public class ShopManager : NetworkBehaviour
         {
             Instance = this;
         }
-        
         ui.PopulateShopContent();
+        InitializeLookupDictionaries();
     }
 
-    public void ViewBoughtItems()
+    private void InitializeLookupDictionaries()
+    {
+        for (int i = 0; i < ShopManager.Instance.shopList.itemsTypesToNames.Length; i++)
+        {
+            ShopItemTypeToName pair = ShopManager.Instance.shopList.itemsTypesToNames[i];
+            Debug.Log(pair.name+ " " + pair.type);
+            ShopItemTypeLookup.Add(pair.type, pair.name);
+        }
+    }
+
+    public void ViewBoughtInventory()
     {
         ui.ClearSharedInventoryUI();
         ui.PopulateSharedInventoryUI(boughtItems);
         ui.ShowSharedInventoryPanel(true);
     }
     
-    public void ViewInventory()
+    public void ViewShop()
     {
         ui.ShowShopPanel(true);
     }
@@ -45,6 +56,7 @@ public class ShopManager : NetworkBehaviour
                 ApplyPlayerPowerUp(shopItem);
                 break;
             case ShopItemType.InventoryItem:
+            case ShopItemType.BoatPart:
                 AddToInventory(shopItem, index);
                 break;
         }

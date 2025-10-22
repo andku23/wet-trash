@@ -68,13 +68,16 @@ public class UI : MonoBehaviour
     {
         for (int i = 0; i < boughtItems.Count; i++)
         {
-            int index = boughtItems[i];
+            int boughtItemIndex = i;
+            int shopItemIndex = boughtItems[i];
             UIShopItem uiShopItem = Instantiate(sharedInventoryPrefab, sharedInventoryContent).GetComponent<UIShopItem>();
-            uiShopItem.name.text = ShopManager.Instance.shopList.items[index].name;
-            uiShopItem.price.text = "$"+ShopManager.Instance.shopList.items[index].price.ToString();
+            ShopItem shopItem = ShopManager.Instance.shopList.items[shopItemIndex];
+            uiShopItem.name.text = shopItem.name;
+            Debug.Log(shopItem.type);
+            uiShopItem.price.text = ShopManager.Instance.ShopItemTypeLookup[shopItem.type];
             uiShopItem.button.onClick.AddListener(() =>
             {
-                OnSharedInventoryButtonClick(index);
+                OnSharedInventoryButtonClick(shopItemIndex, boughtItemIndex);
             });
             uiShopItems.Add(uiShopItem);
         }
@@ -97,24 +100,23 @@ public class UI : MonoBehaviour
         }
     }
     
-    public void OnShopButtonClick(int index)
+    public void OnShopButtonClick(int shopItemIndex)
     {
-        ShopItem shopItem = ShopManager.Instance.shopList.items[index];
+        ShopItem shopItem = ShopManager.Instance.shopList.items[shopItemIndex];
         if (MoneyManager.Instance.Cash >= shopItem.price)
         {
             MoneyManager.Instance.SubtractCash(shopItem.price);
-            ShopManager.Instance.PurchaseItem(shopItem, index);
+            ShopManager.Instance.PurchaseItem(shopItem, shopItemIndex);
         }
     }
     
-    public void OnSharedInventoryButtonClick(int index)
+    public void OnSharedInventoryButtonClick(int shopItemIndex, int boughtItemIndex)
     {
-        //ShopItem shopItem = ShopManager.Instance.shopList.items[index];
-        //if (MoneyManager.Instance.Cash >= shopItem.price)
-        //{
-        //    MoneyManager.Instance.SubtractCash(shopItem.price);
-        //    ShopManager.Instance.PurchaseItem(shopItem, index);
-        //}
+        ShopItem shopItem = ShopManager.Instance.shopList.items[shopItemIndex];
+        ShopManager.Instance.boughtItems.RemoveAt(boughtItemIndex);
+        ClearSharedInventoryUI();
+        PopulateSharedInventoryUI(ShopManager.Instance.boughtItems);
+        GameManager.Instance.ChangeToBuildMode(shopItemIndex);
     }
     
     public void ClearShopContent()

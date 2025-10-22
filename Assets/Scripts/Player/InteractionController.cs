@@ -4,6 +4,7 @@ using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class InteractionController : NetworkBehaviour
 {
@@ -14,7 +15,7 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private NetworkObject networkObject;
     [SerializeField] private ThirdPersonController thirdPersonController;
     
-    private InteractionMode _interactionMode;
+    public InteractionMode CurrentInteractionMode;
 
     public enum InteractionMode
     {
@@ -28,8 +29,10 @@ public class InteractionController : NetworkBehaviour
     
     private StarterAssetsInputs _input;
     private IInteractable lastClosestInteractable;
-    private GameObject heldLoot;
+    private GameObject heldObject;
+    private BoatAttachment placingBoatAttachment;
     private const float MAX_DROP_DISTANCE = 1.5f;
+    private int _shopItemIndex;
     
     public override void OnNetworkSpawn()
     {
@@ -51,7 +54,7 @@ public class InteractionController : NetworkBehaviour
         go.transform.localPosition = Vector3.zero;
         go.transform.localRotation = Quaternion.identity;
         go.transform.localScale = Vector3.one;
-        heldLoot = go;
+        heldObject = go;
         thirdPersonController.ToggleCarrying(true);
         lastClosestInteractable = null;
 
@@ -60,15 +63,15 @@ public class InteractionController : NetworkBehaviour
 
     public void DestroyHeldObject()
     {
-        Destroy(heldLoot);
-        heldLoot = null;
+        Destroy(heldObject);
+        heldObject = null;
         thirdPersonController.ToggleCarrying(false);
         lastClosestInteractable = null;
     }
     
     private void Update()
     {
-        switch (_interactionMode)
+        switch (CurrentInteractionMode)
         {
             case InteractionMode.Default:
                 DoInteractionStandard();
@@ -92,7 +95,7 @@ public class InteractionController : NetworkBehaviour
         {
             // Exclude self if the script is on an object with a collider
             if (collider.gameObject == gameObject) continue;
-            if (heldLoot != null && heldLoot.gameObject == collider.gameObject) continue;
+            if (heldObject != null && heldObject.gameObject == collider.gameObject) continue;
 
             float distance = Vector3.Distance(transform.position, collider.transform.position); 
 
@@ -114,7 +117,7 @@ public class InteractionController : NetworkBehaviour
             IInteractable interactable = parentHitObject.GetComponent<IInteractable>();
             if (interactable != null && interactable != lastClosestInteractable)
             {
-                if (interactable.gameObject.GetComponent<LootDeposit>() != null && heldLoot != null)
+                if (interactable.gameObject.GetComponent<LootDeposit>() != null && heldObject != null)
                 {
                     interactable.SetAsInteractable(true);
                     if (lastClosestInteractable != null)
@@ -123,7 +126,7 @@ public class InteractionController : NetworkBehaviour
                     }
                     lastClosestInteractable = interactable;
                 }
-                else if(heldLoot == null)
+                else if(heldObject == null)
                 {
                     interactable.SetAsInteractable(true);
                     if (lastClosestInteractable != null)
@@ -159,21 +162,21 @@ public class InteractionController : NetworkBehaviour
             }
             
             
-            if (heldLoot != null)
+            if (heldObject != null)
             {
                 if (deposit != null)
                 {
-                    LootManager.Instance.RequestDeposit(deposit, heldLoot);
+                    LootManager.Instance.RequestDeposit(deposit, heldObject);
                 }
                 else
                 {
-                    Physics.Raycast(heldLoot.transform.position, -Vector3.up, out RaycastHit hit);
+                    Physics.Raycast(heldObject.transform.position, -Vector3.up, out RaycastHit hit);
                     if (hit.collider != null)
                     {
                         if (hit.distance < MAX_DROP_DISTANCE)
                         {
                             LootManager.Instance.RequestDrop(
-                                new Vector3(hit.point.x, hit.point.y + 0.3f, hit.point.z), heldLoot);
+                                new Vector3(hit.point.x, hit.point.y + 0.3f, hit.point.z), heldObject);
                         }
                     }
                 }
@@ -198,6 +201,70 @@ public class InteractionController : NetworkBehaviour
 
     private void DoInteractionBuilding()
     {
+        if (!IsOwner) return;
         
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 2.0f, layerMask);
+        float minDistance = Mathf.Infinity;
+        Collider closestCollider = null;
+
+        //Calculate closest interactable
+        foreach (Collider collider in hitColliders)
+        {
+            // Exclude self if the script is on an object with a collider
+            if (collider.gameObject == gameObject) continue;
+            if (heldObject != null && heldObject.gameObject == collider.gameObject) continue;
+
+            float distance = Vector3.Distance(transform.position, collider.transform.position); 
+
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestCollider = collider;
+            }
+        }
+
+        if (closestCollider != null && closestCollider.CompareTag("AttachmentPoint"))
+        {
+            GameObject parentHitObject = closestCollider.gameObject;
+            // Expects collider reference
+            if (closestCollider.GetComponent<ColliderReference>() != null)
+            {
+                parentHitObject = closestCollider.GetComponent<ColliderReference>().reference;
+            }
+            
+            BoatAttachmentPoint boatAttachmentPoint = parentHitObject.GetComponentInChildren<BoatAttachmentPoint>();
+            if (boatAttachmentPoint != null)
+            {
+                placingBoatAttachment.transform.position = boatAttachmentPoint.transform.position;
+                placingBoatAttachment.transform.rotation = boatAttachmentPoint.transform.rotation;
+                placingBoatAttachment.gameObject.SetActive(true);
+                
+                if (_input.interact)
+                {
+                    //placingBoatAttachment.transform.parent = boatAttachmentPoint.transform;
+                    Destroy(placingBoatAttachment.gameObject);
+                    GameManager.Instance.PlaceAttachmentPoint(_shopItemIndex, boatAttachmentPoint);
+                    placingBoatAttachment = null;
+                    CurrentInteractionMode = InteractionMode.Default;
+                    _input.interact = false;
+                }
+            }
+            else
+            {
+                placingBoatAttachment.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            placingBoatAttachment.gameObject.SetActive(false);
+        }
+    }
+
+    public void ChangeToBuildMode(int shopItemIndex)
+    {
+        CurrentInteractionMode = InteractionMode.BoatBuilding;
+        _shopItemIndex = shopItemIndex;
+        placingBoatAttachment = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab).GetComponent<BoatAttachment>();
+        placingBoatAttachment.gameObject.SetActive(false);
     }
 }

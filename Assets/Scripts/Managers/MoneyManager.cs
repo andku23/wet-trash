@@ -6,7 +6,7 @@ public class MoneyManager : NetworkBehaviour
 {
     public static MoneyManager Instance;
     
-    private NetworkVariable<int> _cash = new NetworkVariable<int>(0);
+    private NetworkVariable<int> _cash = new NetworkVariable<int>();
     public UnityEvent<int> OnCashChanged = new UnityEvent<int>();
     
     public int Cash {get{return _cash.Value;}}
@@ -19,8 +19,16 @@ public class MoneyManager : NetworkBehaviour
         {
             Instance = this;
         }
-
+        
         _cash.OnValueChanged += OnCashUpdated;
+
+        if (IsServer)
+        {
+            _cash.Value = 400;
+        }
+        
+        OnCashChanged.Invoke(_cash.Value);
+
     }
 
     public void AddCash(int addAmount)

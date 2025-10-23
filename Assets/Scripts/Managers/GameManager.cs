@@ -15,7 +15,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private UnityEvent<int> _onDayUpdatedEvent;
     [SerializeField] public UnityEvent<float> OnBreathUpdated;
 
-    public List<BoatAttachmentPoint> attachmentPoints = new List<BoatAttachmentPoint>();
+    public NetworkedBoat Boat;
     
     private TimeState _timeState;
     private Coroutine _co_TimerCountdown;
@@ -29,15 +29,18 @@ public class GameManager : NetworkBehaviour
     }
     
     public static GameManager Instance;
-    
-    public override void OnNetworkSpawn()
+
+    private void Start()
     {
-        base.OnNetworkSpawn();
-        
         if (Instance == null)
         {
             Instance = this;
         }
+    }
+    
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
     }
 
     public void RequestToggleDay()
@@ -152,9 +155,9 @@ public class GameManager : NetworkBehaviour
     public void PlaceAttachmentPoint(int shopItemIndex, BoatAttachmentPoint boatAttachmentPoint)
     {
         int attachmentPointIndex = -1;
-        for (int i = 0; i < attachmentPoints.Count; i++)
+        for (int i = 0; i < Boat.BoatAttachmentPoints.Count; i++)
         {
-            if (boatAttachmentPoint == attachmentPoints[i])
+            if (boatAttachmentPoint == Boat.BoatAttachmentPoints[i])
             {
                 attachmentPointIndex = i;
             }
@@ -169,17 +172,18 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void PlaceAttachmentPoint_ServerRpc(int shopIndex, int boatAttachmentIndex)
     {
-        BoatAttachmentPoint boatAttachmentPoint = attachmentPoints[boatAttachmentIndex];
+        BoatAttachmentPoint boatAttachmentPoint = Boat.BoatAttachmentPoints[boatAttachmentIndex];
         NetworkObject no = Instantiate(ShopManager.Instance.shopList.items[shopIndex].placePrefab, 
             boatAttachmentPoint.transform.position, boatAttachmentPoint.transform.rotation).GetComponent<NetworkObject>();
         no.Spawn();
+        boatAttachmentPoint.heldItem.Value = no.NetworkObjectId;
         PlaceAttachmentPoint_ClientRpc(no.NetworkObjectId, boatAttachmentIndex);
     }
     
     [ClientRpc(RequireOwnership = false)]
     public void PlaceAttachmentPoint_ClientRpc(ulong networkObjectId, int boatAttachmentIndex)
     {
-        BoatAttachmentPoint boatAttachmentPoint = attachmentPoints[boatAttachmentIndex];
+        BoatAttachmentPoint boatAttachmentPoint = Boat.BoatAttachmentPoints[boatAttachmentIndex];
         NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId,
             out NetworkObject networkLootObject);
         networkLootObject.transform.parent = boatAttachmentPoint.transform;

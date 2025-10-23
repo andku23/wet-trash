@@ -233,7 +233,7 @@ public class InteractionController : NetworkBehaviour
             }
             
             BoatAttachmentPoint boatAttachmentPoint = parentHitObject.GetComponentInChildren<BoatAttachmentPoint>();
-            if (boatAttachmentPoint != null)
+            if (boatAttachmentPoint != null && boatAttachmentPoint.heldItem.Value == 0)
             {
                 placingBoatAttachment.transform.position = boatAttachmentPoint.transform.position;
                 placingBoatAttachment.transform.rotation = boatAttachmentPoint.transform.rotation;
@@ -241,7 +241,7 @@ public class InteractionController : NetworkBehaviour
                 
                 if (_input.interact)
                 {
-                    //placingBoatAttachment.transform.parent = boatAttachmentPoint.transform;
+                    // TODO dont allow you to place if theres something already attached
                     Destroy(placingBoatAttachment.gameObject);
                     GameManager.Instance.PlaceAttachmentPoint(_shopItemIndex, boatAttachmentPoint);
                     placingBoatAttachment = null;

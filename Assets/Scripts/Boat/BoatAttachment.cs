@@ -1,13 +1,9 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class BoatAttachment : MonoBehaviour
+public class BoatAttachment : NetworkBehaviour
 {
-    private void Start()
-    {
-        
-    }
-
-    private void Update()
+    public override void OnNetworkSpawn()
     {
         
     }

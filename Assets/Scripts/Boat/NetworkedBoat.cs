@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Cinemachine;
 using StarterAssets;
 using Unity.Netcode;
@@ -12,6 +13,8 @@ public class NetworkedBoat : NetworkBehaviour
     [SerializeField] private CinemachineVirtualCamera _boatVirtualCamera;
     [SerializeField] private float RotationSmoothTime = 0.12f;
     [SerializeField] private float BoatSpeed = 2.0f;
+    
+    public List<BoatAttachmentPoint> BoatAttachmentPoints = new List<BoatAttachmentPoint>();
     
     private NetworkVariable<bool> _hasDriver = new NetworkVariable<bool>(false);
     private NetworkVariable<ulong> _driverID = new NetworkVariable<ulong>(0);
@@ -30,6 +33,7 @@ public class NetworkedBoat : NetworkBehaviour
         _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
 #else
 #endif
+        GameManager.Instance.Boat = this;
         
     }
 

@@ -13,3 +13,5 @@ Bootstrap.csproj
 **.cache
 obj/Debug
 Build.zip
+BuildiOS.app.zip
+BuildiOS.app/

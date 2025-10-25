@@ -158,7 +158,7 @@ public class InteractionController : NetworkBehaviour
                     AttachmentCrane crane = heldObject.ConnectedParent.GetComponent<AttachmentCrane>();
                     if (loot != null)
                     {
-                        
+                        crane.AttachCraneHook(NetworkManager.Singleton.LocalClientId, loot.transform, loot.NetworkObject);
                     }
                     else
                     {

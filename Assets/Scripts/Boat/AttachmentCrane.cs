@@ -4,18 +4,21 @@ using UnityEngine;
 public class AttachmentCrane : NetworkBehaviour, IInteractable
 {
     [SerializeField] private GameObject useInstructions;
+    [SerializeField] private GameObject reelInstructions;
     [SerializeField] private GameObject craneHookParent;
-    
     [SerializeField] private GameObject craneHookPrefab;
     
     private ClientStateMachine _stateMachine;
     private NetworkVariable<int> _networkedState = new NetworkVariable<int>(0);
+    private NetworkObject _hookedLoot = null;
+    private GameObject _craneHookOnLoot = null;
     
     enum LocalStates
     {
         Default = 0,
         ClosestItem = 1,
-        HookHeld = 2
+        HookHeld = 2,
+        ClosestItemCrane = 6
     };
 
     enum NetworkStates
@@ -27,7 +30,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         ReelFinished = 5
     }
 
-    public override void OnNetworkSpawn()
+    private void Start()
     {
         _stateMachine = new ClientStateMachine();
         
@@ -43,16 +46,22 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         BaseState attachedToLootState = new BaseState(null, null, null);
         _stateMachine.AddState((int)NetworkStates.AttachedToLoot, attachedToLootState);
         
-        BaseState reelingInState = new BaseState(null, OnReelingInStateUpdate, null);
+        BaseState reelingInState = new BaseState(OnReelingInStateEnter, OnReelingInStateUpdate, null);
         _stateMachine.AddState((int)NetworkStates.ReelingIn, reelingInState);
         
         BaseState reelFinishedState = new BaseState(OnReelFinishedStateEnter, null, null);
         _stateMachine.AddState((int)NetworkStates.ReelFinished, reelFinishedState);
-
-        _networkedState.OnValueChanged += OnNetworkStateUpdated;
+        
+        BaseState closestItemCraneState = new BaseState(OnClosestItemCraneStateEnter, null, OnClosestItemCraneStateExit);
+        _stateMachine.AddState((int)LocalStates.ClosestItemCrane, closestItemCraneState);
         
         _stateMachine.ChangeState(_networkedState.Value);
+        _networkedState.OnValueChanged += OnNetworkStateUpdated;
         
+    }
+
+    public override void OnNetworkSpawn()
+    {
         Instantiate(craneHookPrefab, craneHookParent.transform);
     }
 
@@ -68,20 +77,23 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     {
         if (_stateMachine.currentStateEnum == (int)LocalStates.ClosestItem)
         {
-            _stateMachine.ChangeState((int)LocalStates.HookHeld);
-            Interact_ServerRpc(networkPlayerID);
+            HoldHook_ServerRpc(networkPlayerID);
+        }
+        else if(_stateMachine.currentStateEnum == (int)LocalStates.ClosestItemCrane)
+        {
+            ReelIn_ServerRpc();
         }
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void Interact_ServerRpc(ulong networkPlayerID)
+    public void HoldHook_ServerRpc(ulong networkPlayerID)
     {
         _networkedState.Value = (int)NetworkStates.HookHeld;
-        Interact_ClientRpc(networkPlayerID);
+        HoldHook_ClientRpc(networkPlayerID);
     }
 
     [ClientRpc(RequireOwnership = false)]
-    public void Interact_ClientRpc(ulong networkPlayerID)
+    public void HoldHook_ClientRpc(ulong networkPlayerID)
     {
         NetworkObject playerObject = NetworkManager.Singleton.ConnectedClients[networkPlayerID].PlayerObject;
         InteractionController interactionController = playerObject.GetComponent<InteractionController>();
@@ -101,6 +113,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         DropCraneHook_ServerRpc(networkPlayerID);
     }
     
+    
     [ServerRpc(RequireOwnership = false)]
     public void DropCraneHook_ServerRpc(ulong networkPlayerID)
     {
@@ -119,11 +132,63 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         }
     }
 
+    public void AttachCraneHook(ulong networkPlayerID, Transform attachPoint, NetworkObject networkLoot)
+    {
+        
+        AttachCraneHook_ServerRpc(networkPlayerID, attachPoint.position, networkLoot.NetworkObjectId);
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void AttachCraneHook_ServerRpc(ulong networkPlayerID, Vector3 attachPoint, ulong lootNetworkObjectID)
+    {
+        _networkedState.Value = (int)NetworkStates.AttachedToLoot;
+        _hookedLoot = NetworkManager.Singleton.SpawnManager.SpawnedObjects[lootNetworkObjectID];
+        AttachCraneHook_ClientRpc(networkPlayerID, attachPoint, lootNetworkObjectID);
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void AttachCraneHook_ClientRpc(ulong networkPlayerID, Vector3 attachPoint, ulong lootNetworkObjectID)
+    {
+        NetworkObject playerObject = NetworkManager.Singleton.ConnectedClients[networkPlayerID].PlayerObject;
+        InteractionController interactionController = playerObject.GetComponent<InteractionController>();
+        NetworkObject hookedLoot = NetworkManager.Singleton.SpawnManager.SpawnedObjects[lootNetworkObjectID];
+        if (interactionController != null)
+        {
+            interactionController.DestroyHeldObject();
+        }
+        
+        _craneHookOnLoot = Instantiate(craneHookPrefab, hookedLoot.transform);
+        _craneHookOnLoot.transform.position = attachPoint;
+        _craneHookOnLoot.transform.Translate(0, 1, 0);
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void ReelIn_ServerRpc()
+    {
+        _networkedState.Value = (int)NetworkStates.ReelingIn;
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void ReelFinished_ServerRpc()
+    {
+        _networkedState.Value = (int)NetworkStates.ReelFinished;
+    }
+
     public bool EnableInteractable(IHoldable heldObject)
     {
         if (heldObject != null) return false;
         if(_networkedState.Value == (int)NetworkStates.HookHeld) return false;
-        _stateMachine.ChangeState((int)LocalStates.ClosestItem);
+        else if(_networkedState.Value == (int)NetworkStates.ReelingIn) return false;
+        else if(_networkedState.Value == (int)NetworkStates.ReelFinished) return false;
+        if (_networkedState.Value == (int)NetworkStates.AttachedToLoot)
+        {
+            _stateMachine.ChangeState((int)LocalStates.ClosestItemCrane);
+        }
+        else
+        {
+            _stateMachine.ChangeState((int)LocalStates.ClosestItem);
+        }
+        
         return true;
     }
     
@@ -159,16 +224,45 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         craneHookParent.SetActive(true);
     }
     
+    private void OnClosestItemCraneStateEnter()
+    {
+        reelInstructions.SetActive(true);
+    }
+    
+    private void OnClosestItemCraneStateExit()
+    {
+        reelInstructions.SetActive(false);
+    }
+
+    private float timeStart;
+    private const float duration = 2.0f;
+    private void OnReelingInStateEnter()
+    {
+        if (IsServer)
+        {
+            timeStart = Time.time;
+        }
+    }
+    
     private void OnReelingInStateUpdate()
     {
         if (IsServer)
         {
-            
+            _hookedLoot.transform.position = Vector3.Lerp(_hookedLoot.transform.position, craneHookParent.transform.position, (Time.time - timeStart) / duration);
+            if (Vector3.Distance(_hookedLoot.transform.position, gameObject.transform.position) < 0.05f)
+            {
+                ReelFinished_ServerRpc();
+            }
         }
     }
     
     private void OnReelFinishedStateEnter()
     {
-        
+        _hookedLoot.transform.position = craneHookParent.transform.position;
+    }
+
+    private void Update()
+    {
+        _stateMachine.Update();
     }
 }

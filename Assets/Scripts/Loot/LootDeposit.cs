@@ -76,16 +76,16 @@ public class LootDeposit : MonoBehaviour, IInteractable
         go.transform.localPosition = t;
     }
     
-    public void SetAsInteractable(bool isInteractable)
+    public bool EnableInteractable(IHoldable heldObject)
     {
-        if (isInteractable)
-        {
-            _stateMachine.ChangeState((int)States.ClosestItem);
-        }
-        else
-        {
-            _stateMachine.ChangeState((int)States.Default);
-        }
+        if (heldObject == null) return false;
+        _stateMachine.ChangeState((int)States.ClosestItem);
+        return true;
+    }
+    
+    public void DisableInteractable()
+    {
+        _stateMachine.ChangeState((int)States.Default);
     }
     
     #region States

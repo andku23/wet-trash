@@ -71,7 +71,12 @@ PrefabInstance:
     - target: {fileID: 3978986903696649880, guid: e7cca34d3af719c4f91b5b1e71669f71,
         type: 3}
       propertyPath: m_Name
-      value: LootContainerNetwork Variant
+      value: LootContainerLocal
+      objectReference: {fileID: 0}
+    - target: {fileID: 5201304859418569969, guid: e7cca34d3af719c4f91b5b1e71669f71,
+        type: 3}
+      propertyPath: _heldObjectType
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 3064624484510208193, guid: e7cca34d3af719c4f91b5b1e71669f71, type: 3}

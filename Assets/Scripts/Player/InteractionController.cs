@@ -29,7 +29,7 @@ public class InteractionController : NetworkBehaviour
     
     private StarterAssetsInputs _input;
     private IInteractable lastClosestInteractable;
-    private GameObject heldObject;
+    private IHoldable heldObject;
     private BoatAttachment placingBoatAttachment;
     private const float MAX_DROP_DISTANCE = 1.5f;
     private int _shopItemIndex;
@@ -54,7 +54,7 @@ public class InteractionController : NetworkBehaviour
         go.transform.localPosition = Vector3.zero;
         go.transform.localRotation = Quaternion.identity;
         go.transform.localScale = Vector3.one;
-        heldObject = go;
+        heldObject = go.GetComponent<IHoldable>();
         thirdPersonController.ToggleCarrying(true);
         lastClosestInteractable = null;
 
@@ -63,7 +63,7 @@ public class InteractionController : NetworkBehaviour
 
     public void DestroyHeldObject()
     {
-        Destroy(heldObject);
+        Destroy(heldObject.gameObject);
         heldObject = null;
         thirdPersonController.ToggleCarrying(false);
         lastClosestInteractable = null;
@@ -117,32 +117,22 @@ public class InteractionController : NetworkBehaviour
             IInteractable interactable = parentHitObject.GetComponent<IInteractable>();
             if (interactable != null && interactable != lastClosestInteractable)
             {
-                if (interactable.gameObject.GetComponent<LootDeposit>() != null && heldObject != null)
+                bool isInteractable = interactable.EnableInteractable(heldObject);
+                if (isInteractable)
                 {
-                    interactable.SetAsInteractable(true);
                     if (lastClosestInteractable != null)
                     {
-                        lastClosestInteractable.SetAsInteractable(false);
+                        lastClosestInteractable.DisableInteractable();
                     }
                     lastClosestInteractable = interactable;
                 }
-                else if(heldObject == null)
-                {
-                    interactable.SetAsInteractable(true);
-                    if (lastClosestInteractable != null)
-                    {
-                        lastClosestInteractable.SetAsInteractable(false);
-                    }
-                    lastClosestInteractable = interactable;
-                }
-                
             }
         }
         else
         {
             if (lastClosestInteractable != null)
             {
-                lastClosestInteractable.SetAsInteractable(false);
+                lastClosestInteractable.DisableInteractable();
                 lastClosestInteractable = null;
             }
         }
@@ -163,32 +153,38 @@ public class InteractionController : NetworkBehaviour
             
             if (heldObject != null)
             {
-                IHoldable holdable = heldObject.GetComponent<IHoldable>();
-                //TODO HERE
-                if (holdable != null)
+                if (heldObject.HeldObjectType == HeldObjectType.CraneHook)
                 {
-                    if (holdable.HeldObjectType == HeldObjectType.CraneHook)
+                    AttachmentCrane crane = heldObject.ConnectedParent.GetComponent<AttachmentCrane>();
+                    if (loot != null)
                     {
-                        AttachmentCrane crane = holdable.ConnectedParent.GetComponent<AttachmentCrane>();
+                        
+                    }
+                    else
+                    {
                         crane.DropCraneHook(NetworkManager.Singleton.LocalClientId);
                     }
                 }
-                else if (deposit != null)
+                else if (heldObject.HeldObjectType == HeldObjectType.Loot)
                 {
-                    LootManager.Instance.RequestDeposit(deposit, heldObject);
-                }
-                else
-                {
-                    Physics.Raycast(heldObject.transform.position, -Vector3.up, out RaycastHit hit);
-                    if (hit.collider != null)
+                    if (deposit != null)
                     {
-                        if (hit.distance < MAX_DROP_DISTANCE)
+                        LootManager.Instance.RequestDeposit(deposit, heldObject.gameObject);
+                    }
+                    else
+                    {
+                        Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
+                        if (hit.collider != null)
                         {
-                            LootManager.Instance.RequestDrop(
-                                new Vector3(hit.point.x, hit.point.y + 0.3f, hit.point.z), heldObject);
+                            if (hit.distance < MAX_DROP_DISTANCE)
+                            {
+                                LootManager.Instance.RequestDrop(
+                                    new Vector3(hit.point.x, hit.point.y + 0.3f, hit.point.z), heldObject.gameObject);
+                            }
                         }
                     }
                 }
+                
             }
             else
             {

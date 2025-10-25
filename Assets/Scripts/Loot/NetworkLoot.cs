@@ -7,16 +7,18 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
     [SerializeField] private GameObject instructions;
     [SerializeField] private GameObject dropInstructions;
     [SerializeField] private GameObject heavyInstructions;
+    [SerializeField] private GameObject craneHookInstructions;
     
     public NetworkVariable<int> lootIndex;
     private ClientStateMachine _stateMachine;
 
-    enum States
+    enum LocalStates
     {
         Default = 0,
         ClosestItem = 1,
         PickedUp = 2,
-        TooHeavy = 3
+        TooHeavy = 3,
+        ClosestItemCrane = 4
     };
     
     public override void OnNetworkSpawn()
@@ -27,36 +29,51 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
         
         _stateMachine = new ClientStateMachine();
         
-        BaseState defaultState = new BaseState(OnDefaultStateEnter, OnDefaultStateUpdate, OnDefaultStateExit);
-        _stateMachine.AddState((int)States.Default, defaultState);
+        BaseState defaultState = new BaseState(OnDefaultStateEnter, null, null);
+        _stateMachine.AddState((int)LocalStates.Default, defaultState);
         
-        BaseState closestItemState = new BaseState(OnClosestItemStateEnter, OnClosestItemStateUpdate, OnClosestItemStateExit);
-        _stateMachine.AddState((int)States.ClosestItem, closestItemState);
+        BaseState closestItemState = new BaseState(OnClosestItemStateEnter, null, OnClosestItemStateExit);
+        _stateMachine.AddState((int)LocalStates.ClosestItem, closestItemState);
         
-        BaseState pickedUpState = new BaseState(OnPickedUpStateEnter, OnPickedUpStateUpdate, OnPickedUpStateExit);
-        _stateMachine.AddState((int)States.PickedUp, pickedUpState);
+        BaseState pickedUpState = new BaseState(OnPickedUpStateEnter, null, OnPickedUpStateExit);
+        _stateMachine.AddState((int)LocalStates.PickedUp, pickedUpState);
         
-        BaseState heavyState = new BaseState(OnHeavyStateEnter, OnHeavyStateUpdate, OnHeavyStateExit);
-        _stateMachine.AddState((int)States.TooHeavy, heavyState);
+        BaseState heavyState = new BaseState(OnHeavyStateEnter, null, OnHeavyStateExit);
+        _stateMachine.AddState((int)LocalStates.TooHeavy, heavyState);
         
-        _stateMachine.ChangeState((int)States.Default);
+        BaseState cranePickupableState = new BaseState(OnCranePickupStateEnter, null, OnCranePickupStateExit);
+        _stateMachine.AddState((int)LocalStates.ClosestItemCrane, cranePickupableState);
+        
+        _stateMachine.ChangeState((int)LocalStates.Default);
     }
 
-    public void SetAsInteractable(bool isInteractable)
+    public bool EnableInteractable(IHoldable heldObject)
     {
-        if (isInteractable)
+        bool isInteractable = false;
+        if (heldObject != null)
         {
-            _stateMachine.ChangeState((int)States.ClosestItem);
-        }
-        else
+            if (heldObject.HeldObjectType == HeldObjectType.CraneHook)
+            {
+                _stateMachine.ChangeState((int)LocalStates.ClosestItemCrane);
+                isInteractable = true;
+            }
+        } else if (heldObject == null)
         {
-            _stateMachine.ChangeState((int)States.Default);
+            _stateMachine.ChangeState((int)LocalStates.ClosestItem);
+            isInteractable = true;
         }
+        
+        return isInteractable;
+    }
+    
+    public void DisableInteractable()
+    {
+        _stateMachine.ChangeState((int)LocalStates.Default);
     }
 
     public void SetAsTooHeavy()
     {
-        _stateMachine.ChangeState((int)States.TooHeavy);
+        _stateMachine.ChangeState((int)LocalStates.TooHeavy);
     }
     
     #region States
@@ -68,23 +85,9 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
         dropInstructions.SetActive(false);
     }
     
-    private void OnDefaultStateUpdate()
-    {
-        
-    }
-    
-    private void OnDefaultStateExit()
-    {
-        
-    }
-    
     private void OnClosestItemStateEnter()
     {
         instructions.SetActive(true);
-    }
-    
-    private void OnClosestItemStateUpdate()
-    {
     }
     
     private void OnClosestItemStateExit()
@@ -97,10 +100,6 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
         dropInstructions.SetActive(true);
     }
     
-    private void OnPickedUpStateUpdate()
-    {
-    }
-    
     private void OnPickedUpStateExit()
     {
         dropInstructions.SetActive(false);
@@ -111,13 +110,19 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
         heavyInstructions.SetActive(true);
     }
     
-    private void OnHeavyStateUpdate()
-    {
-    }
-    
     private void OnHeavyStateExit()
     {
         heavyInstructions.SetActive(false);
+    }
+    
+    private void OnCranePickupStateEnter()
+    {
+        craneHookInstructions.SetActive(true);
+    }
+    
+    private void OnCranePickupStateExit()
+    {
+        craneHookInstructions.SetActive(false);
     }
     
     #endregion

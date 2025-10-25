@@ -1,9 +1,13 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class LootInstanceData : MonoBehaviour
+public class LootInstanceData : MonoBehaviour, IHoldable
 {
     public int LootIndex;
+    [SerializeField] private HeldObjectType _heldObjectType;
+    
+    public HeldObjectType HeldObjectType { get => _heldObjectType; }
+    public GameObject ConnectedParent { get; set; }
     
     public void LoadLootLocal(LootData lootData, int lootIndex)
     {
@@ -18,4 +22,6 @@ public class LootInstanceData : MonoBehaviour
         GameObject model = Instantiate(LootManager.Instance.LootList.pairs[lootIndex].model, transform);
         model.GetComponent<ColliderReference>().reference = gameObject;
     }
+
+    
 }

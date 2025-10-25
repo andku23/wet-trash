@@ -15,9 +15,9 @@ public class BaseState : IState
     
     public BaseState(Action onEnter, Action onUpdate, Action onExit)
     {
-        OnEnter += onEnter;
-        OnUpdate += onUpdate;
-        OnExit += onExit;
+        if(onEnter != null) OnEnter += onEnter;
+        if(onUpdate != null)  OnUpdate += onUpdate;
+        if(onExit != null) OnExit += onExit;
     }
     
     public Action OnEnter { get; set; }
@@ -34,11 +34,11 @@ public class ClientStateMachine
     public void ChangeState(int stateEnumNumber)
     {
         if (currentState != null)
-            currentState.OnExit.Invoke();
+            currentState.OnExit?.Invoke();
 
         currentState = _states[stateEnumNumber];
         currentStateEnum = stateEnumNumber;
-        currentState.OnEnter.Invoke();
+        currentState.OnEnter?.Invoke();
     }
 
     public void AddState(int stateEnumNumber, IState newState)
@@ -48,6 +48,6 @@ public class ClientStateMachine
     
     public void Update()
     {
-        if (currentState != null) currentState.OnUpdate.Invoke();
+        if (currentState != null) currentState.OnUpdate?.Invoke();
     }
 }

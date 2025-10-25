@@ -20,5 +20,6 @@ public class LootData
 public enum LootType
 {
     Default = 0,
-    Special = 1
+    Special = 1,
+    Heavy = 2,
 }

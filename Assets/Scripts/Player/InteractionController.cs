@@ -161,10 +161,19 @@ public class InteractionController : NetworkBehaviour
                 deposit = lastClosestInteractable.gameObject.GetComponent<LootDeposit>();
             }
             
-            
             if (heldObject != null)
             {
-                if (deposit != null)
+                IHoldable holdable = heldObject.GetComponent<IHoldable>();
+                //TODO HERE
+                if (holdable != null)
+                {
+                    if (holdable.HeldObjectType == HeldObjectType.CraneHook)
+                    {
+                        AttachmentCrane crane = holdable.ConnectedParent.GetComponent<AttachmentCrane>();
+                        crane.DropCraneHook(NetworkManager.Singleton.LocalClientId);
+                    }
+                }
+                else if (deposit != null)
                 {
                     LootManager.Instance.RequestDeposit(deposit, heldObject);
                 }
@@ -185,14 +194,22 @@ public class InteractionController : NetworkBehaviour
             {
                 if (loot != null)
                 {
-                    LootManager.Instance.RequestPickup(loot);
-                    lastClosestInteractable = null;
+                    LootData data = LootManager.Instance.LootIndextoData(loot.lootIndex.Value);
+                    if (data.lootType == LootType.Heavy)
+                    {
+                        loot.SetAsTooHeavy();
+                    }
+                    else
+                    {
+                        LootManager.Instance.RequestPickup(loot);
+                        lastClosestInteractable = null;
+                    }
                 }
                 else
                 {
                     if (lastClosestInteractable != null)
                     {
-                        lastClosestInteractable.Interact();
+                        lastClosestInteractable.Interact(NetworkManager.Singleton.LocalClientId);
                     }
                 }
             }

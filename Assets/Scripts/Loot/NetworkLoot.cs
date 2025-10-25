@@ -6,6 +6,7 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
 {
     [SerializeField] private GameObject instructions;
     [SerializeField] private GameObject dropInstructions;
+    [SerializeField] private GameObject heavyInstructions;
     
     public NetworkVariable<int> lootIndex;
     private ClientStateMachine _stateMachine;
@@ -14,7 +15,8 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
     {
         Default = 0,
         ClosestItem = 1,
-        PickedUp = 2
+        PickedUp = 2,
+        TooHeavy = 3
     };
     
     public override void OnNetworkSpawn()
@@ -34,6 +36,9 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
         BaseState pickedUpState = new BaseState(OnPickedUpStateEnter, OnPickedUpStateUpdate, OnPickedUpStateExit);
         _stateMachine.AddState((int)States.PickedUp, pickedUpState);
         
+        BaseState heavyState = new BaseState(OnHeavyStateEnter, OnHeavyStateUpdate, OnHeavyStateExit);
+        _stateMachine.AddState((int)States.TooHeavy, heavyState);
+        
         _stateMachine.ChangeState((int)States.Default);
     }
 
@@ -48,12 +53,18 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
             _stateMachine.ChangeState((int)States.Default);
         }
     }
+
+    public void SetAsTooHeavy()
+    {
+        _stateMachine.ChangeState((int)States.TooHeavy);
+    }
     
     #region States
 
     private void OnDefaultStateEnter()
     {
         instructions.SetActive(false);
+        dropInstructions.SetActive(false);
         dropInstructions.SetActive(false);
     }
     
@@ -93,6 +104,20 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
     private void OnPickedUpStateExit()
     {
         dropInstructions.SetActive(false);
+    }
+    
+    private void OnHeavyStateEnter()
+    {
+        heavyInstructions.SetActive(true);
+    }
+    
+    private void OnHeavyStateUpdate()
+    {
+    }
+    
+    private void OnHeavyStateExit()
+    {
+        heavyInstructions.SetActive(false);
     }
     
     #endregion

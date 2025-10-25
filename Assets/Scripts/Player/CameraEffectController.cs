@@ -4,14 +4,31 @@ using UnityEngine.Rendering.PostProcessing;
 public class CameraEffectController : MonoBehaviour
 {
     [SerializeField] private PostProcessVolume postProcessVolume;
+
+    private int waterColliderStack = 0;
     
     private void OnTriggerEnter(Collider other)
     {
-        postProcessVolume.weight = 1.0f;
+        if (other.CompareTag("Water"))
+        {
+            waterColliderStack++;
+        }
+        
+        if(waterColliderStack > 0)
+            postProcessVolume.weight = 1.0f;
+        else
+            postProcessVolume.weight = 0.0f;
     }
 
     private void OnTriggerExit(Collider other)
     {
-        postProcessVolume.weight = 0.0f;
+        if (other.CompareTag("Water"))
+        {
+            waterColliderStack--;
+        }
+        if(waterColliderStack > 0)
+            postProcessVolume.weight = 1.0f;
+        else
+            postProcessVolume.weight = 0.0f;
     }
 }

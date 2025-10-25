@@ -117,6 +117,7 @@ public class UI : MonoBehaviour
         ClearSharedInventoryUI();
         PopulateSharedInventoryUI(ShopManager.Instance.boughtItems);
         GameManager.Instance.ChangeToBuildMode(shopItemIndex);
+        sharedInventoryPanel.SetActive(false);
     }
     
     public void ClearShopContent()

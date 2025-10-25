@@ -40,6 +40,12 @@ MonoBehaviour:
     price: 150
     placePrefab: {fileID: 2262298787450423886, guid: 99dfd308a07e07549ba519da6ae8bcac,
       type: 3}
+  - id: item-crane-0
+    type: 2
+    name: Crane
+    price: 150
+    placePrefab: {fileID: 8200335070758408453, guid: f24abbea2b1812e4b920a7d2bbc895b8,
+      type: 3}
   itemsTypesToNames:
   - type: 2
     name: Inventory Item

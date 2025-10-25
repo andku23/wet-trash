@@ -6,6 +6,7 @@ public interface IState
     public Action OnEnter { get; set; }
     public Action OnUpdate { get; set; }
     public Action OnExit { get; set; }
+    public void GetStateEnum(){}
 }
 
 public class BaseState : IState
@@ -26,7 +27,8 @@ public class BaseState : IState
 
 public class ClientStateMachine
 {
-    IState currentState;
+    public IState currentState;
+    public int currentStateEnum;
     private Dictionary<int, IState> _states = new Dictionary<int, IState>();
     
     public void ChangeState(int stateEnumNumber)
@@ -35,6 +37,7 @@ public class ClientStateMachine
             currentState.OnExit.Invoke();
 
         currentState = _states[stateEnumNumber];
+        currentStateEnum = stateEnumNumber;
         currentState.OnEnter.Invoke();
     }
 

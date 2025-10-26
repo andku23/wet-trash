@@ -152,7 +152,7 @@ public class GameManager : NetworkBehaviour
         SpawnLoot();
     }
 
-    public void PlaceAttachmentPoint(int shopItemIndex, BoatAttachmentPoint boatAttachmentPoint)
+    public void PlaceAttachmentPoint(int shopItemIndex, BoatAttachmentPoint boatAttachmentPoint, float rotationPlaceOffset)
     {
         int attachmentPointIndex = -1;
         for (int i = 0; i < Boat.BoatAttachmentPoints.Count; i++)
@@ -165,16 +165,17 @@ public class GameManager : NetworkBehaviour
 
         if (attachmentPointIndex >= 0)
         {
-            PlaceAttachmentPoint_ServerRpc(shopItemIndex, attachmentPointIndex);
+            PlaceAttachmentPoint_ServerRpc(shopItemIndex, attachmentPointIndex, rotationPlaceOffset);
         }
     }
-    
+
     [ServerRpc(RequireOwnership = false)]
-    public void PlaceAttachmentPoint_ServerRpc(int shopIndex, int boatAttachmentIndex)
+    public void PlaceAttachmentPoint_ServerRpc(int shopIndex, int boatAttachmentIndex, float rotationPlaceOffset)
     {
         BoatAttachmentPoint boatAttachmentPoint = Boat.BoatAttachmentPoints[boatAttachmentIndex];
         NetworkObject no = Instantiate(ShopManager.Instance.shopList.items[shopIndex].placePrefab, 
             boatAttachmentPoint.transform.position, boatAttachmentPoint.transform.rotation).GetComponent<NetworkObject>();
+        no.transform.Rotate(boatAttachmentPoint.transform.up, rotationPlaceOffset);
         no.Spawn();
         boatAttachmentPoint.heldItem.Value = no.NetworkObjectId;
         PlaceAttachmentPoint_ClientRpc(no.NetworkObjectId, boatAttachmentIndex);

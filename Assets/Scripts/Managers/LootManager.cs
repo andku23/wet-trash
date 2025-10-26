@@ -16,7 +16,7 @@ public class LootManager : NetworkBehaviour
     [SerializeField] private int _numLoot;
     [SerializeField] private LootList lootList;
     [SerializeField] private TextMeshProUGUI moneyText;
-    [SerializeField] private LootDeposit[] _lootDeposits;
+    [SerializeField] private List<LootDeposit> _lootDeposits;
     
     private List<NetworkObject> _loots = new List<NetworkObject>();
     
@@ -183,41 +183,33 @@ public class LootManager : NetworkBehaviour
     {
         DestroyLootInHand(targetPlayerNetworkObjectId);
     }
+    
+    public void RegisterDepositServer(LootDeposit deposit)
+    {
+        _lootDeposits.Add(deposit);
+        int id = _lootDeposits.Count - 1;
+        deposit.id.Value = id;
+    }
 
     public void RequestDeposit(LootDeposit deposit, GameObject loot)
     {
-        int id = -1;
-        for (int i = 0; i < _lootDeposits.Length; i++)
-        {
-            if (_lootDeposits[i] == deposit)
-            {
-                id = i;
-            }
-        }
-
-        if (id >= 0)
-        {
-            Deposit_ServerRpc(NetworkManager.Singleton.LocalClientId, id, LootPrefabtoIndex(loot));
-        }
-    }
-
-    public void RegisterDeposit(LootDeposit deposit)
-    {
-        
+        Deposit_ServerRpc(NetworkManager.Singleton.LocalClientId, deposit.NetworkObjectId, LootPrefabtoIndex(loot));
     }
     
     [ServerRpc(RequireOwnership = false)]
-    public void Deposit_ServerRpc(ulong targetPlayerNetworkObjectId, int depositID, int lootIndex)
+    public void Deposit_ServerRpc(ulong targetPlayerNetworkObjectId, ulong depositNetworkID, int lootIndex)
     {
         MoneyManager.Instance.AddCash(lootList.pairs[lootIndex].price);
-        Deposit_ClientRpc(targetPlayerNetworkObjectId, depositID);
+        Deposit_ClientRpc(targetPlayerNetworkObjectId, depositNetworkID);
     }
     
     [ClientRpc(RequireOwnership = false)]
-    public void Deposit_ClientRpc(ulong targetPlayerNetworkObjectId, int depositID)
+    public void Deposit_ClientRpc(ulong targetPlayerNetworkObjectId, ulong depositNetworkID)
     {
         DestroyLootInHand(targetPlayerNetworkObjectId);
-        _lootDeposits[depositID].PlaceLootAtNextPosition();
+        Debug.Log(NetworkManager.Singleton.SpawnManager.SpawnedObjects[depositNetworkID]);
+        LootDeposit lootDeposit = NetworkManager.Singleton.SpawnManager.SpawnedObjects[depositNetworkID].GetComponent<LootDeposit>();
+        lootDeposit.PlaceLootAtNextPosition();
     }
     
 }

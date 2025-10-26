@@ -10,10 +10,13 @@ public class InteractionController : NetworkBehaviour
 {
     public static InteractionController Instance;
     
-    [SerializeField] private LayerMask layerMask;
+    [SerializeField] private LayerMask interactableLayerMask;
+    [SerializeField] private LayerMask buildingLayerMask;
     [SerializeField] private Transform grabbedLootConnectPoint;
     [SerializeField] private NetworkObject networkObject;
     [SerializeField] private ThirdPersonController thirdPersonController;
+
+    private float rotationPlaceOffset = 0.0f;
     
     public InteractionMode CurrentInteractionMode;
 
@@ -86,7 +89,7 @@ public class InteractionController : NetworkBehaviour
     {
         if (!IsOwner) return;
         
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 2.0f, layerMask);
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 2.0f, interactableLayerMask);
         float minDistance = Mathf.Infinity;
         Collider closestCollider = null;
 
@@ -174,6 +177,7 @@ public class InteractionController : NetworkBehaviour
                     if (deposit != null)
                     {
                         LootManager.Instance.RequestDeposit(deposit, heldObject.gameObject);
+                        deposit.DisableInteractable();
                     }
                     else
                     {
@@ -220,7 +224,7 @@ public class InteractionController : NetworkBehaviour
     {
         if (!IsOwner) return;
         
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 2.0f, layerMask);
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 2.0f, buildingLayerMask);
         float minDistance = Mathf.Infinity;
         Collider closestCollider = null;
 
@@ -256,28 +260,33 @@ public class InteractionController : NetworkBehaviour
             {
                 placingBoatAttachment.transform.position = boatAttachmentPoint.transform.position;
                 placingBoatAttachment.transform.rotation = boatAttachmentPoint.transform.rotation;
+                placingBoatAttachment.transform.Rotate(boatAttachmentPoint.transform.up, rotationPlaceOffset);
                 placingBoatAttachment.gameObject.SetActive(true);
                 
                 if (_input.interact)
                 {
                     // TODO dont allow you to place if theres something already attached
                     Destroy(placingBoatAttachment.gameObject);
-                    GameManager.Instance.PlaceAttachmentPoint(_shopItemIndex, boatAttachmentPoint);
+                    GameManager.Instance.PlaceAttachmentPoint(_shopItemIndex, boatAttachmentPoint, rotationPlaceOffset);
                     placingBoatAttachment = null;
                     CurrentInteractionMode = InteractionMode.Default;
                     _input.interact = false;
                 }
+
+                if (_input.respawn)
+                {
+                    rotationPlaceOffset += 90;
+                    rotationPlaceOffset = rotationPlaceOffset % 360;
+                    _input.respawn = false;
+                }
             }
             else
             {
-                Debug.Log("a");
                 placingBoatAttachment.gameObject.SetActive(false);
             }
         }
         else
         {
-            Debug.Log("b");
-            Debug.Log(closestCollider);
             placingBoatAttachment.gameObject.SetActive(false);
         }
     }
@@ -288,5 +297,6 @@ public class InteractionController : NetworkBehaviour
         _shopItemIndex = shopItemIndex;
         placingBoatAttachment = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab).GetComponent<BoatAttachment>();
         placingBoatAttachment.gameObject.SetActive(false);
+        rotationPlaceOffset = 0.0f;
     }
 }

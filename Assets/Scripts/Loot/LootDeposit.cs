@@ -2,11 +2,10 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class LootDeposit : MonoBehaviour, IInteractable
+public class LootDeposit : NetworkBehaviour, IInteractable
 {
-    
     [SerializeField] private GameObject instructions;
-    [SerializeField] private int id;
+    [SerializeField] public NetworkVariable<int> id;
     [SerializeField] private GameObject lootDepositBox;
     [SerializeField] private Collider collider;
 
@@ -22,13 +21,10 @@ public class LootDeposit : MonoBehaviour, IInteractable
         ClosestItem = 1
     };
     
-    public int ID {get; private set;}
     public int Size {get; set;}
     
-    private void Start()
+    public override void OnNetworkSpawn ()
     {
-        ID = id;
-        
         _stateMachine = new ClientStateMachine();
         
         BaseState defaultState = new BaseState(OnDefaultStateEnter, OnDefaultStateUpdate, OnDefaultStateExit);
@@ -38,6 +34,11 @@ public class LootDeposit : MonoBehaviour, IInteractable
         _stateMachine.AddState((int)States.ClosestItem, closestItemState);
         
         _stateMachine.ChangeState((int)States.Default);
+
+        if (IsServer)
+        {
+            LootManager.Instance.RegisterDepositServer(this);
+        }
     }
 
     public void PlaceLootAtNextPosition()

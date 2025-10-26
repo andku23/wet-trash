@@ -143,6 +143,13 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     {
         _networkedState.Value = (int)NetworkStates.AttachedToLoot;
         _hookedLoot = NetworkManager.Singleton.SpawnManager.SpawnedObjects[lootNetworkObjectID];
+        IInteractable interactableObject = _hookedLoot.GetComponent<IInteractable>();
+        if (interactableObject != null)
+        {
+            interactableObject.IsInteractionLocked = true;
+            interactableObject.DisableInteractable();
+        }
+        
         AttachCraneHook_ClientRpc(networkPlayerID, attachPoint, lootNetworkObjectID);
     }
     
@@ -157,9 +164,12 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
             interactionController.DestroyHeldObject();
         }
         
-        _craneHookOnLoot = Instantiate(craneHookPrefab, hookedLoot.transform);
-        _craneHookOnLoot.transform.position = attachPoint;
-        _craneHookOnLoot.transform.Translate(0, 1, 0);
+        ICranable cranableObject = hookedLoot.GetComponent<ICranable>();
+        if (cranableObject != null)
+        {
+            _craneHookOnLoot = Instantiate(craneHookPrefab, hookedLoot.transform);
+            _craneHookOnLoot.transform.position = cranableObject.GetAttachPoint();
+        }
     }
     
     [ServerRpc(RequireOwnership = false)]
@@ -172,6 +182,19 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     public void ReelFinished_ServerRpc()
     {
         _networkedState.Value = (int)NetworkStates.ReelFinished;
+        _hookedLoot.transform.position = craneHookParent.transform.position;
+        LootData lootData = LootManager.Instance.LootPrefabtoData(_hookedLoot.gameObject);
+        _hookedLoot.Despawn(true);
+
+        ReelFinished_ClientRpc((int)lootData.lootType);
+    }
+    
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void ReelFinished_ClientRpc(int lootIndex)
+    {
+        LootData lootData = LootManager.Instance.LootIndextoData(lootIndex);
+        GameObject localHookedLoot = Instantiate(lootData.model, craneHookParent.transform);
     }
 
     public bool EnableInteractable(IHoldable heldObject)
@@ -249,7 +272,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         if (IsServer)
         {
             _hookedLoot.transform.position = Vector3.Lerp(_hookedLoot.transform.position, craneHookParent.transform.position, (Time.time - timeStart) / duration);
-            if (Vector3.Distance(_hookedLoot.transform.position, gameObject.transform.position) < 0.05f)
+            if (Vector3.Distance(_hookedLoot.transform.position, craneHookParent.transform.position) < 0.05f)
             {
                 ReelFinished_ServerRpc();
             }
@@ -258,7 +281,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     
     private void OnReelFinishedStateEnter()
     {
-        _hookedLoot.transform.position = craneHookParent.transform.position;
+        
     }
 
     private void Update()

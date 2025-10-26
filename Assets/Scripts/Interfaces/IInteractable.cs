@@ -14,5 +14,12 @@ public interface IInteractable
    {
    }
    
+   public bool IsInteractionLocked
+   {
+      get { return false;} 
+      set {}
+      
+   }
+   
    GameObject gameObject { get ; } 
 }

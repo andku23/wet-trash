@@ -110,9 +110,13 @@ public class InteractionController : NetworkBehaviour
         {
             GameObject parentHitObject = closestCollider.gameObject;
             // Expects collider reference
-            if (closestCollider.GetComponent<ColliderReference>() != null)
+            ColliderReference colliderReference = closestCollider.GetComponent<ColliderReference>();
+            if (colliderReference != null)
             {
-                parentHitObject = closestCollider.GetComponent<ColliderReference>().reference;
+                if (colliderReference.reference != null)
+                {
+                    parentHitObject = colliderReference.reference;
+                }
             }
             IInteractable interactable = parentHitObject.GetComponent<IInteractable>();
             if (interactable != null && interactable != lastClosestInteractable)
@@ -229,20 +233,22 @@ public class InteractionController : NetworkBehaviour
 
             float distance = Vector3.Distance(transform.position, collider.transform.position); 
 
-            if (distance < minDistance)
+            if (distance < minDistance && collider.CompareTag("AttachmentPoint"))
             {
                 minDistance = distance;
                 closestCollider = collider;
             }
         }
 
-        if (closestCollider != null && closestCollider.CompareTag("AttachmentPoint"))
+        if (closestCollider != null)
         {
             GameObject parentHitObject = closestCollider.gameObject;
+            ColliderReference colliderReference = closestCollider.GetComponent<ColliderReference>();
             // Expects collider reference
-            if (closestCollider.GetComponent<ColliderReference>() != null)
+            if (colliderReference != null)
             {
-                parentHitObject = closestCollider.GetComponent<ColliderReference>().reference;
+                if(colliderReference.reference != null)
+                    parentHitObject = closestCollider.GetComponent<ColliderReference>().reference;
             }
             
             BoatAttachmentPoint boatAttachmentPoint = parentHitObject.GetComponentInChildren<BoatAttachmentPoint>();
@@ -264,11 +270,14 @@ public class InteractionController : NetworkBehaviour
             }
             else
             {
+                Debug.Log("a");
                 placingBoatAttachment.gameObject.SetActive(false);
             }
         }
         else
         {
+            Debug.Log("b");
+            Debug.Log(closestCollider);
             placingBoatAttachment.gameObject.SetActive(false);
         }
     }

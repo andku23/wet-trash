@@ -16,9 +16,8 @@ public class LootManager : NetworkBehaviour
     [SerializeField] private int _numLoot;
     [SerializeField] private LootList lootList;
     [SerializeField] private TextMeshProUGUI moneyText;
-    [SerializeField] LootDeposit[] _lootDeposits;
+    [SerializeField] private LootDeposit[] _lootDeposits;
     
-
     private List<NetworkObject> _loots = new List<NetworkObject>();
     
     public LootList LootList
@@ -200,6 +199,11 @@ public class LootManager : NetworkBehaviour
         {
             Deposit_ServerRpc(NetworkManager.Singleton.LocalClientId, id, LootPrefabtoIndex(loot));
         }
+    }
+
+    public void RegisterDeposit(LootDeposit deposit)
+    {
+        
     }
     
     [ServerRpc(RequireOwnership = false)]

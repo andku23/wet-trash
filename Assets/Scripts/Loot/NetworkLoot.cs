@@ -2,7 +2,7 @@ using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
 
-public class NetworkLoot : NetworkBehaviour, IInteractable
+public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
 {
     [SerializeField] private GameObject instructions;
     [SerializeField] private GameObject dropInstructions;
@@ -10,7 +10,14 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
     [SerializeField] private GameObject craneHookInstructions;
     
     public NetworkVariable<int> lootIndex;
+    public NetworkVariable<bool> isInteractionLocked;
     private ClientStateMachine _stateMachine;
+    
+    public bool IsInteractionLocked
+    {
+        get => isInteractionLocked.Value;
+        set { isInteractionLocked.Value = value; }
+    }
 
     enum LocalStates
     {
@@ -20,13 +27,9 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
         TooHeavy = 3,
         ClosestItemCrane = 4
     };
-    
-    public override void OnNetworkSpawn()
+
+    private void Start()
     {
-        base.OnNetworkSpawn();
-        
-        GetComponent<LootInstanceData>().LoadLootNetwork(lootIndex.Value);
-        
         _stateMachine = new ClientStateMachine();
         
         BaseState defaultState = new BaseState(OnDefaultStateEnter, null, null);
@@ -45,11 +48,34 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
         _stateMachine.AddState((int)LocalStates.ClosestItemCrane, cranePickupableState);
         
         _stateMachine.ChangeState((int)LocalStates.Default);
+
+        isInteractionLocked.OnValueChanged += OnInteractionLockedChanged;
+    }
+
+    private void OnInteractionLockedChanged(bool prev, bool next)
+    {
+        if (prev != next)
+        {
+            if (next == false)
+            {
+                DisableInteractable();
+            }
+        }
+    }
+    
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        
+        GetComponent<LootInstanceData>().LoadLootNetwork(lootIndex.Value);
+        
+        
     }
 
     public bool EnableInteractable(IHoldable heldObject)
     {
         bool isInteractable = false;
+        if (isInteractionLocked.Value) return false;
         if (heldObject != null)
         {
             if (heldObject.HeldObjectType == HeldObjectType.CraneHook)
@@ -130,5 +156,12 @@ public class NetworkLoot : NetworkBehaviour, IInteractable
     private void Update()
     {
         _stateMachine.Update();
+    }
+
+    public Vector3 GetAttachPoint()
+    {
+        Vector3 attachPoint = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+        attachPoint.y += 1.5f;
+        return attachPoint;
     }
 }

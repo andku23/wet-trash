@@ -12,10 +12,16 @@ public class PlayerState : MonoBehaviour
     [Tooltip("Sprint speed of the character in m/s")]
     public float SprintSpeed = 5.335f;
     
+    [Tooltip("Multiplier based on held item")]
+    public float SprintWeightMultiplier = 1.0f;
+    
     public float SprintSpeed_UpgradeIncrement = 0.5f;
     
     [Tooltip("Sprint Swim speed of the character in m/s")]
     public float SprintSwimSpeed = 4.335f;
+    
+    [Tooltip("Multiplier based on held item")]
+    public float SwimWeightMultiplier = 1.0f;
 
     public float SprintSwimSpeed_UpgradeIncrement = 0.5f;
     

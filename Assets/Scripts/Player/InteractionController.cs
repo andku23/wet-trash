@@ -15,6 +15,7 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private Transform grabbedLootConnectPoint;
     [SerializeField] private NetworkObject networkObject;
     [SerializeField] private ThirdPersonController thirdPersonController;
+    [SerializeField] private PlayerState playerState;
 
     private float rotationPlaceOffset = 0.0f;
     
@@ -82,6 +83,17 @@ public class InteractionController : NetworkBehaviour
             case InteractionMode.BoatBuilding:
                 DoInteractionBuilding();
                 break;
+        }
+
+        if (heldObject != null)
+        {
+            playerState.SwimWeightMultiplier = heldObject.GetWeightMultiplier();
+            playerState.SprintWeightMultiplier = heldObject.GetWeightMultiplier();
+        }
+        else
+        {
+            playerState.SwimWeightMultiplier = 1.0f;
+            playerState.SprintWeightMultiplier = 1.0f;
         }
     }
 

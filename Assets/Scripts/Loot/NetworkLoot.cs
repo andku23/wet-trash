@@ -164,4 +164,9 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
         attachPoint.y += 1.5f;
         return attachPoint;
     }
+
+    public GameObject GetLocalModel()
+    {
+        return LootManager.Instance.LootIndextoData(lootIndex.Value).model;
+    }
 }

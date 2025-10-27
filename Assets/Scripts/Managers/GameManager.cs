@@ -41,6 +41,8 @@ public class GameManager : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     public void RequestToggleDay()

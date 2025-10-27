@@ -25,6 +25,13 @@ public class UI : MonoBehaviour
         shopPanel.SetActive(false);
         sharedInventoryPanel.SetActive(false);
     }
+
+    public void CloseAllPanels()
+    {
+        shopPanel.SetActive(false);
+        sharedInventoryPanel.SetActive(false);
+        Cursor.lockState = CursorLockMode.Locked;
+    }
     
     public void UpdateCashText(int amount)
     {
@@ -49,11 +56,13 @@ public class UI : MonoBehaviour
     public void ShowShopPanel(bool isVisible)
     {
         shopPanel.SetActive(isVisible);
+        Cursor.lockState = CursorLockMode.None;
     }
     
     public void ShowSharedInventoryPanel(bool isVisible)
     {
         sharedInventoryPanel.SetActive(isVisible);
+        Cursor.lockState = CursorLockMode.None;
     }
     
     public void ClearSharedInventoryUI()
@@ -117,7 +126,7 @@ public class UI : MonoBehaviour
         ClearSharedInventoryUI();
         PopulateSharedInventoryUI(ShopManager.Instance.boughtItems);
         GameManager.Instance.ChangeToBuildMode(shopItemIndex);
-        sharedInventoryPanel.SetActive(false);
+        CloseAllPanels();
     }
     
     public void ClearShopContent()

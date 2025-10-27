@@ -1264,6 +1264,7 @@ MonoBehaviour:
   grabbedLootConnectPoint: {fileID: 7036386786036852469}
   networkObject: {fileID: 3884127068506848302}
   thirdPersonController: {fileID: 1091257655826559655}
+  playerState: {fileID: 7303158058568402417}
   CurrentInteractionMode: 0
 --- !u!114 &-5723443840750851045
 MonoBehaviour:
@@ -1311,6 +1312,7 @@ MonoBehaviour:
   SprintSpeed: 5.335
   SprintSpeed_UpgradeIncrement: 0.5
   SprintSwimSpeed: 4.335
+  SwimWeightMultiplier: 1
   SprintSwimSpeed_UpgradeIncrement: 0.5
   RotationSmoothTime: 0.12
   SpeedChangeRate: 10

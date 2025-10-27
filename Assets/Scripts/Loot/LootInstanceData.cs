@@ -23,5 +23,9 @@ public class LootInstanceData : MonoBehaviour, IHoldable
         model.GetComponent<ColliderReference>().reference = gameObject;
     }
 
-    
+    public float GetWeightMultiplier()
+    {
+        Debug.Log(LootManager.Instance.LootIndextoData(LootIndex).weightSpeedMultiplier);
+        return LootManager.Instance.LootIndextoData(LootIndex).weightSpeedMultiplier;
+    }
 }

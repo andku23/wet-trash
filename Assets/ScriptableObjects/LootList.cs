@@ -15,6 +15,8 @@ public class LootData
     public GameObject model;
     public int spawnRate;
     public int price;
+    public float weight;
+    public float weightSpeedMultiplier;
 }
 
 public enum LootType

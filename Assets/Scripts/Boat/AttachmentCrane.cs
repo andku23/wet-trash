@@ -183,10 +183,11 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     {
         _networkedState.Value = (int)NetworkStates.ReelFinished;
         _hookedLoot.transform.position = craneHookParent.transform.position;
-        LootData lootData = LootManager.Instance.LootPrefabtoData(_hookedLoot.gameObject);
+        int lootIndex = _hookedLoot.GetComponent<NetworkLoot>().lootIndex.Value;
+        //LootData lootData = LootManager.Instance.LootIndextoData(_hookedLoot.GetComponent<NetworkLoot>().lootIndex.Value);
         _hookedLoot.Despawn(true);
 
-        ReelFinished_ClientRpc((int)lootData.lootType);
+        ReelFinished_ClientRpc(lootIndex);
     }
     
     
@@ -195,6 +196,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     {
         LootData lootData = LootManager.Instance.LootIndextoData(lootIndex);
         GameObject localHookedLoot = Instantiate(lootData.model, craneHookParent.transform);
+        //Debug.Log(localHookedLoot.name);
     }
 
     public bool EnableInteractable(IHoldable heldObject)
@@ -217,12 +219,16 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     
     public void DisableInteractable()
     {
-        _stateMachine.ChangeState((int)LocalStates.Default);
+        if (_stateMachine.currentStateEnum == (int)LocalStates.ClosestItemCrane)
+        {
+            _stateMachine.ChangeState((int)LocalStates.Default);
+        }
     }
     
     private void OnDefaultStateEnter()
     {
         useInstructions.SetActive(false);
+        craneHookParent.SetActive(true);
     }
     
     
@@ -244,7 +250,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     
     private void OnHookHeldStateExit()
     {
-        craneHookParent.SetActive(true);
+        
     }
     
     private void OnClosestItemCraneStateEnter()
@@ -258,12 +264,16 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     }
 
     private float timeStart;
-    private const float duration = 2.0f;
+    private float totalDistance;
+    private const float pullRate = 2.0f;
+    private Vector3 pullStartPosition = new Vector3();
     private void OnReelingInStateEnter()
     {
         if (IsServer)
         {
             timeStart = Time.time;
+            totalDistance = Vector3.Distance(craneHookParent.transform.position, _hookedLoot.transform.position);
+            pullStartPosition = _hookedLoot.transform.position;
         }
     }
     
@@ -271,8 +281,9 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     {
         if (IsServer)
         {
-            _hookedLoot.transform.position = Vector3.Lerp(_hookedLoot.transform.position, craneHookParent.transform.position, (Time.time - timeStart) / duration);
-            if (Vector3.Distance(_hookedLoot.transform.position, craneHookParent.transform.position) < 0.05f)
+            // Debug.Log(((Time.time - timeStart) * pullRate) / totalDistance);
+            _hookedLoot.transform.position = Vector3.Lerp(pullStartPosition, craneHookParent.transform.position, ((Time.time - timeStart) * pullRate) / totalDistance);
+            if (Vector3.Distance(_hookedLoot.transform.position, craneHookParent.transform.position) < 0.01f)
             {
                 ReelFinished_ServerRpc();
             }
@@ -281,7 +292,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     
     private void OnReelFinishedStateEnter()
     {
-        
+        craneHookParent.SetActive(true);
     }
 
     private void Update()

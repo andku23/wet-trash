@@ -360,6 +360,7 @@ public class ThirdPersonController : NetworkBehaviour
         float speedOffset = 0.1f;
         float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
         
+        targetSpeed *= playerState.SwimWeightMultiplier;
         
         if (currentSpeed < targetSpeed - speedOffset ||
             currentSpeed > targetSpeed + speedOffset)
@@ -424,6 +425,8 @@ public class ThirdPersonController : NetworkBehaviour
 
         float speedOffset = 0.1f;
         float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
+
+        targetSpeed *= playerState.SprintWeightMultiplier;
 
         // accelerate or decelerate to target speed
         if (currentHorizontalSpeed < targetSpeed - speedOffset ||

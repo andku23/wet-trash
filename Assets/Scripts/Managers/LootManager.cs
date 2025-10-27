@@ -24,15 +24,18 @@ public class LootManager : NetworkBehaviour
     {
         get { return lootList; }
     }
-    
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
 
+    private void Start()
+    {
         if (Instance == null)
         {
             Instance = this;
         }
+    }
+    
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
     }
 
     private void UpdateScore(int prev, int next)

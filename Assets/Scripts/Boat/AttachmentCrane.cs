@@ -43,7 +43,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         BaseState hookHeldState = new BaseState(OnHookHeldStateEnter, null, OnHookHeldStateExit);
         _stateMachine.AddState((int)LocalStates.HookHeld, hookHeldState);
         
-        BaseState attachedToLootState = new BaseState(null, null, null);
+        BaseState attachedToLootState = new BaseState(OnHookAttachedEnter, null, null);
         _stateMachine.AddState((int)NetworkStates.AttachedToLoot, attachedToLootState);
         
         BaseState reelingInState = new BaseState(OnReelingInStateEnter, OnReelingInStateUpdate, null);
@@ -219,9 +219,12 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     
     public void DisableInteractable()
     {
-        if (_stateMachine.currentStateEnum == (int)LocalStates.ClosestItemCrane)
+        if (_stateMachine.currentStateEnum == (int)LocalStates.ClosestItem)
         {
             _stateMachine.ChangeState((int)LocalStates.Default);
+        } else if (_stateMachine.currentStateEnum == (int)LocalStates.ClosestItemCrane)
+        {
+            _stateMachine.ChangeState((int)NetworkStates.AttachedToLoot);
         }
     }
     
@@ -229,6 +232,11 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     {
         useInstructions.SetActive(false);
         craneHookParent.SetActive(true);
+    }
+
+    private void OnHookAttachedEnter()
+    {
+        useInstructions.SetActive(false);
     }
     
     

@@ -8,6 +8,7 @@ public class UI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI cashText;
     [SerializeField] private TextMeshProUGUI timeText;
     [SerializeField] private TextMeshProUGUI dayText;
+    [SerializeField] private TextMeshProUGUI quotaText;
     [SerializeField] private RectTransform breathParent;
     [SerializeField] private Image breathFill;
     [SerializeField] private GameObject shopPanel;
@@ -17,40 +18,25 @@ public class UI : MonoBehaviour
     [SerializeField] private GameObject sharedInventoryPanel;
     [SerializeField] private RectTransform sharedInventoryContent;
     [SerializeField] private GameObject sharedInventoryPrefab;
+    
+    [SerializeField] private GameObject endScreen;
+    [SerializeField] private TextMeshProUGUI endScreenQuotaText;
+    [SerializeField] private TextMeshProUGUI endScreenCurrentCashText;
 
     private List<UIShopItem> uiShopItems = new List<UIShopItem>();
     
     private void Start()
     {
-        shopPanel.SetActive(false);
-        sharedInventoryPanel.SetActive(false);
+        CloseAllPanels(false);
     }
 
-    public void CloseAllPanels()
+    public void CloseAllPanels(bool lockCursor = true)
     {
         shopPanel.SetActive(false);
         sharedInventoryPanel.SetActive(false);
-        Cursor.lockState = CursorLockMode.Locked;
-    }
-    
-    public void UpdateCashText(int amount)
-    {
-        cashText.text = "$" + amount.ToString();
-    }
-    
-    public void UpdateCountdownText(int timeLeft)
-    {
-        timeText.text = Mathf.FloorToInt(timeLeft/60f).ToString("00") + ":" + Mathf.FloorToInt(timeLeft%60).ToString("00");
-    }
-    
-    public void UpdateDayText(int day)
-    {
-        dayText.text = "Day: " + day.ToString();
-    }
-    
-    public void UpdateBreathBar(float percentage)
-    {
-        breathFill.fillAmount = percentage;
+        endScreen.SetActive(false);
+        if(lockCursor)
+            Cursor.lockState = CursorLockMode.Locked;
     }
     
     public void ShowShopPanel(bool isVisible)
@@ -62,6 +48,12 @@ public class UI : MonoBehaviour
     public void ShowSharedInventoryPanel(bool isVisible)
     {
         sharedInventoryPanel.SetActive(isVisible);
+        Cursor.lockState = CursorLockMode.None;
+    }
+
+    public void ShowEndScreen(bool isVisible)
+    {
+        endScreen.SetActive(isVisible);
         Cursor.lockState = CursorLockMode.None;
     }
     
@@ -128,6 +120,47 @@ public class UI : MonoBehaviour
         GameManager.Instance.ChangeToBuildMode(shopItemIndex);
         CloseAllPanels();
     }
+    
+    #region Text Updates
+
+    public void UpdateDayInfoText(int quota, int day)
+    {
+        UpdateDayText(day);
+        UpdateQuotaText(quota);
+    }
+    
+    public void UpdateEndScreen(int quota, int currentRunCash)
+    {
+        endScreenQuotaText.text = quota.ToString();
+        endScreenCurrentCashText.text = currentRunCash.ToString();
+    }
+    
+    public void UpdateCashText(int amount)
+    {
+        cashText.text = "$" + amount.ToString();
+    }
+    
+    public void UpdateCountdownText(int timeLeft)
+    {
+        timeText.text = Mathf.FloorToInt(timeLeft/60f).ToString("00") + ":" + Mathf.FloorToInt(timeLeft%60).ToString("00");
+    }
+    
+    public void UpdateDayText(int day)
+    {
+        dayText.text = "Day: " + day.ToString();
+    }
+    
+    public void UpdateQuotaText(int quota)
+    {
+        quotaText.text = "Quota: $" + quota.ToString();
+    }
+    
+    public void UpdateBreathBar(float percentage)
+    {
+        breathFill.fillAmount = percentage;
+    }
+    
+    #endregion
     
     public void ClearShopContent()
     {

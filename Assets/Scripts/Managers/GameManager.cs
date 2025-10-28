@@ -20,6 +20,7 @@ public class GameManager : NetworkBehaviour
     private TimeState _timeState;
     private Coroutine _co_TimerCountdown;
     private int _day = 0;
+    private int _quota = 0;
     
     public enum TimeState
     {
@@ -47,31 +48,12 @@ public class GameManager : NetworkBehaviour
 
     public void RequestToggleDay()
     {
-        switch (_timeState)
-        {
-            case TimeState.DayActive:
-                ToggleBeginDay_ServerRpc(false);
-                break;
-            case TimeState.BetweenDays:
-            case TimeState.None:
-                ToggleBeginDay_ServerRpc(true);
-                break;
-        }
+        RequestToggleDay_ServerRpc();
     }
 
     public void ChangeToBuildMode(int shopItemIndex)
     {
         InteractionController.Instance.ChangeToBuildMode(shopItemIndex);
-    }
-
-    public void RequestStartDay()
-    {
-        ToggleBeginDay_ServerRpc(true);
-    }
-    
-    public void RequestEndDay()
-    {
-        ToggleBeginDay_ServerRpc(false);
     }
 
     #region Player Death
@@ -115,39 +97,70 @@ public class GameManager : NetworkBehaviour
     #endregion
     
     [ServerRpc(RequireOwnership = false)]
-    private void ToggleBeginDay_ServerRpc(bool startDay)
+    private void RequestToggleDay_ServerRpc()
     {
-        if (startDay && _timeState == TimeState.DayActive) return;
-        if (!startDay && _timeState == TimeState.BetweenDays) return;
-        _timeState = startDay ? TimeState.DayActive : TimeState.BetweenDays;
-        
         if (_timeState == TimeState.DayActive)
         {
-            _day++;
-            SpawnLoot();
+            EndDay_ServerRpc();
         }
-        else if (_timeState == TimeState.BetweenDays)
+        else
         {
-            DeleteLoot();
+            BeginDay_ServerRpc();
         }
-        ToggleBeginDay_ClientRpc(_timeState, _day);
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    private void BeginDay_ServerRpc()
+    {
+        if (_timeState == TimeState.DayActive) return;
+        _timeState = TimeState.DayActive;
+        _day++;
+        SpawnLoot();
+        _quota += 500;
+        MoneyManager.Instance.ResetCurrentCollected();
+        UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    private void EndDay_ServerRpc()
+    {
+        if (_timeState != TimeState.DayActive) return;
+        _timeState = TimeState.BetweenDays;
+        DeleteLoot();
+        if (MoneyManager.Instance.CurrentDayCash > _quota)
+        {
+            UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
+        }
+        else
+        {
+            EndGame_ClientRpc();
+        }
     }
     
     [ClientRpc(RequireOwnership = false)]
-    private void ToggleBeginDay_ClientRpc(TimeState timeState, int day)
+    private void UpdateTimeState_ClientRpc(TimeState timeState, int day, int quota, int currentDayCash)
     {
         _timeState = timeState;
         _day = day;
         if (_timeState == TimeState.DayActive)
         {
+            _ui.UpdateDayInfoText(quota, day);
             StartCountdown();
         }
         else if (_timeState == TimeState.BetweenDays)
         {
+            _ui.UpdateEndScreen(quota, currentDayCash);
+            _ui.ShowEndScreen(true);
             StopCountdown();
         }
     }
-
+    
+    [ClientRpc(RequireOwnership = false)]
+    private void EndGame_ClientRpc()
+    {
+        Debug.Log("game ending");
+    }
+    
     [ServerRpc(RequireOwnership = false)]
     public void SpawnLoot_ServerRpc()
     {
@@ -225,6 +238,11 @@ public class GameManager : NetworkBehaviour
             _timeUpdatedEvent?.Invoke(secondsRemaining);
             yield return new WaitForSeconds(1);
             secondsRemaining--;
+        }
+
+        if (IsServer)
+        {
+            EndDay_ServerRpc();
         }
         _timeFinishedEvent?.Invoke();
     }

@@ -210,7 +210,6 @@ public class LootManager : NetworkBehaviour
     public void Deposit_ClientRpc(ulong targetPlayerNetworkObjectId, ulong depositNetworkID)
     {
         DestroyLootInHand(targetPlayerNetworkObjectId);
-        Debug.Log(NetworkManager.Singleton.SpawnManager.SpawnedObjects[depositNetworkID]);
         LootDeposit lootDeposit = NetworkManager.Singleton.SpawnManager.SpawnedObjects[depositNetworkID].GetComponent<LootDeposit>();
         lootDeposit.PlaceLootAtNextPosition();
     }

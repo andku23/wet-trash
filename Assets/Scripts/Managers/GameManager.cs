@@ -5,6 +5,7 @@ using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 public class GameManager : NetworkBehaviour
 {
@@ -12,7 +13,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private UI _ui;
     [SerializeField] private float _timeFullDaySeconds;
     [SerializeField] private UnityEvent<int> _timeUpdatedEvent;
-    [SerializeField] private UnityEvent _timeFinishedEvent;
+    [SerializeField] public UnityEvent TimeFinishedEvent;
     [SerializeField] private UnityEvent<int> _onDayUpdatedEvent;
     [SerializeField] public UnityEvent<float> OnBreathUpdated;
 
@@ -185,6 +186,7 @@ public class GameManager : NetworkBehaviour
                 StartCountdown();
                 break;
             case TimeState.ShowDayResult:
+                TimeFinishedEvent?.Invoke();
                 _ui.UpdateEndScreen(quota, currentDayCash);
                 _ui.ShowEndScreen(true);
                 StopCountdown();
@@ -274,7 +276,6 @@ public class GameManager : NetworkBehaviour
         {
             ToNextGameState_ServerRpc();
         }
-        _timeFinishedEvent?.Invoke();
     }
     
     private IEnumerator CountdownTimer(float seconds, Action callback)

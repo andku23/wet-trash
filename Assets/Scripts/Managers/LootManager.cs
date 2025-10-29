@@ -140,10 +140,15 @@ public class LootManager : NetworkBehaviour
         
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject networkLootObject))
         {
-            _loots.Remove(networkLootObject);
-            networkLootObject.Despawn();
+            DespawnLoot_Server(networkLootObject);
             Pickup_ClientRpc(targetPlayerNetworkObjectId, lootIndex);
         }
+    }
+
+    public void DespawnLoot_Server(NetworkObject networkObject)
+    {
+        _loots.Remove(networkObject);
+        networkObject.Despawn();
     }
 
     [ClientRpc(RequireOwnership = false)]

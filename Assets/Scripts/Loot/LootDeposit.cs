@@ -13,7 +13,7 @@ public class LootDeposit : NetworkBehaviour, IInteractable
     [SerializeField] private int columns = 3;
 
     private ClientStateMachine _stateMachine;
-    private List<GameObject> _lootDepositsBoxes;
+    private List<GameObject> _lootDepositsBoxes = new List<GameObject>();
 
     enum States
     {
@@ -39,6 +39,10 @@ public class LootDeposit : NetworkBehaviour, IInteractable
         {
             LootManager.Instance.RegisterDepositServer(this);
         }
+        
+        GameManager.Instance.TimeFinishedEvent.AddListener(Reset);
+        
+        
     }
 
     public void PlaceLootAtNextPosition()
@@ -75,6 +79,19 @@ public class LootDeposit : NetworkBehaviour, IInteractable
 
         
         go.transform.localPosition = t;
+        _lootDepositsBoxes.Add(go);
+    }
+    
+    public void Reset()
+    {
+        _stateMachine.ChangeState((int)States.Default);
+        for (int i = 0; i < _lootDepositsBoxes.Count; i++)
+        {
+            Destroy(_lootDepositsBoxes[i]);
+        }
+
+        _lootDepositsBoxes.Clear();
+        Size = 0;
     }
     
     public bool EnableInteractable(IHoldable heldObject)

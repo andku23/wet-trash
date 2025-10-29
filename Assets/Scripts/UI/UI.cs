@@ -123,7 +123,7 @@ public class UI : MonoBehaviour
         for (int i = 0; i < randomizedShopList.Length; i++)
         {
             int index = Random.Range(0, fullShop.Count);
-            randomizedShopList[i] = index;
+            randomizedShopList[i] = fullShop[index];
             fullShop.RemoveAt(index);
         }
 
@@ -217,6 +217,7 @@ public class UI : MonoBehaviour
             uiShopItems.RemoveAt(i);
             Destroy(item.gameObject);
         }
+        uiShopItems.Clear();
     }
     
 }

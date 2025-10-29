@@ -12,6 +12,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     private NetworkVariable<int> _networkedState = new NetworkVariable<int>(0);
     private NetworkObject _hookedLoot = null;
     private GameObject _craneHookOnLoot = null;
+    private GameObject _localHookedLoot = null;
     
     enum LocalStates
     {
@@ -58,11 +59,13 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         _stateMachine.ChangeState(_networkedState.Value);
         _networkedState.OnValueChanged += OnNetworkStateUpdated;
         
+        
     }
 
     public override void OnNetworkSpawn()
     {
         Instantiate(craneHookPrefab, craneHookParent.transform);
+        GameManager.Instance.TimeFinishedEvent.AddListener(ResetCrane);
     }
 
     public void OnNetworkStateUpdated(int prev, int next)
@@ -184,19 +187,26 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         _networkedState.Value = (int)NetworkStates.ReelFinished;
         _hookedLoot.transform.position = craneHookParent.transform.position;
         int lootIndex = _hookedLoot.GetComponent<NetworkLoot>().lootIndex.Value;
-        //LootData lootData = LootManager.Instance.LootIndextoData(_hookedLoot.GetComponent<NetworkLoot>().lootIndex.Value);
-        _hookedLoot.Despawn(true);
-
+        LootManager.Instance.DespawnLoot_Server(_hookedLoot);
+        MoneyManager.Instance.AddCash(LootManager.Instance.LootIndextoData(lootIndex).price);
         ReelFinished_ClientRpc(lootIndex);
     }
-    
     
     [ClientRpc(RequireOwnership = false)]
     public void ReelFinished_ClientRpc(int lootIndex)
     {
         LootData lootData = LootManager.Instance.LootIndextoData(lootIndex);
-        GameObject localHookedLoot = Instantiate(lootData.model, craneHookParent.transform);
-        //Debug.Log(localHookedLoot.name);
+        _localHookedLoot = Instantiate(lootData.model, craneHookParent.transform);
+    }
+    
+    public void ResetCrane()
+    {
+        _stateMachine.ChangeState((int)LocalStates.Default);
+        _networkedState.Value = (int)NetworkStates.Default;
+        if (_localHookedLoot != null)
+        {
+            Destroy(_localHookedLoot.gameObject);
+        }
     }
 
     public bool EnableInteractable(IHoldable heldObject)

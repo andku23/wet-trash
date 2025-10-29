@@ -176,7 +176,7 @@ public class GameManager : NetworkBehaviour
         switch (_timeState)
         {
             case TimeState.BetweenDays:
-                _ui.CloseAllPanels();
+                _ui.CloseAllPanels(false);
                 break;
             case TimeState.DayActive:
                 _ui.UpdateDayInfoText(quota, day);

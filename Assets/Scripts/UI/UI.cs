@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UI : MonoBehaviour
@@ -11,15 +12,16 @@ public class UI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI quotaText;
     [SerializeField] private RectTransform breathParent;
     [SerializeField] private Image breathFill;
-    [SerializeField] private GameObject shopPanel;
+    
+    [SerializeField] private Panel shopPanel;
     [SerializeField] private RectTransform shopContent;
     [SerializeField] private GameObject shopItemPrefab;
     
-    [SerializeField] private GameObject sharedInventoryPanel;
+    [SerializeField] private Panel sharedInventoryPanel;
     [SerializeField] private RectTransform sharedInventoryContent;
     [SerializeField] private GameObject sharedInventoryPrefab;
     
-    [SerializeField] private GameObject endScreen;
+    [FormerlySerializedAs("endScreen")] [SerializeField] private Panel endScreenPanel;
     [SerializeField] private TextMeshProUGUI endScreenQuotaText;
     [SerializeField] private TextMeshProUGUI endScreenCurrentCashText;
 
@@ -27,33 +29,38 @@ public class UI : MonoBehaviour
     
     private void Start()
     {
+        CloseAllPanels(true, false);
+    }
+
+    public void ButtonEvt_CloseAllPanels()
+    {
         CloseAllPanels(false);
     }
 
-    public void CloseAllPanels(bool lockCursor = true)
+    public void CloseAllPanels(bool immediate, bool lockCursor = true)
     {
-        shopPanel.SetActive(false);
-        sharedInventoryPanel.SetActive(false);
-        endScreen.SetActive(false);
+        shopPanel.FadeOut(immediate);
+        sharedInventoryPanel.FadeOut(immediate);
+        endScreenPanel.FadeOut(immediate);
         if(lockCursor)
             Cursor.lockState = CursorLockMode.Locked;
     }
     
     public void ShowShopPanel(bool isVisible)
     {
-        shopPanel.SetActive(isVisible);
+        shopPanel.FadeIn(false);
         Cursor.lockState = CursorLockMode.None;
     }
     
     public void ShowSharedInventoryPanel(bool isVisible)
     {
-        sharedInventoryPanel.SetActive(isVisible);
+        sharedInventoryPanel.FadeIn(false);
         Cursor.lockState = CursorLockMode.None;
     }
 
     public void ShowEndScreen(bool isVisible)
     {
-        endScreen.SetActive(isVisible);
+        endScreenPanel.FadeIn(false);
         Cursor.lockState = CursorLockMode.None;
     }
     
@@ -118,7 +125,7 @@ public class UI : MonoBehaviour
         ClearSharedInventoryUI();
         PopulateSharedInventoryUI(ShopManager.Instance.boughtItems);
         GameManager.Instance.ChangeToBuildMode(shopItemIndex);
-        CloseAllPanels();
+        CloseAllPanels(false);
     }
     
     #region Text Updates

@@ -22,7 +22,7 @@ public class ShopManager : NetworkBehaviour
         {
             Instance = this;
         }
-        ui.PopulateShopContent();
+        //ui.PopulateShopContent();
         InitializeLookupDictionaries();
     }
 

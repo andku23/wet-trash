@@ -115,6 +115,7 @@ public class GameManager : NetworkBehaviour
     }
     #endregion
     
+    #region Game State
     [ServerRpc(RequireOwnership = false)]
     private void ToNextGameState_ServerRpc()
     {
@@ -140,12 +141,13 @@ public class GameManager : NetworkBehaviour
         {
             case TimeState.BetweenDays:
                 RespawnAllPlayers_ServerRpc();
+                _ui.PopulateShopContent_ServerRpc();
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.DayActive:
                 _day++;
                 SpawnLoot();
-                _quota += 500;
+                _quota += 200;
                 MoneyManager.Instance.ResetCurrentCollected();
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
@@ -193,6 +195,8 @@ public class GameManager : NetworkBehaviour
                 break;
         }
     }
+    
+    #endregion
 
     public void PlaceAttachmentPoint(int shopItemIndex, BoatAttachmentPoint boatAttachmentPoint, float rotationPlaceOffset)
     {
@@ -230,7 +234,6 @@ public class GameManager : NetworkBehaviour
         NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId,
             out NetworkObject networkLootObject);
         networkLootObject.transform.parent = boatAttachmentPoint.transform;
-
     }
 
     private void SpawnLoot()

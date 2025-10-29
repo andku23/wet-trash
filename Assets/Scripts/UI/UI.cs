@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -108,6 +109,45 @@ public class UI : MonoBehaviour
         }
     }
     
+    [ServerRpc(RequireOwnership = false)]
+    public void PopulateShopContent_ServerRpc()
+    {
+        int shopSize = 4;
+        List<int> fullShop = new List<int>();
+        for (int i = 0; i < ShopManager.Instance.shopList.items.Length; i++)
+        {
+            fullShop.Add(i);
+        }
+        
+        int[] randomizedShopList = new int[shopSize];
+        for (int i = 0; i < randomizedShopList.Length; i++)
+        {
+            int index = Random.Range(0, fullShop.Count);
+            randomizedShopList[i] = index;
+            fullShop.RemoveAt(index);
+        }
+
+        PopulateShopContent_ClientRpc(randomizedShopList);
+    }
+
+    [ClientRpc(RequireOwnership = false)]
+    public void PopulateShopContent_ClientRpc(int[] randomizedShopList)
+    {
+        ClearShopContent();
+        for (int i = 0; i < randomizedShopList.Length; i++)
+        {
+            int index = randomizedShopList[i];
+            UIShopItem uiShopItem = Instantiate(shopItemPrefab, shopContent).GetComponent<UIShopItem>();
+            uiShopItem.name.text = ShopManager.Instance.shopList.items[index].name;
+            uiShopItem.price.text = "$"+ShopManager.Instance.shopList.items[index].price.ToString();
+            uiShopItem.button.onClick.AddListener(() =>
+            {
+                OnShopButtonClick(index);
+            });
+            uiShopItems.Add(uiShopItem);
+        }
+    }
+
     public void OnShopButtonClick(int shopItemIndex)
     {
         ShopItem shopItem = ShopManager.Instance.shopList.items[shopItemIndex];
@@ -169,9 +209,14 @@ public class UI : MonoBehaviour
     
     #endregion
     
-    public void ClearShopContent()
+    private void ClearShopContent()
     {
-        //loop through uiShopItems for this
+        for (int i = uiShopItems.Count - 1; i >= 0; i--)
+        {
+            var item = uiShopItems[i];
+            uiShopItems.RemoveAt(i);
+            Destroy(item.gameObject);
+        }
     }
     
 }

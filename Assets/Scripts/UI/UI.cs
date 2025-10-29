@@ -74,7 +74,7 @@ public class UI : MonoBehaviour
             UIShopItem uiShopItem = Instantiate(sharedInventoryPrefab, sharedInventoryContent).GetComponent<UIShopItem>();
             ShopItem shopItem = ShopManager.Instance.shopList.items[shopItemIndex];
             uiShopItem.name.text = shopItem.name;
-            Debug.Log(shopItem.type);
+            //Debug.Log(shopItem.type);
             uiShopItem.price.text = ShopManager.Instance.ShopItemTypeLookup[shopItem.type];
             uiShopItem.button.onClick.AddListener(() =>
             {

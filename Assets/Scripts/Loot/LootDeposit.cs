@@ -67,7 +67,7 @@ public class LootDeposit : NetworkBehaviour, IInteractable
         int column = Mathf.FloorToInt(indexedSize % (rows * columns) / columns);
         int row = Mathf.FloorToInt(indexedSize % (rows * columns) % columns);
         
-        Debug.Log("Row: " + row + " Column: " + column + "Height: " + height);
+        //Debug.Log("Row: " + row + " Column: " + column + "Height: " + height);
         
         t.x = xStart + (row * xSpacing);
         t.y = yStart + (height * ySpacing);

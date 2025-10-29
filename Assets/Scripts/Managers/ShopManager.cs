@@ -31,7 +31,7 @@ public class ShopManager : NetworkBehaviour
         for (int i = 0; i < ShopManager.Instance.shopList.itemsTypesToNames.Length; i++)
         {
             ShopItemTypeToName pair = ShopManager.Instance.shopList.itemsTypesToNames[i];
-            Debug.Log(pair.name+ " " + pair.type);
+            //Debug.Log(pair.name+ " " + pair.type);
             ShopItemTypeLookup.Add(pair.type, pair.name);
         }
     }
@@ -108,6 +108,6 @@ public class ShopManager : NetworkBehaviour
         {
             s += boughtItems[i] + ", ";
         }
-        Debug.Log(s);
+        //Debug.Log(s);
     }
 }

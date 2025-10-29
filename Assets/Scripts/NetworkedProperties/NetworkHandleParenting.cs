@@ -24,7 +24,7 @@ public class NetworkHandleParenting : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     public void RequestParentTo_ClientRPC(ulong networkPlayerID, ulong transformNetworkID)
     {
-        Debug.Log("Request to parent");
+        //Debug.Log("Request to parent");
         NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(transformNetworkID, out var netObj);
         NetworkManager.ConnectedClients[networkPlayerID].PlayerObject.transform.SetParent(netObj.transform, true);
     }
@@ -44,7 +44,7 @@ public class NetworkHandleParenting : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     public void RequestUnparentTo_ClientRPC(ulong networkPlayerID)
     {
-        Debug.Log("Request to Unparent");
+        //Debug.Log("Request to Unparent");
         NetworkManager.ConnectedClients[networkPlayerID].PlayerObject.transform.SetParent(null, true);
     }
 }

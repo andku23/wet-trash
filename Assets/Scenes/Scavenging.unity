@@ -8665,7 +8665,7 @@ PrefabInstance:
     - target: {fileID: 7261415058023802445, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
       propertyPath: onPressed.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: RequestToggleDay
+      value: RequestToNextGameState
       objectReference: {fileID: 0}
     - target: {fileID: 7261415058023802445, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}

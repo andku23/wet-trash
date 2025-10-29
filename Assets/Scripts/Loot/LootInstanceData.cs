@@ -25,7 +25,6 @@ public class LootInstanceData : MonoBehaviour, IHoldable
 
     public float GetWeightMultiplier()
     {
-        Debug.Log(LootManager.Instance.LootIndextoData(LootIndex).weightSpeedMultiplier);
         return LootManager.Instance.LootIndextoData(LootIndex).weightSpeedMultiplier;
     }
 }

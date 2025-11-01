@@ -6,6 +6,7 @@ public class Enemy : NetworkBehaviour
 {
     private Vector3 nextPosition;
     private Vector3 lastPosition;
+    private Vector3 initialPosition;
     private Quaternion nextRotation;
     private NetworkClient _closestPlayer;
     private PlayerState _closestPlayerState;
@@ -42,6 +43,11 @@ public class Enemy : NetworkBehaviour
         _serverStateMachine.AddState((int)ServerStates.AttackingPlayer, attackingPlayer);
 
         ChangeState(ServerStates.Idle);
+
+        if (IsServer)
+        {
+            initialPosition = transform.position;
+        }
     }
     
     #region States
@@ -65,12 +71,9 @@ public class Enemy : NetworkBehaviour
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
         _closestPlayer = null;
         float closestDistance = float.MaxValue;
-        Debug.Log(connectedClients.Count);
         foreach (var client in connectedClients)
         {
             float currentDistance = Vector3.Distance(client.Value.PlayerObject.transform.position, transform.position);
-            Debug.Log("client: " + client.Key + " distance: " + currentDistance);
-            
             if (currentDistance < closestDistance)
             {
                 closestDistance = currentDistance;
@@ -79,19 +82,17 @@ public class Enemy : NetworkBehaviour
             }
         }
 
-        if (_closestPlayer != null && closestDistance < minimumFollowDistance)
+        if (_closestPlayer != null && closestDistance < minimumFollowDistance && _closestPlayerState.Health.Value > 0)
         {
-            Debug.Log("closest Player " + _closestPlayer);
-            Debug.Log("closest distance " + closestDistance);
             ChangeState(ServerStates.FollowingPlayer);
         }
         else if (Vector3.Distance(gameObject.transform.position, nextPosition) <= 0.1f)
         {
             lastPosition = nextPosition;
             nextPosition = new Vector3(
-                Random.Range(-3, 3) + transform.position.x,
-                Random.Range(-3, 3) + transform.position.y,
-                Random.Range(-3, 3) + transform.position.z
+                Random.Range(-3, 3) + initialPosition.x,
+                Random.Range(-3, 3) + initialPosition.y,
+                Random.Range(-3, 3) + initialPosition.z
             );
             startTime = Time.time;
         }
@@ -113,6 +114,10 @@ public class Enemy : NetworkBehaviour
         float distanceToPlayer = Vector3.Distance(transform.position, _closestPlayer.PlayerObject.transform.position);
 
         if (_closestPlayer == null)
+        {
+            ChangeState(ServerStates.Idle);
+        }
+        else if (_closestPlayerState.Health.Value <= 0)
         {
             ChangeState(ServerStates.Idle);
         }

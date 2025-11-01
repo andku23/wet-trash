@@ -211,6 +211,7 @@ public class UI : MonoBehaviour
     
     private void ClearShopContent()
     {
+        Debug.Log("shop size: " + uiShopItems.Count);
         for (int i = uiShopItems.Count - 1; i >= 0; i--)
         {
             var item = uiShopItems[i];

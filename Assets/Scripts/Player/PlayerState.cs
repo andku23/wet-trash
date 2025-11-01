@@ -1,6 +1,7 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerState : MonoBehaviour
+public class PlayerState : NetworkBehaviour
 {
     [Header("Data Values")]
     [Tooltip("Move speed of the character in m/s")]
@@ -41,6 +42,9 @@ public class PlayerState : MonoBehaviour
     public float BreathFullAmount_UpgradeIncrement = 1f;
     public float BreathDepleteRate;
     public float BreathReplenishRate;
+
+    public NetworkVariable<float> Health = new NetworkVariable<float>(10);
+    public float MAX_HEALTH = 10;
     
     
     [Header("Dynamic Continuous Values")]

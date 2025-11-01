@@ -15,9 +15,21 @@ public class PlayerDeath : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         _animIDIsDead = Animator.StringToHash("IsDead");
-        _breath = playerState.BreathFullAmount;
-        
         _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
+
+        if (IsOwner)
+        {
+            _breath = playerState.BreathFullAmount;
+            playerState.Health.OnValueChanged += OnHealthChanged;
+        }
+    }
+
+    private void OnHealthChanged(float prev, float next)
+    {
+        if (next <= 0)
+        {
+            GameManager.Instance.RequestPlayerDeath();
+        }
     }
 
     private void Update()
@@ -59,6 +71,7 @@ public class PlayerDeath : NetworkBehaviour
     public void RevivePlayerLocal()
     {
         _breath = playerState.BreathFullAmount;
+        playerState.Health.Value = playerState.MAX_HEALTH;
         _animator.SetBool(_animIDIsDead, false);
         playerState.IsDead = false;
     }

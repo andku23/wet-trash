@@ -15,36 +15,12 @@ using UnityEngine.InputSystem;
 
 public class ThirdPersonController : NetworkBehaviour
 {
-    /*[Header("Player")]
-    [Tooltip("Move speed of the character in m/s")]
-    public float playerState.MoveSpeed = 2.0f;
-    
-    [Tooltip("Max Swimming Speed in m/s")]
-    public float playerState.MaxSwimmingSpeed = 2.0f;
-
-    [Tooltip("Sprint speed of the character in m/s")]
-    public float playerState.SprintSpeed = 5.335f;
-    
-    [Tooltip("Sprint Swim speed of the character in m/s")]
-    public float playerState.SprintSwimSpeed = 4.335f;
-
-    [Tooltip("How fast the character turns to face movement direction")]
-    [Range(0.0f, 0.3f)]
-    public float playerState.RotationSmoothTime = 0.12f;
-
-    [Tooltip("Acceleration and deceleration")]
-    public float playerState.SpeedChangeRate = 10.0f;*/
-
     public PlayerState playerState;
 
     public AudioClip LandingAudioClip;
     public AudioClip[] FootstepAudioClips;
     [Range(0, 1)] public float FootstepAudioVolume = 0.5f;
-
-    /*[Space(10)]
-    [Tooltip("The height the player can jump")]
-    public float playerState.JumpHeight = 1.2f;
-    */
+    
 
     [Tooltip("The character uses its own gravity value. The engine default is -9.81f")]
     public float Gravity = -15.0f;
@@ -55,25 +31,6 @@ public class ThirdPersonController : NetworkBehaviour
 
     [Tooltip("Time required to pass before entering the fall state. Useful for walking down stairs")]
     public float FallTimeout = 0.15f;
-
-    /*[Header("Player playerState.Grounded")]
-    [Tooltip("If the character is playerState.Grounded or not. Not part of the CharacterController built in playerState.Grounded check")]
-    public bool playerState.Grounded = true;
-    
-    public bool playerState.VehicleParented = false;
-    
-    [Header("In Water")]
-    public bool playerState.InWater = true;
-    
-    [Header("Is Driving")]
-    public bool playerState.IsDriving = false;
-    
-    [Header("Is Dead")]
-    public bool playerState.IsDead = false;
-    
-    [Header("If youre on the water surface")]
-    public bool playerState.InWaterOnSurface = false;*/
-
 
     [Tooltip("Useful for rough ground")]
     public float GroundedOffset = -0.14f;
@@ -100,23 +57,10 @@ public class ThirdPersonController : NetworkBehaviour
     [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
     public GameObject CinemachineCameraTarget;
 
-    [Tooltip("How far in degrees can you move the camera up")]
-    public float TopClamp = 70.0f;
-
-    [Tooltip("How far in degrees can you move the camera down")]
-    public float BottomClamp = -30.0f;
-
-    [Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
-    public float CameraAngleOverride = 0.0f;
-
-    [Tooltip("For locking the camera position on all axis")]
-    public bool LockCameraPosition = false;
+    public CameraControl _cameraControl;
     
     public NetworkHandleParenting NetworkHandleParenting;
 
-    // cinemachine
-    private float _cinemachineTargetYaw;
-    private float _cinemachineTargetPitch;
 
     // player
     private float _speed;
@@ -143,12 +87,10 @@ public class ThirdPersonController : NetworkBehaviour
 #if ENABLE_INPUT_SYSTEM 
     private PlayerInput _playerInput;
 #endif
-    private Animator _animator;
+    [SerializeField] private Animator _animator;
     private CharacterController _controller;
     private StarterAssetsInputs _input;
     private GameObject _mainCamera;
-
-    private const float _threshold = 0.01f;
 
     private bool _hasAnimator;
 
@@ -164,12 +106,6 @@ public class ThirdPersonController : NetworkBehaviour
         }
     }
 
-
-    private void Awake()
-    {
-        
-    }
-
     public override void OnNetworkSpawn()
     {
 
@@ -179,9 +115,7 @@ public class ThirdPersonController : NetworkBehaviour
             _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
         }
 
-        _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-        
-        _hasAnimator = TryGetComponent(out _animator);
+        _hasAnimator = _animator != null;
         _controller = GetComponent<CharacterController>();
         _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
 #if ENABLE_INPUT_SYSTEM
@@ -202,9 +136,8 @@ public class ThirdPersonController : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        _hasAnimator = TryGetComponent(out _animator);
+        _hasAnimator = _animator != null;
 
-        
         JumpAndGravity();
         GroundedCheck();
         InWaterCheck();
@@ -217,7 +150,7 @@ public class ThirdPersonController : NetworkBehaviour
     private void LateUpdate()
     {
         if (!IsOwner) return;
-        CameraRotation();
+        _cameraControl.CameraRotation();
     }
 
     private void AssignAnimationIDs()
@@ -315,28 +248,6 @@ public class ThirdPersonController : NetworkBehaviour
         }
     }
 
-    private void CameraRotation()
-    {
-        // if there is an input and camera position is not fixed
-        if (_input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
-        {
-            //Don't multiply mouse input by Time.deltaTime;
-            float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
-
-            _cinemachineTargetYaw += _input.look.x * deltaTimeMultiplier;
-            _cinemachineTargetPitch += _input.look.y * deltaTimeMultiplier;
-        }
-
-        // clamp our rotations so our values are limited 360 degrees
-        _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
-        _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
-
-        // Cinemachine will follow this target
-        CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride,
-            _cinemachineTargetYaw, 0.0f);
-    }
-
-
     private void Move()
     {
         if (playerState.IsDriving) return;
@@ -392,7 +303,6 @@ public class ThirdPersonController : NetworkBehaviour
             // rotate to face input direction relative to camera position
             transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
         }
-
 
         Vector3 cameraEuler = CinemachineCameraTarget.transform.forward;
 
@@ -573,12 +483,7 @@ public class ThirdPersonController : NetworkBehaviour
         }
     }
 
-    private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
-    {
-        if (lfAngle < -360f) lfAngle += 360f;
-        if (lfAngle > 360f) lfAngle -= 360f;
-        return Mathf.Clamp(lfAngle, lfMin, lfMax);
-    }
+   
 
     private void OnDrawGizmosSelected()
     {
@@ -592,25 +497,5 @@ public class ThirdPersonController : NetworkBehaviour
         Gizmos.DrawSphere(
             new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z),
             GroundedRadius);
-    }
-
-    private void OnFootstep(AnimationEvent animationEvent)
-    {
-        if (animationEvent.animatorClipInfo.weight > 0.5f)
-        {
-            if (FootstepAudioClips.Length > 0)
-            {
-                var index = Random.Range(0, FootstepAudioClips.Length);
-                //AudioSource.PlayClipAtPoint(FootstepAudioClips[index], transform.TransformPoint(_controller.center), FootstepAudioVolume);
-            }
-        }
-    }
-
-    private void OnLand(AnimationEvent animationEvent)
-    {
-        if (animationEvent.animatorClipInfo.weight > 0.5f)
-        {
-            //AudioSource.PlayClipAtPoint(LandingAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
-        }
     }
 }

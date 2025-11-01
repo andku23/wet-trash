@@ -100,7 +100,7 @@ public class ThirdPersonCameraControl : MonoBehaviour, ICameraControl
         _followCamera.Priority += 1;
     }
 
-    private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
+    public static float ClampAngle(float lfAngle, float lfMin, float lfMax)
     {
         if (lfAngle < -360f) lfAngle += 360f;
         if (lfAngle > 360f) lfAngle -= 360f;

@@ -90,6 +90,9 @@ public class PlayerController : NetworkBehaviour
     private int _animIDIsCarrying;
     private int _animIDIsDriving;
 
+    private float firstPersonPitch;
+    private float firstPersonYaw;
+
 #if ENABLE_INPUT_SYSTEM 
     private PlayerInput _playerInput;
 #endif
@@ -115,6 +118,7 @@ public class PlayerController : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        //Set control to first person if youre the controller
         if (IsOwner)
         {
             ControlMode = ControlModeEnum.FirstPerson;
@@ -124,8 +128,8 @@ public class PlayerController : NetworkBehaviour
             ControlMode = ControlModeEnum.ThirdPerson;
         }
         
+        // Disable whichever version isnt being used
         _selectedControlMode = (ControlMode == ControlModeEnum.FirstPerson) ? ControlModeFirstPerson : ControlModeThirdPerson;
-        
         if (_selectedControlMode == ControlModeFirstPerson)
             ControlModeThirdPerson.SetActive(false);
         else 
@@ -321,21 +325,50 @@ public class PlayerController : NetworkBehaviour
 
         _speed = Mathf.Clamp(_speed, 0, playerState.SprintSwimSpeed);
         
-        if (_input.move != Vector2.zero)
-        {
-            _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                              _mainCamera.transform.eulerAngles.y;
-            float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
-                playerState.RotationSmoothTime);
-
-            // rotate to face input direction relative to camera position
-            transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
-        }
-       Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+        
+            if (ControlMode == ControlModeEnum.ThirdPerson)
+            {
+                if (_input.move != Vector2.zero)
+                {
+                    _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                                      _mainCamera.transform.eulerAngles.y;
+                    float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
+                        playerState.RotationSmoothTime);
+                    // rotate to face input direction relative to camera position
+                    transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                }
+                Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
        
-        // move the player
-        _controller.Move(targetDirection.normalized * (inputDirection.magnitude * (_speed * Time.deltaTime)) +
-                         new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+                // move the player
+                _controller.Move(targetDirection.normalized * (inputDirection.magnitude * (_speed * Time.deltaTime)) +
+                                 new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+            }
+            else
+            {
+                float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
+
+                firstPersonPitch += _input.look.y * deltaTimeMultiplier;
+                firstPersonYaw += _input.look.x * deltaTimeMultiplier;
+            
+                firstPersonYaw = ThirdPersonCameraControl.ClampAngle(firstPersonYaw, float.MinValue, float.MaxValue);
+                firstPersonPitch = ThirdPersonCameraControl.ClampAngle(firstPersonPitch, -50, 50);
+                
+                transform.rotation = Quaternion.Euler(firstPersonPitch,
+                    firstPersonYaw, 0.0f);
+
+                _targetRotation = transform.rotation.eulerAngles.y;
+            
+                Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+                Vector3 leftDirection = Quaternion.Euler(0, _targetRotation + 90, 0) * Vector3.forward ;
+
+                // move the player
+                _controller.Move(targetDirection.normalized * (inputDirection.z * (_speed * Time.deltaTime)) +
+                                 new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime +
+                                 leftDirection.normalized * (inputDirection.x * (_speed * Time.deltaTime)));
+            }
+            
+
+            
         
         if (_hasAnimator)
         {
@@ -388,23 +421,50 @@ public class PlayerController : NetworkBehaviour
 
         // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
         // if there is a move input rotate player when the player is moving
-        if (_input.move != Vector2.zero)
+        if (ControlMode == ControlModeEnum.ThirdPerson)
         {
-            _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                              _mainCamera.transform.eulerAngles.y;
-            float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
-                playerState.RotationSmoothTime);
+            if (_input.move != Vector2.zero)
+            {
+                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                                  _mainCamera.transform.eulerAngles.y;
+                float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
+                    playerState.RotationSmoothTime);
 
-            // rotate to face input direction relative to camera position
-            transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                // rotate to face input direction relative to camera position
+                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+            }
+            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+
+            // move the player
+            _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
+                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
         }
+        else
+        {
+            float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 
+            firstPersonPitch += _input.look.y * deltaTimeMultiplier;
+            firstPersonYaw += _input.look.x * deltaTimeMultiplier;
+            
+            firstPersonYaw = ThirdPersonCameraControl.ClampAngle(firstPersonYaw, float.MinValue, float.MaxValue);
+            firstPersonPitch = ThirdPersonCameraControl.ClampAngle(firstPersonPitch, -50, 50);
+                
+            transform.rotation = Quaternion.Euler(firstPersonPitch,
+                firstPersonYaw, 0.0f);
 
-        Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+            _targetRotation = transform.rotation.eulerAngles.y;
+            
+            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+            Vector3 leftDirection = Quaternion.Euler(0, _targetRotation + 90, 0) * Vector3.forward ;
 
-        // move the player
-        _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
-                         new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+            // move the player
+            _controller.Move(targetDirection.normalized * (inputDirection.z * (_speed * Time.deltaTime)) +
+                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime +
+                leftDirection.normalized * (inputDirection.x * (_speed * Time.deltaTime)));
+        }
+        
+
+        
         
 
         // update animator if using character

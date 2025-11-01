@@ -3,6 +3,7 @@ using StarterAssets;
 using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Components;
+using UnityEngine.Serialization;
 #if ENABLE_INPUT_SYSTEM 
 using UnityEngine.InputSystem;
 #endif
@@ -99,7 +100,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private Animator _animator;
     private CharacterController _controller;
     private StarterAssetsInputs _input;
-    private GameObject _mainCamera;
+    [FormerlySerializedAs("_mainCamera")] public GameObject MainCamera;
     private GameObject _selectedControlMode;
 
     private bool _hasAnimator;
@@ -142,9 +143,9 @@ public class PlayerController : NetworkBehaviour
         
         if (IsOwner)
         {
-            if (_mainCamera == null)
+            if (MainCamera == null)
             {
-                _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+                MainCamera = GameObject.FindGameObjectWithTag("MainCamera");
             }
             _cameraControl = _selectedControlMode.GetComponent<ICameraControl>();
             _cameraControl.SetupCinemachineCamera();
@@ -331,7 +332,7 @@ public class PlayerController : NetworkBehaviour
                 if (_input.move != Vector2.zero)
                 {
                     _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                      _mainCamera.transform.eulerAngles.y;
+                                      MainCamera.transform.eulerAngles.y;
                     float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
                         playerState.RotationSmoothTime);
                     // rotate to face input direction relative to camera position
@@ -426,7 +427,7 @@ public class PlayerController : NetworkBehaviour
             if (_input.move != Vector2.zero)
             {
                 _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                  _mainCamera.transform.eulerAngles.y;
+                                  MainCamera.transform.eulerAngles.y;
                 float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
                     playerState.RotationSmoothTime);
 

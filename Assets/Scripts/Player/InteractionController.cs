@@ -14,7 +14,7 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private LayerMask buildingLayerMask;
     [SerializeField] private Transform grabbedLootConnectPoint;
     [SerializeField] private NetworkObject networkObject;
-    [FormerlySerializedAs("thirdPersonController")] [SerializeField] private PlayerController playerController;
+    [SerializeField] private PlayerController playerController;
     [SerializeField] private PlayerState playerState;
 
     private float rotationPlaceOffset = 0.0f;
@@ -36,6 +36,7 @@ public class InteractionController : NetworkBehaviour
     private IHoldable heldObject;
     private BoatAttachment placingBoatAttachment;
     private const float MAX_DROP_DISTANCE = 1.5f;
+    private const float MAX_INTERACTION_DISTANCE = 5.0f;
     private int _shopItemIndex;
     
     public override void OnNetworkSpawn()
@@ -100,11 +101,29 @@ public class InteractionController : NetworkBehaviour
     private void DoInteractionStandard()
     {
         if (!IsOwner) return;
+
+        Collider[] hitColliders = new Collider[] { };
+        if (playerController.ControlMode == PlayerController.ControlModeEnum.ThirdPerson)
+        {
+            hitColliders = Physics.OverlapSphere(transform.position, 2.0f, interactableLayerMask);
+        } else if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
+        {
+            RaycastHit[] hits = Physics.RaycastAll(
+                playerController.MainCamera.transform.position, 
+                playerController.MainCamera.transform.forward, 
+                interactableLayerMask);
+            
+            hitColliders = new Collider[hits.Length];
+            for (int i = 0; i < hits.Length; i++)
+            {
+                hitColliders[i] = hits[i].collider;
+            }
+            
+        }
         
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 2.0f, interactableLayerMask);
+       
         float minDistance = Mathf.Infinity;
         Collider closestCollider = null;
-
         //Calculate closest interactable
         foreach (Collider collider in hitColliders)
         {
@@ -121,7 +140,9 @@ public class InteractionController : NetworkBehaviour
             }
         }
         
-        if (closestCollider != null)
+        Debug.Log(minDistance);
+        
+        if (closestCollider != null && minDistance < MAX_INTERACTION_DISTANCE)
         {
             GameObject parentHitObject = closestCollider.gameObject;
             // Expects collider reference
@@ -236,7 +257,25 @@ public class InteractionController : NetworkBehaviour
     {
         if (!IsOwner) return;
         
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 2.0f, buildingLayerMask);
+        Collider[] hitColliders = new Collider[] { };
+        if (playerController.ControlMode == PlayerController.ControlModeEnum.ThirdPerson)
+        {
+            hitColliders = Physics.OverlapSphere(transform.position, 2.0f, interactableLayerMask);
+        } else if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
+        {
+            RaycastHit[] hits = Physics.RaycastAll(
+                playerController.MainCamera.transform.position, 
+                playerController.MainCamera.transform.forward, 
+                interactableLayerMask);
+            
+            hitColliders = new Collider[hits.Length];
+            for (int i = 0; i < hits.Length; i++)
+            {
+                hitColliders[i] = hits[i].collider;
+            }
+            
+        }
+        
         float minDistance = Mathf.Infinity;
         Collider closestCollider = null;
 

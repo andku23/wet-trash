@@ -10,10 +10,9 @@ using UnityEngine.InputSystem;
 /* Note: animations are called via the controller for both the character and capsule using animator null checks
 */
 
-
 [RequireComponent(typeof(CharacterController))]
 
-public class ThirdPersonController : NetworkBehaviour
+public class PlayerController : NetworkBehaviour
 {
     public PlayerState playerState;
 
@@ -52,15 +51,22 @@ public class ThirdPersonController : NetworkBehaviour
     
     [Tooltip("What layers the character uses as water")]
     public LayerMask WaterLayers;
+    
+    public GameObject ControlModeThirdPerson;
+    public GameObject ControlModeFirstPerson;
+    public ControlModeEnum ControlMode;
+    
+    public OwnerNetworkAnimator OwnerNetworkAnimator;
 
-    [Header("Cinemachine")]
-    [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
-    public GameObject CinemachineCameraTarget;
-
-    public CameraControl _cameraControl;
+    private ICameraControl _cameraControl;
     
     public NetworkHandleParenting NetworkHandleParenting;
 
+    public enum ControlModeEnum
+    {
+        FirstPerson,
+        ThirdPerson
+    }
 
     // player
     private float _speed;
@@ -91,6 +97,7 @@ public class ThirdPersonController : NetworkBehaviour
     private CharacterController _controller;
     private StarterAssetsInputs _input;
     private GameObject _mainCamera;
+    private GameObject _selectedControlMode;
 
     private bool _hasAnimator;
 
@@ -108,34 +115,57 @@ public class ThirdPersonController : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-
-        // get a reference to our main camera
-        if (_mainCamera == null)
+        if (IsOwner)
         {
-            _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+            ControlMode = ControlModeEnum.FirstPerson;
         }
-
-        _hasAnimator = _animator != null;
-        _controller = GetComponent<CharacterController>();
-        _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
+        else
+        {
+            ControlMode = ControlModeEnum.ThirdPerson;
+        }
+        
+        _selectedControlMode = (ControlMode == ControlModeEnum.FirstPerson) ? ControlModeFirstPerson : ControlModeThirdPerson;
+        
+        if (_selectedControlMode == ControlModeFirstPerson)
+            ControlModeThirdPerson.SetActive(false);
+        else 
+            ControlModeFirstPerson.SetActive(false);
+        
+        OwnerNetworkAnimator.Animator = _selectedControlMode.GetComponent<Animator>();
+        
+        GetComponent<PlayerDeath>().Animator = _selectedControlMode.GetComponent<Animator>();
+        _animator = _selectedControlMode.GetComponent<Animator>();
+        
+        if (IsOwner)
+        {
+            if (_mainCamera == null)
+            {
+                _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+            }
+            _cameraControl = _selectedControlMode.GetComponent<ICameraControl>();
+            _cameraControl.SetupCinemachineCamera();
+            
+            _hasAnimator = _animator != null;
+            _controller = GetComponent<CharacterController>();
+            _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
 #if ENABLE_INPUT_SYSTEM
-        _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
-        Debug.Log(_playerInput);
+            _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
+            Debug.Log(_playerInput);
 #else
 		Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
 
-        AssignAnimationIDs();
+            AssignAnimationIDs();
 
-        // reset our timeouts on start
-        _jumpTimeoutDelta = JumpTimeout;
-        _fallTimeoutDelta = FallTimeout;
+            // reset our timeouts on start
+            _jumpTimeoutDelta = JumpTimeout;
+            _fallTimeoutDelta = FallTimeout;
+        }
     }
 
     private void Update()
     {
         if (!IsOwner) return;
-
         _hasAnimator = _animator != null;
 
         JumpAndGravity();
@@ -150,7 +180,7 @@ public class ThirdPersonController : NetworkBehaviour
     private void LateUpdate()
     {
         if (!IsOwner) return;
-        _cameraControl.CameraRotation();
+        _cameraControl.UpdateCameraRotation();
     }
 
     private void AssignAnimationIDs()
@@ -167,7 +197,6 @@ public class ThirdPersonController : NetworkBehaviour
 
     private void GroundedCheck()
     {
-        
         // set sphere position, with offset
         Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset,
             transform.position.z);
@@ -264,7 +293,6 @@ public class ThirdPersonController : NetworkBehaviour
     private void MoveWater()
     {
         float targetSpeed = _input.sprint ? playerState.SprintSwimSpeed : playerState.MoveSpeed;
-        Vector3 cameraForward = CinemachineCameraTarget.transform.forward;
         float currentSpeed = new Vector3(_controller.velocity.x, _controller.velocity.y, _controller.velocity.z).magnitude;
         Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
         
@@ -303,9 +331,6 @@ public class ThirdPersonController : NetworkBehaviour
             // rotate to face input direction relative to camera position
             transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
         }
-
-        Vector3 cameraEuler = CinemachineCameraTarget.transform.forward;
-
        Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
        
         // move the player
@@ -482,8 +507,6 @@ public class ThirdPersonController : NetworkBehaviour
             _verticalVelocity += Gravity * Time.deltaTime;
         }
     }
-
-   
 
     private void OnDrawGizmosSelected()
     {

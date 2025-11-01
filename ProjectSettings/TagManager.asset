@@ -8,6 +8,8 @@ TagManager:
   - Boat
   - AttachmentPoint
   - Water
+  - ThirdPersonCamera
+  - FirstPersonCamera
   layers:
   - Default
   - TransparentFX

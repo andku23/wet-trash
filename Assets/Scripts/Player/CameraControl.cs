@@ -1,8 +1,10 @@
+using Cinemachine;
 using StarterAssets;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
-public class CameraControl : MonoBehaviour
+public class ThirdPersonCameraControl : MonoBehaviour, ICameraControl
 {
     // cinemachine
     private float _cinemachineTargetYaw;
@@ -62,7 +64,7 @@ public class CameraControl : MonoBehaviour
         _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
     }
     
-    public void CameraRotation()
+    public void UpdateCameraRotation()
     {
         // if there is an input and camera position is not fixed
         if (_input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
@@ -82,11 +84,33 @@ public class CameraControl : MonoBehaviour
         CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride,
             _cinemachineTargetYaw, 0.0f);
     }
-    
+
+    public void SetupCinemachineCamera()
+    {
+        var _followCameras = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        var _followCamera = _followCameras[0];
+        for (int i = 0; i < _followCameras.Length; i++)
+        {
+            if (_followCameras[i].gameObject.CompareTag("ThirdPersonCamera"))
+            {
+                _followCamera = _followCameras[i];
+            }
+        }
+        _followCamera.Follow = CinemachineCameraTarget.transform;
+        _followCamera.Priority += 1;
+    }
+
     private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
     {
         if (lfAngle < -360f) lfAngle += 360f;
         if (lfAngle > 360f) lfAngle -= 360f;
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
     }
+}
+
+public interface ICameraControl
+{
+    public void UpdateCameraRotation();
+
+    public void SetupCinemachineCamera();
 }

@@ -14,7 +14,7 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private LayerMask buildingLayerMask;
     [SerializeField] private Transform grabbedLootConnectPoint;
     [SerializeField] private NetworkObject networkObject;
-    [SerializeField] private ThirdPersonController thirdPersonController;
+    [FormerlySerializedAs("thirdPersonController")] [SerializeField] private PlayerController playerController;
     [SerializeField] private PlayerState playerState;
 
     private float rotationPlaceOffset = 0.0f;
@@ -59,7 +59,7 @@ public class InteractionController : NetworkBehaviour
         go.transform.localRotation = Quaternion.identity;
         go.transform.localScale = Vector3.one;
         heldObject = go.GetComponent<IHoldable>();
-        thirdPersonController.ToggleCarrying(true);
+        playerController.ToggleCarrying(true);
         lastClosestInteractable = null;
 
         return go;
@@ -69,7 +69,7 @@ public class InteractionController : NetworkBehaviour
     {
         Destroy(heldObject.gameObject);
         heldObject = null;
-        thirdPersonController.ToggleCarrying(false);
+        playerController.ToggleCarrying(false);
         lastClosestInteractable = null;
     }
     

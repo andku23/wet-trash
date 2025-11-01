@@ -2,12 +2,13 @@ using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 public class PlayerDeath : NetworkBehaviour
 {
     private int _animIDIsDead;
     [SerializeField] private PlayerState playerState;
-    [SerializeField] private Animator _animator;
+    [FormerlySerializedAs("_animator")] public Animator Animator;
     
     private float _breath;
     private StarterAssetsInputs _input;
@@ -63,7 +64,7 @@ public class PlayerDeath : NetworkBehaviour
     // Client Rpc Callback
     public void KillPlayerLocal()
     {
-        _animator.SetBool(_animIDIsDead, true);
+        Animator.SetBool(_animIDIsDead, true);
         playerState.IsDead = true;
     }
     
@@ -72,7 +73,7 @@ public class PlayerDeath : NetworkBehaviour
     {
         _breath = playerState.BreathFullAmount;
         playerState.Health.Value = playerState.MAX_HEALTH;
-        _animator.SetBool(_animIDIsDead, false);
+        Animator.SetBool(_animIDIsDead, false);
         playerState.IsDead = false;
     }
 }

@@ -27,9 +27,14 @@ public class PlayerDeath : NetworkBehaviour
 
     private void OnHealthChanged(float prev, float next)
     {
-        if (next <= 0)
+        if (prev > 0 && next <= 0)
         {
-            GameManager.Instance.RequestPlayerDeath();
+            KillPlayerLocal();
+        }
+        
+        else if (prev <= 0 && next > 0)
+        {
+            RevivePlayerLocal();
         }
     }
 
@@ -50,12 +55,12 @@ public class PlayerDeath : NetworkBehaviour
         GameManager.Instance.OnBreathUpdated.Invoke(_breath/playerState.BreathFullAmount);
         if (_breath <= 0.0f && !playerState.IsDead)
         {
-            GameManager.Instance.RequestPlayerDeath();
+            GameManager.Instance.ChangeHealth(NetworkManager.Singleton.LocalClientId, 0f);
         } else if (playerState.IsDead)
         {
             if (_input.respawn)
             {
-                GameManager.Instance.RequestPlayerRevive();
+                GameManager.Instance.ChangeHealth(NetworkManager.Singleton.LocalClientId, playerState.MAX_HEALTH);
                 _input.respawn = false;
             }
         } 
@@ -72,7 +77,7 @@ public class PlayerDeath : NetworkBehaviour
     public void RevivePlayerLocal()
     {
         _breath = playerState.BreathFullAmount;
-        playerState.Health.Value = playerState.MAX_HEALTH;
+        //playerState.Health.Value = playerState.MAX_HEALTH;
         Animator.SetBool(_animIDIsDead, false);
         playerState.IsDead = false;
     }

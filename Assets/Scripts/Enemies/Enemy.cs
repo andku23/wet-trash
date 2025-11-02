@@ -154,6 +154,10 @@ public class Enemy : NetworkBehaviour
         {
             ChangeState(ServerStates.Idle);
         }
+        else if (_closestPlayerState.Health.Value <= 0)
+        {
+            ChangeState(ServerStates.Idle);
+        }
         else if (distanceToPlayer > minimumAttackDistance)
         {
             ChangeState(ServerStates.FollowingPlayer);
@@ -174,17 +178,18 @@ public class Enemy : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     private void DoAttack_ClientRpc(ulong networkPlayerID)
     {
+        _animator.SetTrigger("Attack");
         if (NetworkManager.Singleton.LocalClientId == networkPlayerID)
         {
-            _animator.SetTrigger("Attack");
             StartCoroutine(InflictDamage(2));
         }
     }
 
     private IEnumerator InflictDamage(int damage)
     {
-        yield return new WaitForSeconds(2.5f);
-        NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerState>().Health.Value -= damage;
+        yield return new WaitForSeconds(1.5f);
+        var playerState = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerState>();
+        GameManager.Instance.ChangeHealth(NetworkManager.Singleton.LocalClientId, playerState.Health.Value - damage);
     }
     
     #endregion

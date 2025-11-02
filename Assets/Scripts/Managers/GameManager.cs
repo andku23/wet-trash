@@ -61,58 +61,28 @@ public class GameManager : NetworkBehaviour
     }
 
     #region Player Death
-    public void RequestPlayerDeath()
+    
+    public void ChangeHealth(ulong targetPlayerNetworkObjectId, float newHealth)
     {
-        PlayerDeath_ServerRpc(NetworkManager.Singleton.LocalClientId);
+        ChangeHealth_ServerRpc(targetPlayerNetworkObjectId, newHealth);
     }
     
     [ServerRpc(RequireOwnership = false)]
-    public void PlayerDeath_ServerRpc(ulong targetPlayerNetworkObjectId)
-    {
-        PlayerDeath_ClientRpc(targetPlayerNetworkObjectId);
-    }
-    
-    [ClientRpc(RequireOwnership = false)]
-    public void PlayerDeath_ClientRpc(ulong targetPlayerNetworkObjectId)
+    public void ChangeHealth_ServerRpc(ulong targetPlayerNetworkObjectId, float newHealth)
     {
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
-        pickupPlayerClient.PlayerObject.GetComponent<PlayerDeath>().KillPlayerLocal();
+        pickupPlayerClient.PlayerObject.GetComponent<PlayerState>().Health.Value = newHealth;
     }
     
     [ServerRpc(RequireOwnership = false)]
     public void RespawnAllPlayers_ServerRpc()
     {
-        PlayerReviveAll_ClientRpc();
-    }
-    
-    public void RequestPlayerRevive()
-    {
-        PlayerRevive_ServerRpc(NetworkManager.Singleton.LocalClientId);
-    }
-    
-    [ServerRpc(RequireOwnership = false)]
-    public void PlayerRevive_ServerRpc(ulong targetPlayerNetworkObjectId)
-    {
-        NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
-        pickupPlayerClient.PlayerObject.transform.position = Vector3.zero;
-        PlayerRevive_ClientRpc(targetPlayerNetworkObjectId);
-    }
-    
-    [ClientRpc(RequireOwnership = false)]
-    public void PlayerReviveAll_ClientRpc()
-    {
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
         foreach (var connectedClient in connectedClients)
         {
-            connectedClient.Value.PlayerObject.GetComponent<PlayerDeath>().RevivePlayerLocal();
+            var playerState = connectedClient.Value.PlayerObject.GetComponent<PlayerState>();
+            playerState.Health.Value = playerState.MAX_HEALTH;
         }
-    }
-    
-    [ClientRpc(RequireOwnership = false)]
-    public void PlayerRevive_ClientRpc(ulong targetPlayerNetworkObjectId)
-    {
-        NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
-        pickupPlayerClient.PlayerObject.GetComponent<PlayerDeath>().RevivePlayerLocal();
     }
     #endregion
     

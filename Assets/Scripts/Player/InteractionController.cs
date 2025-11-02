@@ -140,8 +140,6 @@ public class InteractionController : NetworkBehaviour
             }
         }
         
-        Debug.Log(minDistance);
-        
         if (closestCollider != null && minDistance < MAX_INTERACTION_DISTANCE)
         {
             GameObject parentHitObject = closestCollider.gameObject;

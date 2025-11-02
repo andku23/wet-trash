@@ -18,7 +18,6 @@ public class FirstPersonCameraControl : MonoBehaviour, ICameraControl
             _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
         }
         
-        //_mainCamera.
     }
     
     public void SetupCinemachineCamera()

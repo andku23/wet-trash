@@ -33,6 +33,7 @@ public class InteractionController : NetworkBehaviour
     
     private StarterAssetsInputs _input;
     private IInteractable lastClosestInteractable;
+    private IInteractable persistentInteractable;
     private IHoldable heldObject;
     private BoatAttachment placingBoatAttachment;
     private const float MAX_DROP_DISTANCE = 1.5f;
@@ -61,7 +62,7 @@ public class InteractionController : NetworkBehaviour
         go.transform.localScale = Vector3.one;
         heldObject = go.GetComponent<IHoldable>();
         playerController.ToggleCarrying(true);
-        lastClosestInteractable = null;
+        DisableCurrentInteractable();
 
         return go;
     }
@@ -71,10 +72,10 @@ public class InteractionController : NetworkBehaviour
         Destroy(heldObject.gameObject);
         heldObject = null;
         playerController.ToggleCarrying(false);
-        lastClosestInteractable = null;
+        DisableCurrentInteractable();
     }
     
-    private void Update()
+    private void FixedUpdate()
     {
         switch (CurrentInteractionMode)
         {
@@ -139,7 +140,7 @@ public class InteractionController : NetworkBehaviour
                 closestCollider = collider;
             }
         }
-        
+
         if (closestCollider != null && minDistance < MAX_INTERACTION_DISTANCE)
         {
             GameObject parentHitObject = closestCollider.gameObject;
@@ -156,98 +157,124 @@ public class InteractionController : NetworkBehaviour
             if (interactable != null && interactable != lastClosestInteractable)
             {
                 bool isInteractable = interactable.EnableInteractable(heldObject);
-                if (isInteractable)
+
+                if (persistentInteractable == null)
                 {
-                    if (lastClosestInteractable != null)
+                    if (isInteractable)
                     {
-                        lastClosestInteractable.DisableInteractable();
+                        if (lastClosestInteractable != null)
+                        {
+                            lastClosestInteractable.DisableInteractable();
+                        }
+                
+                        lastClosestInteractable = interactable;
                     }
-                    lastClosestInteractable = interactable;
                 }
             }
         }
         else
         {
-            if (lastClosestInteractable != null)
-            {
-                lastClosestInteractable.DisableInteractable();
-                lastClosestInteractable = null;
-            }
+            DisableCurrentInteractable();
         }
+       
 
         if (_input.interact)
         {
             //Turn it off immediately so we don't get double events
             _input.interact = false;
-            
-            NetworkLoot loot = null;
-            LootDeposit deposit = null;
-            
-            if (lastClosestInteractable != null)
+
+            if (persistentInteractable != null)
             {
-                loot = lastClosestInteractable.gameObject.GetComponent<NetworkLoot>();
-                deposit = lastClosestInteractable.gameObject.GetComponent<LootDeposit>();
+                
+                persistentInteractable.Interact(NetworkManager.Singleton.LocalClientId);
+                persistentInteractable = null;
+                DisableCurrentInteractable();
             }
-            
-            if (heldObject != null)
+            else
             {
-                if (heldObject.HeldObjectType == HeldObjectType.CraneHook)
+                NetworkLoot loot = null;
+                LootDeposit deposit = null;
+                
+                if (lastClosestInteractable != null)
                 {
-                    AttachmentCrane crane = heldObject.ConnectedParent.GetComponent<AttachmentCrane>();
+                    loot = lastClosestInteractable.gameObject.GetComponent<NetworkLoot>();
+                    deposit = lastClosestInteractable.gameObject.GetComponent<LootDeposit>();
+                }
+                
+                if (heldObject != null)
+                {
+                    if (heldObject.HeldObjectType == HeldObjectType.CraneHook)
+                    {
+                        AttachmentCrane crane = heldObject.ConnectedParent.GetComponent<AttachmentCrane>();
+                        if (loot != null)
+                        {
+                            crane.AttachCraneHook(NetworkManager.Singleton.LocalClientId, loot.transform, loot.NetworkObject);
+                        }
+                        else
+                        {
+                            crane.DropCraneHook(NetworkManager.Singleton.LocalClientId);
+                        }
+                    }
+                    else if (heldObject.HeldObjectType == HeldObjectType.Loot)
+                    {
+                        if (deposit != null)
+                        {
+                            LootManager.Instance.RequestDeposit(deposit, heldObject.gameObject);
+                            deposit.DisableInteractable();
+                        }
+                        else
+                        {
+                            Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
+                            if (hit.collider != null)
+                            {
+                                if (hit.distance < MAX_DROP_DISTANCE)
+                                {
+                                    LootManager.Instance.RequestDrop(
+                                        new Vector3(hit.point.x, hit.point.y + 0.3f, hit.point.z), heldObject.gameObject);
+                                }
+                            }
+                        }
+                    } 
+                }
+                else
+                {
                     if (loot != null)
                     {
-                        crane.AttachCraneHook(NetworkManager.Singleton.LocalClientId, loot.transform, loot.NetworkObject);
-                    }
-                    else
-                    {
-                        crane.DropCraneHook(NetworkManager.Singleton.LocalClientId);
-                    }
-                }
-                else if (heldObject.HeldObjectType == HeldObjectType.Loot)
-                {
-                    if (deposit != null)
-                    {
-                        LootManager.Instance.RequestDeposit(deposit, heldObject.gameObject);
-                        deposit.DisableInteractable();
-                    }
-                    else
-                    {
-                        Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
-                        if (hit.collider != null)
+                        LootData data = LootManager.Instance.LootIndextoData(loot.lootIndex.Value);
+                        if (data.lootType == LootType.Heavy)
                         {
-                            if (hit.distance < MAX_DROP_DISTANCE)
+                            loot.SetAsTooHeavy();
+                        }
+                        else
+                        {
+                            DisableCurrentInteractable();
+                            LootManager.Instance.RequestPickup(loot);
+                        }
+                    }
+                    else
+                    {
+                        if (lastClosestInteractable != null)
+                        {
+                            lastClosestInteractable.Interact(NetworkManager.Singleton.LocalClientId);
+
+                            if (lastClosestInteractable.IsPersistentInteractable)
                             {
-                                LootManager.Instance.RequestDrop(
-                                    new Vector3(hit.point.x, hit.point.y + 0.3f, hit.point.z), heldObject.gameObject);
+                                
+                                persistentInteractable = lastClosestInteractable;
                             }
                         }
                     }
                 }
-                
             }
-            else
-            {
-                if (loot != null)
-                {
-                    LootData data = LootManager.Instance.LootIndextoData(loot.lootIndex.Value);
-                    if (data.lootType == LootType.Heavy)
-                    {
-                        loot.SetAsTooHeavy();
-                    }
-                    else
-                    {
-                        LootManager.Instance.RequestPickup(loot);
-                        lastClosestInteractable = null;
-                    }
-                }
-                else
-                {
-                    if (lastClosestInteractable != null)
-                    {
-                        lastClosestInteractable.Interact(NetworkManager.Singleton.LocalClientId);
-                    }
-                }
-            }
+        }
+    }
+
+    private void DisableCurrentInteractable()
+    {
+        if (lastClosestInteractable != null)
+        {
+            lastClosestInteractable.DisableInteractable();
+            lastClosestInteractable = null;
         }
     }
 

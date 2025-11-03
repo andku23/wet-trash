@@ -21,6 +21,9 @@ public class NetworkedBoat : NetworkBehaviour
     private float _targetRotation = 0.0f;
     private float _rotationVelocity;
     
+    public bool HasDriver => _hasDriver.Value;
+    public ulong DriverID => _driverID.Value;
+    
 #if ENABLE_INPUT_SYSTEM 
     private PlayerInput _playerInput;
 #endif

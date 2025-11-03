@@ -3,6 +3,7 @@ using UnityEngine;
 public interface IHoldable
 {
     public HeldObjectType HeldObjectType { get; }
+    // Reference to whatever object it calls back to (like used mostly for cranes)
     public GameObject ConnectedParent { get; set; }
     public GameObject gameObject { get ; }
 
@@ -16,5 +17,6 @@ public enum HeldObjectType
 {
     Default = 0,
     Loot = 1,
-    CraneHook = 2
+    CraneHook = 2,
+    SteeringWheel = 3
 }

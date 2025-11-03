@@ -14,6 +14,14 @@ public interface IInteractable
    {
    }
    
+   // If the interactor is something that takes over player control for a bit
+   public bool IsPersistentInteractable
+   {
+      get { return false;} 
+      set {}
+   }
+   
+   // Whether its able to be interacted with or not
    public bool IsInteractionLocked
    {
       get { return false;} 

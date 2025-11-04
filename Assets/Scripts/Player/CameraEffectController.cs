@@ -1,9 +1,10 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 
 public class CameraEffectController : MonoBehaviour
 {
-    [SerializeField] private PostProcessVolume postProcessVolume;
+    [SerializeField] private Volume postProcessVolume;
 
     private int waterColliderStack = 0;
     

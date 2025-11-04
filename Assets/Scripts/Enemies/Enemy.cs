@@ -19,6 +19,7 @@ public class Enemy : NetworkBehaviour
     private float swimSpeed = 3.5f;
     private ClientStateMachine _serverStateMachine;
     private NetworkVariable<int> _networkState = new NetworkVariable<int>(0);
+    private Collider _currentWaterBody;
     
     [SerializeField] private Animator _animator;
     
@@ -47,6 +48,14 @@ public class Enemy : NetworkBehaviour
         if (IsServer)
         {
             initialPosition = transform.position;
+            Collider[] colliders = Physics.OverlapSphere(transform.position, 0.5f);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                if (colliders[i].CompareTag("Water"))
+                {
+                    _currentWaterBody = colliders[i];
+                }
+            }
         }
     }
     
@@ -99,7 +108,7 @@ public class Enemy : NetworkBehaviour
         else
         {
             transform.position = Vector3.Lerp(lastPosition, nextPosition, (Time.time - startTime)/travelTime);
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(nextPosition - transform.position), 0.3f * Time.deltaTime);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(nextPosition - transform.position), 3.0f * Time.deltaTime);
         }
     }
     
@@ -114,6 +123,10 @@ public class Enemy : NetworkBehaviour
         float distanceToPlayer = Vector3.Distance(transform.position, _closestPlayer.PlayerObject.transform.position);
 
         if (_closestPlayer == null)
+        {
+            ChangeState(ServerStates.Idle);
+        }
+        else if (!_currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
         {
             ChangeState(ServerStates.Idle);
         }

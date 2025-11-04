@@ -117,6 +117,7 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.DayActive:
                 _day++;
+                TerrainManager.Instance.GenerateTerrain();
                 SpawnLoot();
                 _quota += 200;
                 MoneyManager.Instance.ResetCurrentCollected();

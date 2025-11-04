@@ -3220,7 +3220,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 94792807
+  GlobalObjectIdHash: 3994523073
   InScenePlacedSourceGlobalObjectIdHash: 3994523073
   DeferredDespawnTick: 0
   Ownership: 1
@@ -3316,6 +3316,7 @@ MonoBehaviour:
   OwnerNetworkAnimator: {fileID: 2648169704613640180}
   NetworkHandleParenting: {fileID: 8149868342962994308}
   _animator: {fileID: 3938184501639273155}
+  MainCamera: {fileID: 0}
 --- !u!114 &3817229071060700491
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3408,7 +3409,7 @@ MonoBehaviour:
   SpeedChangeRate: 10
   JumpHeight: 1.2
   WaterSurfaceJumpHeight: 10
-  BreathFullAmount: 10
+  BreathFullAmount: 300
   BreathFullAmount_UpgradeIncrement: 1
   BreathDepleteRate: 1
   BreathReplenishRate: 2

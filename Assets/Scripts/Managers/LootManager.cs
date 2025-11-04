@@ -54,11 +54,13 @@ public class LootManager : NetworkBehaviour
                 networkLootPrefabs.Add(i);
             }
         }
-        
+        Vector3 spawnPosition = Vector3.zero;
         for (int i = 0; i < _numLoot; i++)
         {
+            spawnPosition = TerrainManager.Instance.GetRandomPointOnTerrain();
+            spawnPosition.y += 1.0f;
             GameObject go = Instantiate(lootList.networkLootPrefab,
-                new Vector3(Random.Range(-15f, 15f), 0.5f, Random.Range(-15f, 15f)) + transform.position,
+                spawnPosition,
                 Quaternion.identity);
             //LootBaseData lootBaseData = go.GetComponent<LootBaseData>();
             int selectedPrefabIndex = networkLootPrefabs[Random.Range(0, networkLootPrefabs.Count)];

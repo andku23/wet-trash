@@ -255,13 +255,14 @@ public class InteractionController : NetworkBehaviour
                     {
                         if (lastClosestInteractable != null)
                         {
-                            lastClosestInteractable.Interact(NetworkManager.Singleton.LocalClientId);
-
                             if (lastClosestInteractable.IsPersistentInteractable)
                             {
                                 
                                 persistentInteractable = lastClosestInteractable;
                             }
+                            
+                            lastClosestInteractable.Interact(NetworkManager.Singleton.LocalClientId);
+                            
                         }
                     }
                 }

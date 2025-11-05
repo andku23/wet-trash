@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-5666143785276425717
+--- !u!114 &-7924587317024593085
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20,9 +20,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Water
-  m_Shader: {fileID: -6465566751694194690, guid: f6d8430285755f446b6d6d74775803e1,
-    type: 3}
+  m_Name: Head
+  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -30,8 +29,9 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
-  stringTagMap: {}
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses:
   - MOTIONVECTORS
   m_LockedProperties: 
@@ -62,20 +62,12 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _Intersection_Foam_Texture:
-        m_Texture: {fileID: 2800000, guid: 716010ae70e1b4e84ba6baf439991fae, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _Normals_Texture:
-        m_Texture: {fileID: 2800000, guid: ead3be67941d84de8806e2bdbc4a2d24, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -88,10 +80,6 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
         m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _Surface_Foam_Texture:
-        m_Texture: {fileID: 2800000, guid: 756d6724924f2448ab273c1be1db34c8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -118,71 +106,34 @@ Material:
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
-    - _Depth_Fade_Distance: 92.8
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
-    - _Direction: 0
-    - _Distortion_Speed: 0.2
-    - _DstBlend: 10
-    - _DstBlendAlpha: 10
+    - _DstBlend: 0
+    - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
-    - _Foam_Blend: 0.52
-    - _Foam_Fade_Distance: 6.18
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _Horizon_Distance: 20
-    - _Intersection_Foam_Cutoff: 1.14
-    - _Intersection_Foam_Depth: 3.2
-    - _Intersection_Foam_Direction: 36.8
-    - _Intersection_Foam_Fade: 1
-    - _Intersection_Foam_Tiling: 28.71
-    - _Intersection_Foam_speed: 0.15
-    - _Lighting_Hardness: 0.81
-    - _Lighting_Smoothness: -0.04
     - _Metallic: 0
-    - _Mode: 3
-    - _Normals_Scale: 0.18
-    - _Normals_Speed: 0.01
-    - _Normals_Strength: 4.04
+    - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _QueueControl: 1
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _Refraction_Distance: 300
-    - _Refraction_Scale: 0.01
-    - _Refraction_Speed: 2
-    - _Refraction_Strength: 0.01
-    - _Smoothness: 0.718
+    - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _Steps: 20
-    - _Surface: 1
-    - _Surface_Foam_Direction: 0
-    - _Surface_Foam_Distortion: 0.3
-    - _Surface_Foam_Speed: 0.1
-    - _Surface_Foam_Tiling: 40
-    - _Tiling: 0
+    - _Surface: 0
     - _UVSec: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
-    - _ZWrite: 0
-    - _speed: 0
+    - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.35978103, g: 0.5692379, b: 0.990566, a: 0.5254902}
-    - _Color: {r: 0.35978103, g: 0.5692379, b: 0.990566, a: 0.5254902}
-    - _Deep_Color: {r: 0.27171594, g: 0.3935981, b: 0.8113208, a: 1}
+    - _BaseColor: {r: 1, g: 0.850984, b: 0.759434, a: 1}
+    - _Color: {r: 1, g: 0.850984, b: 0.759434, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _Foam_Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Horizon_Color: {r: 0.4198113, g: 0.72465986, b: 1, a: 1}
-    - _Intersection_Foam_Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Offset: {r: 0, g: 0, b: 0, a: 0}
-    - _Shallow_Color: {r: 0.4269313, g: 0.6620522, b: 0.7735849, a: 0.64705884}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
-    - _Specular_Color: {r: 1, g: 1, b: 1, a: 0.078431375}
-    - _UV: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

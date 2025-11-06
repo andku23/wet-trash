@@ -117,4 +117,6 @@ public interface ICameraControl
     public void SetupCinemachineCamera();
     
     public GameObject CinemachineCameraTarget { get; }
+    
+    public GameObject gameObject { get ; }
 }

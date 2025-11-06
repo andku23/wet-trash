@@ -106,6 +106,7 @@ public class PlayerController : NetworkBehaviour
     private GameObject _selectedControlMode;
 
     private bool _hasAnimator;
+    public ICameraControl CameraControl {get{return _cameraControl;}}
 
     private bool IsCurrentDeviceMouse
     {
@@ -465,7 +466,7 @@ public class PlayerController : NetworkBehaviour
             if (_hasAnimator)
             {
                 _animator.SetFloat(_animIDVerticalLookAmount, ((firstPersonPitch + 50) / 100));
-                _cameraControl.CinemachineCameraTarget.transform.localEulerAngles = new Vector3(firstPersonPitch + 50, 0, 0);
+                _cameraControl.CinemachineCameraTarget.transform.localEulerAngles = new Vector3(firstPersonPitch, 0, 0);
             }
 
             _targetRotation = transform.rotation.eulerAngles.y;

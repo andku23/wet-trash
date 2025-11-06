@@ -13,7 +13,8 @@ public class LootInstanceData : MonoBehaviour, IHoldable
     {
         LootIndex = lootIndex;
         GameObject model = Instantiate(lootData.model, transform);
-        model.GetComponent<ColliderReference>().reference = gameObject;
+        model.GetComponent<ColliderReference>().enabled = false;
+        //model.GetComponent<ColliderReference>().reference = gameObject;
     }
     
     public void LoadLootNetwork(int lootIndex)

@@ -56,7 +56,7 @@ public class InteractionController : NetworkBehaviour
     
     public GameObject AttachToPoint(GameObject loot)
     {
-        GameObject go = Instantiate(loot, grabbedLootConnectPoint.transform);
+        GameObject go = Instantiate(loot, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
         go.transform.localPosition = Vector3.zero;
         go.transform.localRotation = Quaternion.identity;
         go.transform.localScale = Vector3.one;

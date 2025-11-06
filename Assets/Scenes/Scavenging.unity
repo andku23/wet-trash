@@ -1106,7 +1106,7 @@ PrefabInstance:
     - target: {fileID: 4265444382038021279, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.15
+      value: 1.0600001
       objectReference: {fileID: 0}
     - target: {fileID: 4265444382038021279, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
@@ -1171,7 +1171,7 @@ PrefabInstance:
     - target: {fileID: 5254441434628328387, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
       propertyPath: m_Name
-      value: NetworkedSwitch (1)
+      value: ShopSwitch
       objectReference: {fileID: 0}
     - target: {fileID: 5792596615216538214, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
@@ -3403,7 +3403,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 329bc961a2872b6479272a227032d839,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.51
+      value: 0.42
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 329bc961a2872b6479272a227032d839,
         type: 3}
@@ -3855,7 +3855,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 329bc961a2872b6479272a227032d839,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.93
+      value: 1.84
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 329bc961a2872b6479272a227032d839,
         type: 3}
@@ -9436,7 +9436,11 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2070925442191277755, guid: a1a802ecaf6775746bb2a929fb554ad8,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2041746799}
+      addedObject: {fileID: 2041746803}
+    - targetCorrespondingSourceObject: {fileID: 2070925442191277755, guid: a1a802ecaf6775746bb2a929fb554ad8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2041746804}
   m_SourcePrefab: {fileID: 100100000, guid: a1a802ecaf6775746bb2a929fb554ad8, type: 3}
 --- !u!1 &2041746794 stripped
 GameObject:
@@ -9444,7 +9448,7 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 2041746793}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2041746799
+--- !u!114 &2041746803
 MonoBehaviour:
   m_ObjectHideFlags: 3
   m_CorrespondingSourceObject: {fileID: 0}
@@ -9453,21 +9457,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 2041746794}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd6043bde05a7fc4cba197d06915c1e3, type: 3}
+  m_Script: {fileID: 11500000, guid: a4c41ac9245b87c4192012080077d830, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Cinemachine::Cinemachine.Cinemachine3rdPersonFollow
-  Damping: {x: 0, y: 0, z: 0}
-  ShoulderOffset: {x: 0, y: 0, z: 0}
-  VerticalArmLength: 0.15
-  CameraSide: 1
-  CameraDistance: 0.24
-  CameraCollisionFilter:
-    serializedVersion: 2
-    m_Bits: 0
-  IgnoreTag: 
-  CameraRadius: 0.2
-  DampingIntoCollision: 0
-  DampingFromCollision: 2
+  m_EditorClassIdentifier: Cinemachine::Cinemachine.CinemachineSameAsFollowTarget
+  m_Damping: 0
+--- !u!114 &2041746804
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2041746794}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36d1163fa822e8b418a0a603ec078d5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Cinemachine::Cinemachine.CinemachineHardLockToTarget
+  m_Damping: 0
 --- !u!1 &2084164408 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2537677505130179116, guid: 9c67c1dc79ad1b14d8372972bbb2c20c,
@@ -9748,11 +9754,11 @@ PrefabInstance:
         type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: e23336608092e8b468ba84c82086352e, type: 2}
+      objectReference: {fileID: 2100000, guid: bd670736a997716409bbbdb68e430ec5, type: 2}
     - target: {fileID: 4265444382038021279, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.82
+      value: 4.73
       objectReference: {fileID: 0}
     - target: {fileID: 4265444382038021279, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
@@ -9817,7 +9823,7 @@ PrefabInstance:
     - target: {fileID: 5254441434628328387, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}
       propertyPath: m_Name
-      value: NetworkedSwitch
+      value: DayStartSwitch
       objectReference: {fileID: 0}
     - target: {fileID: 5792596615216538214, guid: 2a4adb15a9444d44ba5263b2bed3b880,
         type: 3}

@@ -19,7 +19,7 @@ public class ThirdPersonCameraControl : MonoBehaviour, ICameraControl
     
     [Header("Cinemachine")]
     [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
-    public GameObject CinemachineCameraTarget;
+    public GameObject cinemachineCameraTarget;
     
     [Tooltip("For locking the camera position on all axis")]
     public bool LockCameraPosition = false;
@@ -44,6 +44,8 @@ public class ThirdPersonCameraControl : MonoBehaviour, ICameraControl
 #endif
         }
     }
+    
+    public GameObject CinemachineCameraTarget { get => cinemachineCameraTarget; }
 
     private void Start()
     {
@@ -113,4 +115,6 @@ public interface ICameraControl
     public void UpdateCameraRotation();
 
     public void SetupCinemachineCamera();
+    
+    public GameObject CinemachineCameraTarget { get; }
 }

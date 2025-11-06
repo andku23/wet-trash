@@ -8,8 +8,10 @@ public class FirstPersonCameraControl : MonoBehaviour, ICameraControl
     
     [Header("Cinemachine")]
     [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
-    public GameObject CinemachineCameraTarget;
-    
+    public GameObject cinemachineCameraTarget;
+
+    public GameObject CinemachineCameraTarget { get => cinemachineCameraTarget; }
+
     private void Start()
     {
         // get a reference to our main camera
@@ -37,6 +39,5 @@ public class FirstPersonCameraControl : MonoBehaviour, ICameraControl
     
     public void UpdateCameraRotation()
     {
-        
     }
 }

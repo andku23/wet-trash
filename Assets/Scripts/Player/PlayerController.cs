@@ -91,6 +91,7 @@ public class PlayerController : NetworkBehaviour
     private int _animIDIsSwimming;
     private int _animIDIsCarrying;
     private int _animIDIsDriving;
+    private int _animIDVerticalLookAmount;
 
     private float firstPersonPitch;
     private float firstPersonYaw;
@@ -199,6 +200,7 @@ public class PlayerController : NetworkBehaviour
         _animIDIsSwimming = Animator.StringToHash("IsSwimming");
         _animIDIsCarrying = Animator.StringToHash("IsCarrying");
         _animIDIsDriving = Animator.StringToHash("IsDriving");
+        _animIDVerticalLookAmount = Animator.StringToHash("VerticalLookAmount");
     }
 
     private void GroundedCheck()
@@ -355,8 +357,14 @@ public class PlayerController : NetworkBehaviour
                 firstPersonYaw = ThirdPersonCameraControl.ClampAngle(firstPersonYaw, float.MinValue, float.MaxValue);
                 firstPersonPitch = ThirdPersonCameraControl.ClampAngle(firstPersonPitch, -50, 50);
                 
-                transform.rotation = Quaternion.Euler(firstPersonPitch,
+                transform.rotation = Quaternion.Euler(0.0f,
                     firstPersonYaw, 0.0f);
+                
+                if (_hasAnimator)
+                {
+                    _animator.SetFloat(_animIDVerticalLookAmount, (firstPersonPitch + 50) / 100);
+                    _cameraControl.CinemachineCameraTarget.transform.localEulerAngles = new Vector3(firstPersonPitch, 0, 0);
+                }
 
                 _targetRotation = transform.rotation.eulerAngles.y;
             
@@ -451,8 +459,14 @@ public class PlayerController : NetworkBehaviour
             firstPersonYaw = ThirdPersonCameraControl.ClampAngle(firstPersonYaw, float.MinValue, float.MaxValue);
             firstPersonPitch = ThirdPersonCameraControl.ClampAngle(firstPersonPitch, -50, 50);
                 
-            transform.rotation = Quaternion.Euler(firstPersonPitch,
+            transform.rotation = Quaternion.Euler(0.0f,
                 firstPersonYaw, 0.0f);
+                
+            if (_hasAnimator)
+            {
+                _animator.SetFloat(_animIDVerticalLookAmount, ((firstPersonPitch + 50) / 100));
+                _cameraControl.CinemachineCameraTarget.transform.localEulerAngles = new Vector3(firstPersonPitch + 50, 0, 0);
+            }
 
             _targetRotation = transform.rotation.eulerAngles.y;
             

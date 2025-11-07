@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 44c170a7cddd1b842887541b835d64b1
+guid: 267dd53ef2476a143a7a6cb3ccc38907
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -7,8 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Material.001
-    second: {fileID: 2100000, guid: 136724df2ce0e7045a8676cd7ab2b4b0, type: 2}
+      name: Hook
+    second: {fileID: 2100000, guid: f7b66afc02490db4f8f217464abbc209, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

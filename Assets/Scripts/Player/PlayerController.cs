@@ -169,6 +169,11 @@ public class PlayerController : NetworkBehaviour
             // reset our timeouts on start
             _jumpTimeoutDelta = JumpTimeout;
             _fallTimeoutDelta = FallTimeout;
+
+            if (_animator != null)
+            {
+                _animator.SetFloat(_animIDVerticalLookAmount, 0.5f);
+            }
         }
     }
 

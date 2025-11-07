@@ -2716,7 +2716,7 @@ MonoBehaviour:
   WaterLayers:
     serializedVersion: 2
     m_Bits: 16
-  ForceThirdPerson: 0
+  ForceThirdPerson: 1
   ControlModeThirdPerson: {fileID: 2490552734691246173}
   ControlModeFirstPerson: {fileID: 3362303129766747424}
   ControlMode: 0

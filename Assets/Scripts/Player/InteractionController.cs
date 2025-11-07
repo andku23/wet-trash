@@ -58,9 +58,17 @@ public class InteractionController : NetworkBehaviour
     public GameObject AttachToPoint(GameObject loot)
     {
         GameObject go = Instantiate(loot, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
-        go.transform.localPosition = Vector3.zero;
         go.transform.localRotation = Quaternion.identity;
-        go.transform.localScale = Vector3.one * 0.3f;
+        if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
+        {
+            go.transform.localPosition = new Vector3(0, 0.4f, 0);
+            go.transform.localScale = Vector3.one * 0.3f;
+        }
+        else
+        {
+            go.transform.localPosition = new Vector3(0, -0.3f, -0.1f);
+            go.transform.localScale = Vector3.one * 0.6f;
+        }
         heldObject = go.GetComponent<IHoldable>();
         playerController.ToggleCarrying(true);
         DisableCurrentInteractable();

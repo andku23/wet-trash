@@ -1,24 +1,9 @@
 fileFormatVersion: 2
-guid: 4d9f85ea1d032ab46b0cd4e819cb2e77
+guid: 44c170a7cddd1b842887541b835d64b1
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Glass
-    second: {fileID: 2100000, guid: 02050595b17e9a04a97ba1fa35e78ec2, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Lights
-    second: {fileID: 2100000, guid: 6b3e773428719a043b5bae6ece4ffe25, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: vending_m
-    second: {fileID: 2100000, guid: 2e893fd46d44f59428aaf21929eea399, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0

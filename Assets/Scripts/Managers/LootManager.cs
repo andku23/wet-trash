@@ -58,7 +58,6 @@ public class LootManager : NetworkBehaviour
         for (int i = 0; i < _numLoot; i++)
         {
             spawnPosition = TerrainManager.Instance.GetRandomPointOnTerrain();
-            spawnPosition.y += 1.0f;
             GameObject go = Instantiate(lootList.networkLootPrefab,
                 spawnPosition,
                 Quaternion.identity);

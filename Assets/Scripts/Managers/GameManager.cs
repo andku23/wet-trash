@@ -31,6 +31,7 @@ public class GameManager : NetworkBehaviour
         ShowDayResult = 2,
         BetweenDays = 3,
         QuotaFailed = 4,
+        LoadingNextDay = 5,
     }
     
     public static GameManager Instance;
@@ -95,6 +96,9 @@ public class GameManager : NetworkBehaviour
         {
             case TimeState.None:
             case TimeState.BetweenDays:
+                _timeState = TimeState.LoadingNextDay;
+                break;
+            case TimeState.LoadingNextDay:
                 _timeState = TimeState.DayActive;
                 break;
             case TimeState.DayActive:
@@ -108,6 +112,7 @@ public class GameManager : NetworkBehaviour
                 break;
         }
         
+        //On enter for next state
         switch (_timeState)
         {
             case TimeState.BetweenDays:
@@ -115,12 +120,16 @@ public class GameManager : NetworkBehaviour
                 _ui.PopulateShopContent_ServerRpc();
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
-            case TimeState.DayActive:
+            case TimeState.LoadingNextDay:
                 _day++;
-                TerrainManager.Instance.GenerateTerrain();
-                SpawnLoot();
                 _quota += 200;
                 MoneyManager.Instance.ResetCurrentCollected();
+                TerrainManager.Instance.GenerateTerrain();
+                UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
+                StartCoroutine(WaitForPlayersToLoad());
+                break;
+            case TimeState.DayActive:
+                SpawnLoot();
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.ShowDayResult:
@@ -133,6 +142,13 @@ public class GameManager : NetworkBehaviour
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
         }
+    }
+
+    private IEnumerator WaitForPlayersToLoad()
+    {
+        yield return new WaitForSeconds(1);
+        ToNextGameState_ServerRpc();
+        yield return null;
     }
     
     [ClientRpc(RequireOwnership = false)]
@@ -151,6 +167,8 @@ public class GameManager : NetworkBehaviour
         {
             case TimeState.BetweenDays:
                 _ui.CloseAllPanels(false);
+                break;
+            case TimeState.LoadingNextDay:
                 break;
             case TimeState.DayActive:
                 _ui.UpdateDayInfoText(quota, day);

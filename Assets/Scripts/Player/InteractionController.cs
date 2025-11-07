@@ -103,7 +103,7 @@ public class InteractionController : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        Collider[] hitColliders = new Collider[] { };
+        Collider[] hitColliders = Array.Empty<Collider>();
         if (playerController.ControlMode == PlayerController.ControlModeEnum.ThirdPerson)
         {
             hitColliders = Physics.OverlapSphere(transform.position, 2.0f, interactableLayerMask);
@@ -148,7 +148,6 @@ public class InteractionController : NetworkBehaviour
 
         if (closestCollider != null && minDistance < MAX_INTERACTION_DISTANCE)
         {
-            Debug.Log(closestCollider.ToString());
             GameObject parentHitObject = closestCollider.gameObject;
             // Expects collider reference
             ColliderReference colliderReference = closestCollider.GetComponent<ColliderReference>();
@@ -282,8 +281,8 @@ public class InteractionController : NetworkBehaviour
     private void DoInteractionBuilding()
     {
         if (!IsOwner) return;
-        
-        Collider[] hitColliders = new Collider[] { };
+
+        Collider[] hitColliders = Array.Empty<Collider>();
         if (playerController.ControlMode == PlayerController.ControlModeEnum.ThirdPerson)
         {
             hitColliders = Physics.OverlapSphere(transform.position, 2.0f, interactableLayerMask);
@@ -294,7 +293,7 @@ public class InteractionController : NetworkBehaviour
                 playerController.MainCamera.transform.forward,
                 out RaycastHit raycastHit,
                 MAX_INTERACTION_DISTANCE,
-                interactableLayerMask);
+                buildingLayerMask);
             
             if (raycastHit.collider != null)
             {
@@ -329,6 +328,8 @@ public class InteractionController : NetworkBehaviour
 
         if (closestCollider != null)
         {
+            Debug.Log(closestCollider.ToString());
+            
             GameObject parentHitObject = closestCollider.gameObject;
             ColliderReference colliderReference = closestCollider.GetComponent<ColliderReference>();
             // Expects collider reference

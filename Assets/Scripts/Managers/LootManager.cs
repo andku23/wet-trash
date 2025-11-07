@@ -45,38 +45,41 @@ public class LootManager : NetworkBehaviour
 
     public void SpawnLoot()
     {
-        List<int> networkLootPrefabs = new List<int>();
+        List<int> spawnProbabilityTable = new List<int>();
         // Create spawn probability table
         for (int i = 0; i < lootList.pairs.Length; i++)
         {
             for (int j = 0; j < lootList.pairs[i].spawnRate; j++)
             {
-                networkLootPrefabs.Add(i);
+                spawnProbabilityTable.Add(i);
             }
         }
         Vector3 spawnPosition = Vector3.zero;
         for (int i = 0; i < _numLoot; i++)
         {
             spawnPosition = TerrainManager.Instance.GetRandomPointOnTerrain();
-            GameObject go = Instantiate(lootList.networkLootPrefab,
-                spawnPosition,
-                Quaternion.identity);
-            //LootBaseData lootBaseData = go.GetComponent<LootBaseData>();
-            int selectedPrefabIndex = networkLootPrefabs[Random.Range(0, networkLootPrefabs.Count)];
-            //LootData randomlySelectedData = lootList.pairs[selectedPrefabIndex];
-            
-            NetworkObject networkObject = go.GetComponent<NetworkObject>();
-            NetworkLoot networkLoot = go.GetComponent<NetworkLoot>();
-            
-            networkLoot.lootIndex.Value = selectedPrefabIndex;
-            networkObject.Spawn();
-            _loots.Add(networkObject);
+            SpawnAndLoadLoot(spawnPosition, spawnProbabilityTable);
         }
+        
+        //One on the surface just to debug
+        SpawnAndLoadLoot(new Vector3(0,0,0), spawnProbabilityTable);
     }
 
-    private void SpawnAndLoadLoot()
+    private void SpawnAndLoadLoot(Vector3 spawnPosition, List<int> spawnProbabilityTable)
     {
-        
+        GameObject go = Instantiate(lootList.networkLootPrefab,
+            spawnPosition,
+            Quaternion.identity);
+        //LootBaseData lootBaseData = go.GetComponent<LootBaseData>();
+        int selectedPrefabIndex = spawnProbabilityTable[Random.Range(0, spawnProbabilityTable.Count)];
+        //LootData randomlySelectedData = lootList.pairs[selectedPrefabIndex];
+            
+        NetworkObject networkObject = go.GetComponent<NetworkObject>();
+        NetworkLoot networkLoot = go.GetComponent<NetworkLoot>();
+            
+        networkLoot.lootIndex.Value = selectedPrefabIndex;
+        networkObject.Spawn();
+        _loots.Add(networkObject);
     }
     
     private void DestroyLootInHand(ulong targetPlayerNetworkObjectId)

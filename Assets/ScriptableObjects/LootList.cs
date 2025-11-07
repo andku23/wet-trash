@@ -13,7 +13,8 @@ public class LootData
 {
     public LootType lootType;
     public GameObject model;
-    public int spawnRate;
+    public int spawnRateShallow;
+    public int spawnRateDeep;
     public int price;
     public float weight;
     public float weightSpeedMultiplier;

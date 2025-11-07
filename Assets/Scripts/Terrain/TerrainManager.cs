@@ -3,6 +3,7 @@ using UnityEngine;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.Mathematics.Geometry;
 using Random = UnityEngine.Random;
 
 public class TerrainManager : NetworkBehaviour
@@ -100,7 +101,11 @@ public class TerrainManager : NetworkBehaviour
             {
                 for (int j = 0; j < _terrain.terrainData.heightmapResolution; j++)
                 {
-                    float height = 0.5f 
+                    float xRatio = i/(float)_terrain.terrainData.heightmapResolution;
+                    float zRatio = (j/(float)_terrain.terrainData.heightmapResolution);
+                    float xInitialPosition = 1f - 2f * Mathf.Abs(xRatio - 0.5f);
+                    float zInitialPosition = 1f - 2f * Mathf.Abs(zRatio - 0.5f);
+                    float height = 0.6f*(xInitialPosition + zInitialPosition)/2f + 0.25f
                                    + 0.55f * holesMap[i * _terrain.terrainData.heightmapResolution + j]
                                    + 0.05f*noiseMap[i*_terrain.terrainData.heightmapResolution + j];
                                    //Starting height

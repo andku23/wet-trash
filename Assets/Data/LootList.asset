@@ -19,19 +19,22 @@ MonoBehaviour:
   pairs:
   - lootType: 0
     model: {fileID: 8553116992996838160, guid: c4e634d38da91a94587a113bcec7442f, type: 3}
-    spawnRate: 4
+    spawnRateShallow: 8
+    spawnRateDeep: 1
     price: 200
     weight: 100
     weightSpeedMultiplier: 1
   - lootType: 1
     model: {fileID: 8553116992996838160, guid: 1f69a8b1aeb60254388031fec04f9564, type: 3}
-    spawnRate: 2
+    spawnRateShallow: 1
+    spawnRateDeep: 4
     price: 400
     weight: 100
     weightSpeedMultiplier: 1
   - lootType: 0
     model: {fileID: 3116376814885025957, guid: 94314f3a91ff82d48a64864a480f453e, type: 3}
-    spawnRate: 2
+    spawnRateShallow: 0
+    spawnRateDeep: 4
     price: 1500
     weight: 200
     weightSpeedMultiplier: 0.5

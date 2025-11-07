@@ -17,6 +17,7 @@ public class LootManager : NetworkBehaviour
     [SerializeField] private LootList lootList;
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] private List<LootDeposit> _lootDeposits;
+    [SerializeField] private GameObject spawnCutoff;
     
     private List<NetworkObject> _loots = new List<NetworkObject>();
     
@@ -45,24 +46,41 @@ public class LootManager : NetworkBehaviour
 
     public void SpawnLoot()
     {
-        List<int> spawnProbabilityTable = new List<int>();
-        // Create spawn probability table
+        List<int> spawnProbabilityShallow = new List<int>();
+        List<int> spawnProbabilityDeep = new List<int>();
+        // Create spawn probability tables
         for (int i = 0; i < lootList.pairs.Length; i++)
         {
-            for (int j = 0; j < lootList.pairs[i].spawnRate; j++)
+            for (int j = 0; j < lootList.pairs[i].spawnRateShallow; j++)
             {
-                spawnProbabilityTable.Add(i);
+                spawnProbabilityShallow.Add(i);
             }
         }
+        
+        for (int i = 0; i < lootList.pairs.Length; i++)
+        {
+            for (int j = 0; j < lootList.pairs[i].spawnRateDeep; j++)
+            {
+                spawnProbabilityDeep.Add(i);
+            }
+        }
+        
         Vector3 spawnPosition = Vector3.zero;
         for (int i = 0; i < _numLoot; i++)
         {
             spawnPosition = TerrainManager.Instance.GetRandomPointOnTerrain();
-            SpawnAndLoadLoot(spawnPosition, spawnProbabilityTable);
+            if (spawnPosition.y < spawnCutoff.transform.position.y)
+            {
+                SpawnAndLoadLoot(spawnPosition, spawnProbabilityDeep);
+            }
+            else
+            {
+                SpawnAndLoadLoot(spawnPosition, spawnProbabilityShallow);
+            }
         }
         
         //One on the surface just to debug
-        SpawnAndLoadLoot(new Vector3(0,0,0), spawnProbabilityTable);
+        SpawnAndLoadLoot(new Vector3(0,0,0), spawnProbabilityShallow);
     }
 
     private void SpawnAndLoadLoot(Vector3 spawnPosition, List<int> spawnProbabilityTable)

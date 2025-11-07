@@ -131,7 +131,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _Horizon_Distance: 20
+    - _Horizon_Distance: 2
     - _Intersection_Foam_Cutoff: 1.14
     - _Intersection_Foam_Depth: 3.2
     - _Intersection_Foam_Direction: 36.8
@@ -142,7 +142,7 @@ Material:
     - _Lighting_Smoothness: -0.04
     - _Metallic: 0
     - _Mode: 3
-    - _Normals_Scale: 0.1
+    - _Normals_Scale: 0.01
     - _Normals_Speed: 0.01
     - _Normals_Strength: 22.48
     - _OcclusionStrength: 1
@@ -164,7 +164,7 @@ Material:
     - _Surface_Foam_Direction: 0
     - _Surface_Foam_Distortion: 0.3
     - _Surface_Foam_Speed: 0.1
-    - _Surface_Foam_Tiling: 40
+    - _Surface_Foam_Tiling: 120
     - _Tiling: 0
     - _UVSec: 0
     - _WorkflowMode: 1
@@ -177,7 +177,7 @@ Material:
     - _Deep_Color: {r: 0.55602527, g: 0.6536395, b: 0.990566, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Foam_Color: {r: 1, g: 1, b: 1, a: 0}
-    - _Horizon_Color: {r: 0.4198113, g: 0.72465986, b: 1, a: 1}
+    - _Horizon_Color: {r: 0.20572266, g: 0.48159805, b: 0.6320754, a: 1}
     - _Intersection_Foam_Color: {r: 1, g: 1, b: 1, a: 1}
     - _Offset: {r: 0, g: 0, b: 0, a: 0}
     - _Shallow_Color: {r: 0.4999555, g: 0.67202985, b: 0.990566, a: 0.64705884}

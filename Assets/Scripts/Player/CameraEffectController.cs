@@ -21,6 +21,16 @@ public class CameraEffectController : MonoBehaviour
 
     private void OnWaterStackUpdated()
     {
-        postProcessVolume.weight = (waterChecker.IsInWater) ? 1.0f : 0.0f;
+        if (waterChecker.IsInWater)
+        {
+            RenderSettings.fog = true;
+            postProcessVolume.weight = 1.0f;
+        }
+        else
+        {
+            RenderSettings.fog = false;
+            postProcessVolume.weight = 0.0f;
+        }
+        
     }
 }

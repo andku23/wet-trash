@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class InteractableSteeringWheel : MonoBehaviour, IInteractable
@@ -16,19 +17,23 @@ public class InteractableSteeringWheel : MonoBehaviour, IInteractable
         {
             if (networkBoat.DriverID == networkPlayerId)
             {
-                Debug.Log("undrive");
                 networkBoat.RequestToDrive(false);
             }
         }
         else
         {
             networkBoat.RequestToDrive(true);
-            
+            instructions.SetActive(false);
         }
     }
     
     public bool EnableInteractable(IHoldable heldObject)
     {
+        if (networkBoat.HasDriver)
+        {
+            instructions.SetActive(false);
+            return false;
+        }
         instructions.SetActive(true);
         return true;
     }

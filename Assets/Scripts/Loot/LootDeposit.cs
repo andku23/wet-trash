@@ -57,15 +57,17 @@ public class LootDeposit : NetworkBehaviour, IInteractable
         // float yStart = collider.bounds.min.y;
         // float xSpacing = (collider.bounds.max.x - collider.bounds.min.x)/rows;
         // float ySpacing = (collider.bounds.max.y - collider.bounds.min.y)/columns;
+
+        float scale = 0.8f;
+        float startOffset = (1.0f - scale) / 2f;
         
+        float xSpacing = (go.transform.localScale.x)*scale/rows;
+        float ySpacing = (go.transform.localScale.y)*scale/rows;
+        float zSpacing = (go.transform.localScale.z)*scale/columns;
         
-        float xSpacing = (go.transform.localScale.x)/rows;
-        float ySpacing = (go.transform.localScale.y)/rows;
-        float zSpacing = (go.transform.localScale.z)/columns;
-        
-        float xStart = -go.transform.localScale.x/2 + xSpacing/2;
+        float xStart = -go.transform.localScale.x*scale/2 + xSpacing/2 + startOffset;
         float yStart = 0.0f;
-        float zStart = -go.transform.localScale.z/2 + zSpacing/2;
+        float zStart = -go.transform.localScale.z*scale/2 + zSpacing/2 + startOffset;
 
         int height = Mathf.FloorToInt(indexedSize / (rows * columns));
         int column = Mathf.FloorToInt(indexedSize % (rows * columns) / columns);
@@ -79,6 +81,7 @@ public class LootDeposit : NetworkBehaviour, IInteractable
 
         
         go.transform.localPosition = t;
+        go.transform.localScale = go.transform.localScale * scale;
         _lootDepositsBoxes.Add(go);
     }
     

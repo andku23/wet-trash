@@ -293,7 +293,7 @@ public class InteractionController : NetworkBehaviour
         Collider[] hitColliders = Array.Empty<Collider>();
         if (playerController.ControlMode == PlayerController.ControlModeEnum.ThirdPerson)
         {
-            hitColliders = Physics.OverlapSphere(transform.position, 2.0f, interactableLayerMask);
+            hitColliders = Physics.OverlapSphere(transform.position, 2.0f, buildingLayerMask);
         } else if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
         {
             Physics.Raycast(

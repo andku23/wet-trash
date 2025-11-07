@@ -578,6 +578,7 @@ GameObject:
   - component: {fileID: 4109861085898150849}
   - component: {fileID: 3064624484510208193}
   - component: {fileID: 5201304859418569969}
+  - component: {fileID: 583575609256796491}
   m_Layer: 0
   m_Name: LootContainerNetwork
   m_TagString: Untagged
@@ -598,6 +599,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 2299551134642604032}
   - {fileID: 3594561491408162760}
   - {fileID: 7394660709681856529}
   - {fileID: 6036073697684569287}
@@ -684,6 +686,8 @@ MonoBehaviour:
   craneHookInstructions: {fileID: 6110021482015672327}
   lootIndex:
     m_InternalValue: 0
+  isInteractionLocked:
+    m_InternalValue: 0
 --- !u!114 &5201304859418569969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -698,6 +702,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   LootIndex: 0
   _heldObjectType: 0
+--- !u!114 &583575609256796491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3978986903696649880}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8066d162b2353bd46bcf3c0c796e8ccb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkFall
+  ShowTopMostFoldoutHeaderGroup: 1
+  inWaterChecker: {fileID: 2323725623820610603}
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 2023
+  FallCheckDistance: 0.2
+  FallSpeedAir: 0.1
+  FallSpeedWater: 0.01
 --- !u!1 &4349484526995083743
 GameObject:
   m_ObjectHideFlags: 0
@@ -773,6 +797,100 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &4835566130901958101
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2299551134642604032}
+  - component: {fileID: 6031821767128413894}
+  - component: {fileID: 2323725623820610603}
+  - component: {fileID: 5958040649704989874}
+  m_Layer: 0
+  m_Name: WaterChecker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2299551134642604032
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4835566130901958101}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.5, y: 1.375, z: -4}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 549098659809130690}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &6031821767128413894
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4835566130901958101}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 16
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2323725623820610603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4835566130901958101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dac9cdf8b1c31d4aba77df87ec37488, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InWaterChecker
+--- !u!54 &5958040649704989874
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4835566130901958101}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &6110021482015672327
 GameObject:
   m_ObjectHideFlags: 0

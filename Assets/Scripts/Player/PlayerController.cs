@@ -102,7 +102,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private Animator _animator;
     private CharacterController _controller;
     private StarterAssetsInputs _input;
-    [FormerlySerializedAs("_mainCamera")] public GameObject MainCamera;
+    public GameObject MainCamera;
     private GameObject _selectedControlMode;
 
     private bool _hasAnimator;
@@ -143,6 +143,7 @@ public class PlayerController : NetworkBehaviour
         
         GetComponent<PlayerDeath>().Animator = _selectedControlMode.GetComponent<Animator>();
         _animator = _selectedControlMode.GetComponent<Animator>();
+        _cameraControl = _selectedControlMode.GetComponent<ICameraControl>();
         
         if (IsOwner)
         {
@@ -150,7 +151,7 @@ public class PlayerController : NetworkBehaviour
             {
                 MainCamera = GameObject.FindGameObjectWithTag("MainCamera");
             }
-            _cameraControl = _selectedControlMode.GetComponent<ICameraControl>();
+            
             _cameraControl.SetupCinemachineCamera();
             
             _hasAnimator = _animator != null;
@@ -356,14 +357,14 @@ public class PlayerController : NetworkBehaviour
                 firstPersonYaw += _input.look.x * deltaTimeMultiplier;
             
                 firstPersonYaw = ThirdPersonCameraControl.ClampAngle(firstPersonYaw, float.MinValue, float.MaxValue);
-                firstPersonPitch = ThirdPersonCameraControl.ClampAngle(firstPersonPitch, -50, 50);
+                firstPersonPitch = ThirdPersonCameraControl.ClampAngle(firstPersonPitch, -89, 89);
                 
                 transform.rotation = Quaternion.Euler(0.0f,
                     firstPersonYaw, 0.0f);
                 
                 if (_hasAnimator)
                 {
-                    _animator.SetFloat(_animIDVerticalLookAmount, (firstPersonPitch + 50) / 100);
+                    _animator.SetFloat(_animIDVerticalLookAmount, (firstPersonPitch + 89) / (89 + 89));
                     _cameraControl.CinemachineCameraTarget.transform.localEulerAngles = new Vector3(firstPersonPitch, 0, 0);
                 }
 
@@ -458,14 +459,14 @@ public class PlayerController : NetworkBehaviour
             firstPersonYaw += _input.look.x * deltaTimeMultiplier;
             
             firstPersonYaw = ThirdPersonCameraControl.ClampAngle(firstPersonYaw, float.MinValue, float.MaxValue);
-            firstPersonPitch = ThirdPersonCameraControl.ClampAngle(firstPersonPitch, -50, 50);
+            firstPersonPitch = ThirdPersonCameraControl.ClampAngle(firstPersonPitch, -89, 89);
                 
             transform.rotation = Quaternion.Euler(0.0f,
                 firstPersonYaw, 0.0f);
                 
             if (_hasAnimator)
             {
-                _animator.SetFloat(_animIDVerticalLookAmount, ((firstPersonPitch + 50) / 100));
+                _animator.SetFloat(_animIDVerticalLookAmount, ((firstPersonPitch + 89) / (89+89)));
                 _cameraControl.CinemachineCameraTarget.transform.localEulerAngles = new Vector3(firstPersonPitch, 0, 0);
             }
 

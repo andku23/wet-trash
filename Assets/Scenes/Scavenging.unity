@@ -548,6 +548,100 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 130242602}
   m_CullTransparentMesh: 1
+--- !u!1 &136886313
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 136886316}
+  - component: {fileID: 136886315}
+  - component: {fileID: 136886314}
+  - component: {fileID: 136886317}
+  m_Layer: 0
+  m_Name: WaterChecker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &136886314
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 136886313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dac9cdf8b1c31d4aba77df87ec37488, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InWaterChecker
+--- !u!135 &136886315
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 136886313}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 16
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!4 &136886316
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 136886313}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1562635058}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &136886317
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 136886313}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &139635860
 GameObject:
   m_ObjectHideFlags: 0
@@ -5553,7 +5647,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _numLoot: 10
+  _numLoot: 40
   lootList: {fileID: 11400000, guid: 4623b85544d214945bd6f8e8f852d1ce, type: 2}
   moneyText: {fileID: 1420962018}
   _lootDeposits: []
@@ -6242,6 +6336,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 489319852}
+    - targetCorrespondingSourceObject: {fileID: 8944336655422409503, guid: f6d148d888ffbf54b9afe9936dfaec1f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 136886316}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8944336655422409498, guid: f6d148d888ffbf54b9afe9936dfaec1f,
         type: 3}
@@ -6250,15 +6348,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8944336655422409498, guid: f6d148d888ffbf54b9afe9936dfaec1f,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1562635060}
-    - targetCorrespondingSourceObject: {fileID: 8944336655422409498, guid: f6d148d888ffbf54b9afe9936dfaec1f,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1562635061}
-    - targetCorrespondingSourceObject: {fileID: 8944336655422409498, guid: f6d148d888ffbf54b9afe9936dfaec1f,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1562635062}
     - targetCorrespondingSourceObject: {fileID: 8944336655422409498, guid: f6d148d888ffbf54b9afe9936dfaec1f,
         type: 3}
       insertIndex: -1
@@ -6578,27 +6668,6 @@ MonoBehaviour:
   m_BeforeTransparentBundles: []
   m_BeforeStackBundles: []
   m_AfterStackBundles: []
---- !u!135 &1562635060
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1562635054}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 16
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &1562635061
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6612,33 +6681,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraEffectController
   postProcessVolume: {fileID: 2025396048}
---- !u!54 &1562635062
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1562635054}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 0
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  waterChecker: {fileID: 136886314}
 --- !u!114 &1562635066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7211,7 +7254,7 @@ PrefabInstance:
     - target: {fileID: 3765401392505160110, guid: aaf2773a9c6aa1d4dace314df2c65353,
         type: 3}
       propertyPath: m_Size.x
-      value: 2.46
+      value: 1.43
       objectReference: {fileID: 0}
     - target: {fileID: 3765401392505160110, guid: aaf2773a9c6aa1d4dace314df2c65353,
         type: 3}
@@ -7221,7 +7264,12 @@ PrefabInstance:
     - target: {fileID: 3765401392505160110, guid: aaf2773a9c6aa1d4dace314df2c65353,
         type: 3}
       propertyPath: m_Size.z
-      value: 1.77
+      value: 1.22
+      objectReference: {fileID: 0}
+    - target: {fileID: 4308102263540326234, guid: aaf2773a9c6aa1d4dace314df2c65353,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.491
       objectReference: {fileID: 0}
     - target: {fileID: 4740361926860113457, guid: aaf2773a9c6aa1d4dace314df2c65353,
         type: 3}
@@ -9582,7 +9630,7 @@ MonoBehaviour:
   ShoulderOffset: {x: 0, y: 0, z: 0}
   VerticalArmLength: 0.44
   CameraSide: 1
-  CameraDistance: 0.2
+  CameraDistance: 0
   CameraCollisionFilter:
     serializedVersion: 2
     m_Bits: 0

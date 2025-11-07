@@ -1,3 +1,4 @@
+using System;
 using StarterAssets;
 using TMPro;
 using Unity.Netcode;
@@ -59,11 +60,10 @@ public class InteractionController : NetworkBehaviour
         GameObject go = Instantiate(loot, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
         go.transform.localPosition = Vector3.zero;
         go.transform.localRotation = Quaternion.identity;
-        go.transform.localScale = Vector3.one;
+        go.transform.localScale = Vector3.one * 0.3f;
         heldObject = go.GetComponent<IHoldable>();
         playerController.ToggleCarrying(true);
         DisableCurrentInteractable();
-
         return go;
     }
 
@@ -109,17 +109,22 @@ public class InteractionController : NetworkBehaviour
             hitColliders = Physics.OverlapSphere(transform.position, 2.0f, interactableLayerMask);
         } else if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
         {
-            RaycastHit[] hits = Physics.RaycastAll(
+            Physics.Raycast(
                 playerController.MainCamera.transform.position, 
-                playerController.MainCamera.transform.forward, 
+                playerController.MainCamera.transform.forward,
+                out RaycastHit raycastHit,
+                MAX_INTERACTION_DISTANCE,
                 interactableLayerMask);
             
-            hitColliders = new Collider[hits.Length];
-            for (int i = 0; i < hits.Length; i++)
+            if (raycastHit.collider != null)
             {
-                hitColliders[i] = hits[i].collider;
+                hitColliders = new Collider[1];
+                hitColliders[0] = raycastHit.collider;
             }
-            
+            else
+            {
+                hitColliders = Array.Empty<Collider>();
+            }
         }
         
        
@@ -143,6 +148,7 @@ public class InteractionController : NetworkBehaviour
 
         if (closestCollider != null && minDistance < MAX_INTERACTION_DISTANCE)
         {
+            Debug.Log(closestCollider.ToString());
             GameObject parentHitObject = closestCollider.gameObject;
             // Expects collider reference
             ColliderReference colliderReference = closestCollider.GetComponent<ColliderReference>();
@@ -225,14 +231,8 @@ public class InteractionController : NetworkBehaviour
                         else
                         {
                             Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
-                            if (hit.collider != null)
-                            {
-                                if (hit.distance < MAX_DROP_DISTANCE)
-                                {
-                                    LootManager.Instance.RequestDrop(
-                                        new Vector3(hit.point.x, hit.point.y + 0.3f, hit.point.z), heldObject.gameObject);
-                                }
-                            }
+                            LootManager.Instance.RequestDrop(
+                                heldObject.gameObject.transform.position, heldObject.gameObject);
                         }
                     } 
                 }
@@ -289,15 +289,21 @@ public class InteractionController : NetworkBehaviour
             hitColliders = Physics.OverlapSphere(transform.position, 2.0f, interactableLayerMask);
         } else if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
         {
-            RaycastHit[] hits = Physics.RaycastAll(
+            Physics.Raycast(
                 playerController.MainCamera.transform.position, 
-                playerController.MainCamera.transform.forward, 
+                playerController.MainCamera.transform.forward,
+                out RaycastHit raycastHit,
+                MAX_INTERACTION_DISTANCE,
                 interactableLayerMask);
             
-            hitColliders = new Collider[hits.Length];
-            for (int i = 0; i < hits.Length; i++)
+            if (raycastHit.collider != null)
             {
-                hitColliders[i] = hits[i].collider;
+                hitColliders = new Collider[1];
+                hitColliders[0] = raycastHit.collider;
+            }
+            else
+            {
+                hitColliders = Array.Empty<Collider>();
             }
             
         }

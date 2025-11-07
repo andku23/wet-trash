@@ -184,7 +184,9 @@ public class LootManager : NetworkBehaviour
         networkLoot.lootIndex.Value = lootIndex;
         //lootBaseData.LoadLootNetwork();
         networkObject.Spawn();
-        _loots.Add(networkObject);     
+        NetworkFall networkFall = networkObject.GetComponent<NetworkFall>();
+        if (networkFall != null) networkFall.enabled = true;
+        _loots.Add(networkObject);
         Drop_ClientRpc(targetPlayerNetworkObjectId);
     }
     

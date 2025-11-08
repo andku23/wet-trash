@@ -265,7 +265,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3030204026595536305}
   - component: {fileID: 246672686618251258}
-  - component: {fileID: 2663000344273310590}
   m_Layer: 10
   m_Name: BoatAttachmentPoint (1)
   m_TagString: AttachmentPoint
@@ -305,31 +304,6 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   heldItem:
     m_InternalValue: 0
---- !u!114 &2663000344273310590
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4676189924237630181}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1417086944
-  InScenePlacedSourceGlobalObjectIdHash: 3095711529
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 0
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
 --- !u!1 &4865316050851331386
 GameObject:
   m_ObjectHideFlags: 0
@@ -340,7 +314,6 @@ GameObject:
   m_Component:
   - component: {fileID: 9023183788660336184}
   - component: {fileID: 4134017611891853089}
-  - component: {fileID: 5713025555567200718}
   m_Layer: 10
   m_Name: BoatAttachmentPoint
   m_TagString: AttachmentPoint
@@ -380,31 +353,6 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   heldItem:
     m_InternalValue: 0
---- !u!114 &5713025555567200718
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4865316050851331386}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2846178152
-  InScenePlacedSourceGlobalObjectIdHash: 3095711529
-  DeferredDespawnTick: 0
-  Ownership: 1
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 0
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
-  SyncOwnerTransformWhenParented: 1
-  AllowOwnerToParent: 0
 --- !u!1 &6122289656322111674
 GameObject:
   m_ObjectHideFlags: 0
@@ -643,7 +591,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1214719725
+  GlobalObjectIdHash: 3849195495
   InScenePlacedSourceGlobalObjectIdHash: 3095711529
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1330,17 +1278,39 @@ PrefabInstance:
       propertyPath: m_Name
       value: LootDeposit
       objectReference: {fileID: 0}
+    - target: {fileID: 5434238444473404748, guid: aaf2773a9c6aa1d4dace314df2c65353,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.432
+      objectReference: {fileID: 0}
+    - target: {fileID: 5824269557838290399, guid: aaf2773a9c6aa1d4dace314df2c65353,
+        type: 3}
+      propertyPath: m_Size.y
+      value: 1.13
+      objectReference: {fileID: 0}
+    - target: {fileID: 6478895510489575448, guid: aaf2773a9c6aa1d4dace314df2c65353,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6611659550737756129, guid: aaf2773a9c6aa1d4dace314df2c65353,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6611659550737756129, guid: aaf2773a9c6aa1d4dace314df2c65353,
         type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 2568452037
+      value: 3849195495
       objectReference: {fileID: 0}
     - target: {fileID: 6611659550737756129, guid: aaf2773a9c6aa1d4dace314df2c65353,
         type: 3}
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 3095711529
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6611659550737756129, guid: aaf2773a9c6aa1d4dace314df2c65353, type: 3}
+    - {fileID: 6478895510489575448, guid: aaf2773a9c6aa1d4dace314df2c65353, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

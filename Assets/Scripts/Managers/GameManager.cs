@@ -12,6 +12,8 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private LootManager _lootManager;
     [SerializeField] private UI _ui;
     [SerializeField] private float _timeFullDaySeconds;
+    [SerializeField] private GameObject _boatPrefab;
+    [SerializeField] private GameObject _boatSpawnLocation;
     [SerializeField] private UnityEvent<int> _timeUpdatedEvent;
     [SerializeField] public UnityEvent TimeFinishedEvent;
     [SerializeField] private UnityEvent<int> _onDayUpdatedEvent;
@@ -49,6 +51,15 @@ public class GameManager : NetworkBehaviour
         base.OnNetworkSpawn();
         
         Cursor.lockState = CursorLockMode.Locked;
+
+        if (IsServer)
+        {
+            GameObject boat = Instantiate(_boatPrefab);
+            boat.transform.position = _boatSpawnLocation.transform.position;
+            NetworkObject networkObject = boat.GetComponent<NetworkObject>();
+            networkObject.Spawn();
+        }
+        
     }
 
     public void RequestToNextGameState()
@@ -214,19 +225,10 @@ public class GameManager : NetworkBehaviour
             boatAttachmentPoint.transform.position, boatAttachmentPoint.transform.rotation).GetComponent<NetworkObject>();
         no.transform.Rotate(boatAttachmentPoint.transform.up, rotationPlaceOffset);
         no.Spawn();
+        no.transform.parent = Boat.transform;
         boatAttachmentPoint.heldItem.Value = no.NetworkObjectId;
-        PlaceAttachmentPoint_ClientRpc(no.NetworkObjectId, boatAttachmentIndex);
     }
     
-    [ClientRpc(RequireOwnership = false)]
-    public void PlaceAttachmentPoint_ClientRpc(ulong networkObjectId, int boatAttachmentIndex)
-    {
-        BoatAttachmentPoint boatAttachmentPoint = Boat.BoatAttachmentPoints[boatAttachmentIndex];
-        NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId,
-            out NetworkObject networkLootObject);
-        networkLootObject.transform.parent = boatAttachmentPoint.transform;
-    }
-
     private void SpawnLoot()
     {
         DeleteLoot();

@@ -21,21 +21,6 @@ public class NetworkModeOverlay : NetworkBehaviour
     
     private void OnConnected(NetworkManager manager, ConnectionEventData eventData)
     {
-        if (NetworkManager.Singleton.IsHost)
-        {
-            Debug.Log("Host");
-        }
-        
-        if (NetworkManager.Singleton.IsClient)
-        {
-            Debug.Log("Client");
-        }
-        
-        if (NetworkManager.Singleton.IsServer)
-        {
-            Debug.Log("Server");
-        }
-
         if (textMesh.text == "Server")
         {
             textMesh.text = "Host";

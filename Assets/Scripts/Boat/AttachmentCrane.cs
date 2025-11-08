@@ -202,7 +202,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     public void ResetCrane()
     {
         _stateMachine.ChangeState((int)LocalStates.Default);
-        _networkedState.Value = (int)NetworkStates.Default;
+        if(IsServer) _networkedState.Value = (int)NetworkStates.Default;
         if (_localHookedLoot != null)
         {
             Destroy(_localHookedLoot.gameObject);

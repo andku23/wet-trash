@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-public class UI : MonoBehaviour
+public class UI : NetworkBehaviour
 {
     [SerializeField] private TextMeshProUGUI cashText;
     [SerializeField] private TextMeshProUGUI timeText;
@@ -92,23 +92,6 @@ public class UI : MonoBehaviour
         }
     }
     
-    public void PopulateShopContent()
-    {
-        for (int i = 0; i < ShopManager.Instance.shopList.items.Length; i++)
-        {
-            int index = i;
-            UIShopItem uiShopItem = Instantiate(shopItemPrefab, shopContent).GetComponent<UIShopItem>();
-            uiShopItem.name.text = ShopManager.Instance.shopList.items[i].name;
-            uiShopItem.price.text = "$"+ShopManager.Instance.shopList.items[i].price.ToString();
-            uiShopItem.button.onClick.AddListener(() =>
-            {
-                // TODO when I change this to be randomized, make sure the indexes are correct
-                OnShopButtonClick(index);
-            });
-            uiShopItems.Add(uiShopItem);
-        }
-    }
-    
     [ServerRpc(RequireOwnership = false)]
     public void PopulateShopContent_ServerRpc()
     {
@@ -133,6 +116,8 @@ public class UI : MonoBehaviour
     [ClientRpc(RequireOwnership = false)]
     public void PopulateShopContent_ClientRpc(int[] randomizedShopList)
     {
+        Debug.Log("populate shop " + randomizedShopList.Length);
+        
         ClearShopContent();
         for (int i = 0; i < randomizedShopList.Length; i++)
         {

@@ -38,6 +38,8 @@ public class NetworkedBoat : NetworkBehaviour
 #endif
         GameManager.Instance.Boat = this;
         
+        //Initialize all the boat logic so it can be spawned in
+        
     }
 
     private void FixedUpdate()

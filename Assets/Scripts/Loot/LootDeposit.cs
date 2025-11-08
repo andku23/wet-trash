@@ -41,12 +41,18 @@ public class LootDeposit : NetworkBehaviour, IInteractable
         }
         
         GameManager.Instance.TimeFinishedEvent.AddListener(Reset);
-        
-        
+        LootManager.Instance.OnLootDeposited += PlaceLootAtNextPosition;
     }
 
-    public void PlaceLootAtNextPosition()
+    private void OnDestroy()
     {
+        GameManager.Instance.TimeFinishedEvent.RemoveListener(Reset);
+        LootManager.Instance.OnLootDeposited -= PlaceLootAtNextPosition;
+    }
+
+    public void PlaceLootAtNextPosition(int lootDepositIndex)
+    {
+        if (lootDepositIndex != id.Value) return;
         Size++;
         
         GameObject go = Instantiate(lootDepositBox, transform);

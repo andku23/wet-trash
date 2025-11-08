@@ -18,6 +18,8 @@ public class LootManager : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] private List<LootDeposit> _lootDeposits;
     [SerializeField] private GameObject spawnCutoff;
+
+    public Action<int> OnLootDeposited;
     
     private List<NetworkObject> _loots = new List<NetworkObject>();
     
@@ -225,22 +227,24 @@ public class LootManager : NetworkBehaviour
 
     public void RequestDeposit(LootDeposit deposit, GameObject loot)
     {
-        Deposit_ServerRpc(NetworkManager.Singleton.LocalClientId, deposit.NetworkObjectId, LootPrefabtoIndex(loot));
+        Deposit_ServerRpc(NetworkManager.Singleton.LocalClientId, deposit.id.Value, LootPrefabtoIndex(loot));
     }
     
     [ServerRpc(RequireOwnership = false)]
-    public void Deposit_ServerRpc(ulong targetPlayerNetworkObjectId, ulong depositNetworkID, int lootIndex)
+    public void Deposit_ServerRpc(ulong targetPlayerNetworkObjectId, int lootDepositIndex, int lootIndex)
     {
         MoneyManager.Instance.AddCash(lootList.pairs[lootIndex].price);
-        Deposit_ClientRpc(targetPlayerNetworkObjectId, depositNetworkID);
+        Deposit_ClientRpc(targetPlayerNetworkObjectId, lootDepositIndex);
     }
     
     [ClientRpc(RequireOwnership = false)]
-    public void Deposit_ClientRpc(ulong targetPlayerNetworkObjectId, ulong depositNetworkID)
+    public void Deposit_ClientRpc(ulong targetPlayerNetworkObjectId, int lootDepositIndex)
     {
         DestroyLootInHand(targetPlayerNetworkObjectId);
-        LootDeposit lootDeposit = NetworkManager.Singleton.SpawnManager.SpawnedObjects[depositNetworkID].GetComponent<LootDeposit>();
-        lootDeposit.PlaceLootAtNextPosition();
+        OnLootDeposited.Invoke(lootDepositIndex);
+        
+        //LootDeposit lootDeposit = NetworkManager.Singleton.SpawnManager.SpawnedObjects[depositNetworkID].GetComponent<LootDeposit>();
+        //lootDeposit.PlaceLootAtNextPosition();
     }
     
 }

@@ -64,6 +64,11 @@ public class Enemy : NetworkBehaviour
     private void ChangeState(ServerStates newState)
     {
         _serverStateMachine.ChangeState((int)newState);
+        ChangeState_ServerRpc(newState);
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void ChangeState_ServerRpc(ServerStates newState)
+    {
         _networkState.Value = (int)newState;
     }
 

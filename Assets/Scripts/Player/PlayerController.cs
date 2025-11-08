@@ -61,6 +61,7 @@ public class PlayerController : NetworkBehaviour
     public OwnerNetworkAnimator OwnerNetworkAnimator;
 
     private ICameraControl _cameraControl;
+    private bool _isCameraAndMovementLocked;
     
     public NetworkHandleParenting NetworkHandleParenting;
 
@@ -174,7 +175,28 @@ public class PlayerController : NetworkBehaviour
             {
                 _animator.SetFloat(_animIDVerticalLookAmount, 0.5f);
             }
+            UI.Instance.OnUIOpened += LockCamera;
+            UI.Instance.OnUIClosed += UnlockCamera;
         }
+    }
+
+    private void OnDestroy()
+    {
+        if (IsOwner)
+        {
+            UI.Instance.OnUIOpened -= LockCamera;
+            UI.Instance.OnUIClosed -= UnlockCamera;
+        }
+    }
+
+    private void LockCamera()
+    {
+        _isCameraAndMovementLocked = true;
+    }
+    
+    private void UnlockCamera()
+    {
+        _isCameraAndMovementLocked = false;
     }
 
     private void Update()
@@ -185,7 +207,7 @@ public class PlayerController : NetworkBehaviour
         JumpAndGravity();
         GroundedCheck();
         InWaterCheck();
-        if (!playerState.IsDead)
+        if (!playerState.IsDead && !_isCameraAndMovementLocked)
         {
             Move();
         }

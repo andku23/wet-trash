@@ -1,12 +1,16 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class UI : NetworkBehaviour
 {
+    public static UI Instance;
+    
     [SerializeField] private TextMeshProUGUI cashText;
     [SerializeField] private TextMeshProUGUI timeText;
     [SerializeField] private TextMeshProUGUI dayText;
@@ -22,14 +26,18 @@ public class UI : NetworkBehaviour
     [SerializeField] private RectTransform sharedInventoryContent;
     [SerializeField] private GameObject sharedInventoryPrefab;
     
-    [FormerlySerializedAs("endScreen")] [SerializeField] private Panel endScreenPanel;
+    [SerializeField] private Panel endScreenPanel;
     [SerializeField] private TextMeshProUGUI endScreenQuotaText;
     [SerializeField] private TextMeshProUGUI endScreenCurrentCashText;
 
     private List<UIShopItem> uiShopItems = new List<UIShopItem>();
+
+    public Action OnUIOpened;
+    public Action OnUIClosed;
     
     private void Start()
     {
+        if(Instance == null) Instance = this;
         CloseAllPanels(true, false);
     }
 
@@ -40,6 +48,7 @@ public class UI : NetworkBehaviour
 
     public void CloseAllPanels(bool immediate, bool lockCursor = true)
     {
+        OnUIClosed?.Invoke();
         shopPanel.FadeOut(immediate);
         sharedInventoryPanel.FadeOut(immediate);
         endScreenPanel.FadeOut(immediate);
@@ -51,18 +60,21 @@ public class UI : NetworkBehaviour
     {
         shopPanel.FadeIn(false);
         Cursor.lockState = CursorLockMode.None;
+        OnUIOpened?.Invoke();
     }
     
     public void ShowSharedInventoryPanel(bool isVisible)
     {
         sharedInventoryPanel.FadeIn(false);
         Cursor.lockState = CursorLockMode.None;
+        OnUIOpened?.Invoke();
     }
 
     public void ShowEndScreen(bool isVisible)
     {
         endScreenPanel.FadeIn(false);
         Cursor.lockState = CursorLockMode.None;
+        OnUIOpened?.Invoke();
     }
     
     public void ClearSharedInventoryUI()
@@ -116,8 +128,6 @@ public class UI : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     public void PopulateShopContent_ClientRpc(int[] randomizedShopList)
     {
-        Debug.Log("populate shop " + randomizedShopList.Length);
-        
         ClearShopContent();
         for (int i = 0; i < randomizedShopList.Length; i++)
         {

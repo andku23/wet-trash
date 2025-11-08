@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
@@ -29,6 +30,10 @@ public class UI : NetworkBehaviour
     [SerializeField] private Panel endScreenPanel;
     [SerializeField] private TextMeshProUGUI endScreenQuotaText;
     [SerializeField] private TextMeshProUGUI endScreenCurrentCashText;
+    
+    [SerializeField] private Panel startDayPanel;
+    [SerializeField] private TextMeshProUGUI startDayText;
+    [SerializeField] private TextMeshProUGUI startQuotaText;
 
     private List<UIShopItem> uiShopItems = new List<UIShopItem>();
 
@@ -52,8 +57,25 @@ public class UI : NetworkBehaviour
         shopPanel.FadeOut(immediate);
         sharedInventoryPanel.FadeOut(immediate);
         endScreenPanel.FadeOut(immediate);
+        startDayPanel.FadeOut(immediate);
         if(lockCursor)
             Cursor.lockState = CursorLockMode.Locked;
+    }
+    
+    public void ShowDayStartPanel()
+    {
+        StartCoroutine(Co_ShowDayStartPanel());
+    }
+
+    private IEnumerator Co_ShowDayStartPanel()
+    {
+        startDayPanel.FadeIn(false, 1.0f);
+        Cursor.lockState = CursorLockMode.None;
+        OnUIOpened?.Invoke();
+        yield return new WaitForSeconds(2.5f);
+        startDayPanel.FadeOut(false, 1.0f);
+        Cursor.lockState = CursorLockMode.Locked;
+        OnUIClosed?.Invoke();
     }
     
     public void ShowShopPanel(bool isVisible)
@@ -190,11 +212,13 @@ public class UI : NetworkBehaviour
     public void UpdateDayText(int day)
     {
         dayText.text = "Day: " + day.ToString();
+        startDayText.text = "Day: " + day.ToString();
     }
     
     public void UpdateQuotaText(int quota)
     {
         quotaText.text = "Quota: $" + quota.ToString();
+        startQuotaText.text = "Quota: " + quota.ToString();
     }
     
     public void UpdateBreathBar(float percentage)

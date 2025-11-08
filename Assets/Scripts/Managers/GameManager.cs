@@ -20,6 +20,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] public UnityEvent<float> OnBreathUpdated;
 
     public NetworkedBoat Boat;
+    private Dictionary<ulong, bool> playerWaitConfirm;
     
     private TimeState _timeState;
     private Coroutine _co_TimerCountdown;
@@ -65,6 +66,43 @@ public class GameManager : NetworkBehaviour
     public void RequestToNextGameState()
     {
         ToNextGameState_ServerRpc();
+    }
+
+    private void WaitForPlayerResponse(Action onComplete)
+    {
+        playerWaitConfirm = new Dictionary<ulong, bool>();
+        var connectedClients = NetworkManager.Singleton.ConnectedClients;
+        foreach (var client in connectedClients)
+        {
+            playerWaitConfirm.Add(client.Key, false);
+        }
+
+        StartCoroutine(Co_WaitForPlayerResponse(onComplete));
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void PlayerWaitResponse_ServerRpc(ulong targetPlayerNetworkObjectId)
+    {
+        playerWaitConfirm[targetPlayerNetworkObjectId] = true;
+    }
+
+    private IEnumerator Co_WaitForPlayerResponse(Action onComplete)
+    {
+        bool allPlayersResponded = false;
+        while (!allPlayersResponded)
+        {
+            allPlayersResponded = true;
+            foreach (var player in playerWaitConfirm)
+            {
+                if (!player.Value)
+                {
+                    allPlayersResponded = false;
+                    break;
+                }
+            }
+            yield return null;
+        }
+        onComplete?.Invoke();
     }
 
     public void ChangeToBuildMode(int shopItemIndex)
@@ -134,10 +172,10 @@ public class GameManager : NetworkBehaviour
             case TimeState.LoadingNextDay:
                 _day++;
                 _quota += 200;
+                WaitForPlayerResponse(ToNextGameState_ServerRpc);
                 MoneyManager.Instance.ResetCurrentCollected();
                 TerrainManager.Instance.GenerateTerrain();
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
-                StartCoroutine(WaitForPlayersToLoad());
                 break;
             case TimeState.DayActive:
                 SpawnLoot();
@@ -155,13 +193,6 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    private IEnumerator WaitForPlayersToLoad()
-    {
-        yield return new WaitForSeconds(1);
-        ToNextGameState_ServerRpc();
-        yield return null;
-    }
-    
     [ClientRpc(RequireOwnership = false)]
     private void UpdateTimeState_ClientRpc(TimeState timeState, int day, int quota, int currentDayCash)
     {
@@ -183,6 +214,7 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.DayActive:
                 _ui.UpdateDayInfoText(quota, day);
+                _ui.ShowDayStartPanel();
                 StartCountdown();
                 break;
             case TimeState.ShowDayResult:
@@ -259,7 +291,7 @@ public class GameManager : NetworkBehaviour
         while (secondsRemaining > 0)
         {
             _timeUpdatedEvent?.Invoke(secondsRemaining);
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(3);
             secondsRemaining--;
         }
 

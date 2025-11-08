@@ -115,7 +115,9 @@ public class TerrainManager : NetworkBehaviour
                 }
             }
         
-            _terrain.terrainData.SetHeights(0, 0, heights); 
+            _terrain.terrainData.SetHeights(0, 0, heights);
+
+            GameManager.Instance.PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
 
             noiseMap.Dispose();
             holesMap.Dispose();

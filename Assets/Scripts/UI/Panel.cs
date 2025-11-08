@@ -13,7 +13,7 @@ public class Panel : MonoBehaviour
         _canvasGroup = GetComponent<CanvasGroup>();
     }
     
-    public void FadeIn(bool immediate = true)
+    public void FadeIn(bool immediate = true, float overrideFadeTime = fadeTime)
     {
         if (_fadeTween != null)
         {
@@ -28,11 +28,11 @@ public class Panel : MonoBehaviour
         }
         else
         {
-            _fadeTween = _canvasGroup.DOFade(1, fadeTime);
+            _fadeTween = _canvasGroup.DOFade(1, overrideFadeTime);
         }
     }
     
-    public void FadeOut(bool immediate = true)
+    public void FadeOut(bool immediate = true, float overrideFadeTime = fadeTime)
     {
         if (_fadeTween != null)
         {
@@ -45,7 +45,7 @@ public class Panel : MonoBehaviour
         }
         else
         {
-            _fadeTween = _canvasGroup.DOFade(0, fadeTime);
+            _fadeTween = _canvasGroup.DOFade(0, overrideFadeTime);
             _fadeTween.onComplete = OnFadeoutComplete;
         }
     }

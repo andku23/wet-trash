@@ -4040,6 +4040,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: BoatAttachment Crane
       objectReference: {fileID: 0}
+    - target: {fileID: 8200335070758408453, guid: f24abbea2b1812e4b920a7d2bbc895b8,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9145671610517223157, guid: f24abbea2b1812e4b920a7d2bbc895b8,
         type: 3}
       propertyPath: GlobalObjectIdHash
@@ -5836,6 +5841,7 @@ MonoBehaviour:
   lootList: {fileID: 11400000, guid: 4623b85544d214945bd6f8e8f852d1ce, type: 2}
   moneyText: {fileID: 1420962018}
   _lootDeposits: []
+  _holes: []
   spawnCutoff: {fileID: 161932798}
 --- !u!4 &1379245674
 Transform:
@@ -6811,6 +6817,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnderwaterTerrain
   ShowTopMostFoldoutHeaderGroup: 1
+  caveRoomEnds:
+  - {fileID: 6761049422850096718, guid: 282d08b761b871d4f8d2de506e6a8eab, type: 3}
   _terrain: {fileID: 1917169612}
 --- !u!1 &1562635054 stripped
 GameObject:
@@ -7239,8 +7247,8 @@ Transform:
   m_GameObject: {fileID: 1708712706}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.0000023842, y: -23.8, z: -0.00000095367}
-  m_LocalScale: {x: 500, y: 46.578293, z: 500}
+  m_LocalPosition: {x: -0.0000023842, y: -52.2, z: -0.00000095367}
+  m_LocalScale: {x: 500, y: 104.25153, z: 500}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1522880990}

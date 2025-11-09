@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using Unity.Collections;
@@ -9,6 +10,7 @@ using Random = UnityEngine.Random;
 public class TerrainManager : NetworkBehaviour
 {
     public static TerrainManager Instance;
+    [SerializeField] private GameObject[] caveRoomEnds;
 
     private void Start()
     {
@@ -78,10 +80,88 @@ public class TerrainManager : NetworkBehaviour
         float randomX = Random.Range(terrainPosition.x, terrainPosition.x + terrainSize.x);
         float randomZ = Random.Range(terrainPosition.z, terrainPosition.z + terrainSize.z);
 
-        Vector3 pointOnXZPlane = new Vector3(randomX, 0, randomZ);
+        return GetPointOnTerrain(randomX, randomZ);
+    }
+    
+    public Vector3 GetPointOnTerrain(float x, float z)
+    {
+        Vector3 terrainPosition = _terrain.transform.position;
+
+        Vector3 pointOnXZPlane = new Vector3(x, 0, z);
         float height = _terrain.SampleHeight(pointOnXZPlane);
 
-        return new Vector3(randomX, height + terrainPosition.y, randomZ);
+        return new Vector3(x, height + terrainPosition.y, z);
+    }
+
+    private Hole CreateHole(int xPos, int zPos, int holeWidth, int holeHeight)
+    {
+        bool[,] holeMap = new bool[holeWidth, holeHeight];
+        float[,] heightMap = new float[holeWidth, holeHeight];
+        Vector2 originOfCircle = new Vector2(holeWidth / 2, holeHeight / 2);
+        int xbase = xPos - holeWidth / 2;
+        int zbase = zPos - holeHeight / 2;
+        
+        Vector3 lowestHolePosition = new Vector3(xPos, 0, zPos);
+        
+        lowestHolePosition.y = _terrain.terrainData.GetHeight((int)lowestHolePosition.x, (int)lowestHolePosition.z);
+        float lowestHoleHeight = lowestHolePosition.y / _terrain.terrainData.size.y - 0.1f;
+        float fullSize = holeWidth / 2;
+        float holeSize = holeWidth / 4;
+        float edgeFromCenter = Vector2.Distance(new Vector2(holeWidth, holeHeight), originOfCircle);
+        
+        
+        for (int x = 0; x < holeWidth; x++)
+        {
+            for (int y = 0; y < holeHeight; y++)
+            {
+                float currentHeight = _terrain.terrainData.GetHeight(zbase + y, xbase + x)/_terrain.terrainData.size.y;
+                float distanceFromCenter = Vector2.Distance(new Vector2(x, y), originOfCircle);
+                
+                heightMap[x, y] = currentHeight;
+                //heightMap[x, y] -= (1.0f - distanceFromCenter/fullSize) * 0.4f;
+
+                float targetDepth = currentHeight - lowestHoleHeight;
+                
+                heightMap[x, y] -= Mathf.Clamp(targetDepth * (1.0f-((distanceFromCenter - holeSize) / (edgeFromCenter - holeSize))), 0.0f, targetDepth);
+                
+                if (distanceFromCenter <= holeSize)
+                {
+                    holeMap[x, y] = false; // This is a hole
+                }
+                else
+                {
+                    holeMap[x, y] = true; // This is solid terrain
+                }
+            }
+        }
+        _terrain.terrainData.SetHoles(xbase, zbase, holeMap);
+        _terrain.terrainData.SetHeights(xbase, zbase, heightMap);
+        GameObject caveRoom = Instantiate(caveRoomEnds[Random.Range(0, caveRoomEnds.Length)]);
+        lowestHolePosition.x /=  _terrain.terrainData.heightmapResolution;
+        lowestHolePosition.z /=  _terrain.terrainData.heightmapResolution;
+        lowestHolePosition.x *=  _terrain.terrainData.size.x;
+        lowestHolePosition.z *=  _terrain.terrainData.size.z;
+        lowestHolePosition.y -=  3.0f;
+        caveRoom.transform.position = lowestHolePosition + _terrain.transform.position;
+        
+        return caveRoom.GetComponent<Hole>();
+    }
+
+    private void ClearAllHoles()
+    {
+        bool[,] clearHoles  = new bool[
+            _terrain.terrainData.heightmapResolution - 1,
+            _terrain.terrainData.heightmapResolution - 1];
+        
+
+        for (int i = 0; i < _terrain.terrainData.heightmapResolution - 1; i++)
+        {
+            for (int j = 0; j < _terrain.terrainData.heightmapResolution - 1; j++)
+            {
+                clearHoles[i, j] = true;
+            }
+        }
+        _terrain.terrainData.SetHoles(0, 0, clearHoles);
     }
     
     private void Update()
@@ -96,6 +176,8 @@ public class TerrainManager : NetworkBehaviour
           float[,] heights = new float[
                 _terrain.terrainData.heightmapResolution,
                 _terrain.terrainData.heightmapResolution];
+          
+          ClearAllHoles();
 
             for (int i = 0; i < _terrain.terrainData.heightmapResolution; i++)
             {
@@ -108,14 +190,19 @@ public class TerrainManager : NetworkBehaviour
                     float height = 0.6f*(xInitialPosition + zInitialPosition)/2f + 0.25f
                                    + 0.55f * holesMap[i * _terrain.terrainData.heightmapResolution + j]
                                    + 0.05f*noiseMap[i*_terrain.terrainData.heightmapResolution + j];
-                                   //Starting height
-                                   //+ 0.15f*(noiseMap[i*_terrain.terrainData.heightmapResolution + j]// noise
-                                   //0.55f*holesMap[i*_terrain.terrainData.heightmapResolution + j]);
                     heights[i, j] = height;
                 }
             }
         
             _terrain.terrainData.SetHeights(0, 0, heights);
+            Hole hole = CreateHole(_terrain.terrainData.heightmapResolution/3, 
+                _terrain.terrainData.heightmapResolution/3,
+                32, 32);
+
+            if (IsServer)
+            {
+                LootManager.Instance.RegisterHoleServer(hole);
+            }
 
             GameManager.Instance.PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
 

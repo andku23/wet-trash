@@ -72,7 +72,7 @@ public class UI : NetworkBehaviour
         startDayPanel.FadeIn(false, 1.0f);
         Cursor.lockState = CursorLockMode.None;
         OnUIOpened?.Invoke();
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(1f);
         startDayPanel.FadeOut(false, 1.0f);
         Cursor.lockState = CursorLockMode.Locked;
         OnUIClosed?.Invoke();

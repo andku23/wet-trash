@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using StarterAssets;
 using TMPro;
 using Unity.Netcode;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class LootManager : NetworkBehaviour
@@ -17,6 +13,7 @@ public class LootManager : NetworkBehaviour
     [SerializeField] private LootList lootList;
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] private List<LootDeposit> _lootDeposits;
+    [SerializeField] private List<Hole> _holes;
     [SerializeField] private GameObject spawnCutoff;
 
     public Action<int> OnLootDeposited;
@@ -48,9 +45,10 @@ public class LootManager : NetworkBehaviour
 
     public void SpawnLoot()
     {
+        // Create spawn probability tables for different depths
         List<int> spawnProbabilityShallow = new List<int>();
         List<int> spawnProbabilityDeep = new List<int>();
-        // Create spawn probability tables
+        
         for (int i = 0; i < lootList.pairs.Length; i++)
         {
             for (int j = 0; j < lootList.pairs[i].spawnRateShallow; j++)
@@ -67,6 +65,7 @@ public class LootManager : NetworkBehaviour
             }
         }
         
+        // Spawn loot based on created loot tables
         Vector3 spawnPosition = Vector3.zero;
         for (int i = 0; i < _numLoot; i++)
         {
@@ -83,6 +82,14 @@ public class LootManager : NetworkBehaviour
         
         //One on the surface just to debug
         SpawnAndLoadLoot(new Vector3(0,0,0), spawnProbabilityShallow);
+
+        for (int i = 0; i < _holes.Count; i++)
+        {
+            for (int j = 0; j < _holes[i].lootSpawnLocations.Length; j++)
+            {
+                SpawnAndLoadLoot(_holes[i].lootSpawnLocations[j].position, spawnProbabilityDeep);
+            }
+        }
     }
 
     private void SpawnAndLoadLoot(Vector3 spawnPosition, List<int> spawnProbabilityTable)
@@ -216,6 +223,13 @@ public class LootManager : NetworkBehaviour
     public void Drop_ClientRpc(ulong targetPlayerNetworkObjectId)
     {
         DestroyLootInHand(targetPlayerNetworkObjectId);
+    }
+    
+    public void RegisterHoleServer(Hole hole)
+    {
+        _holes.Add(hole);
+        int id = _holes.Count - 1;
+        hole.id = id;
     }
     
     public void RegisterDepositServer(LootDeposit deposit)

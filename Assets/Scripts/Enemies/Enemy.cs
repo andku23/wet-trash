@@ -64,12 +64,10 @@ public class Enemy : NetworkBehaviour
     private void ChangeState(ServerStates newState)
     {
         _serverStateMachine.ChangeState((int)newState);
-        ChangeState_ServerRpc(newState);
-    }
-    [ServerRpc(RequireOwnership = false)]
-    private void ChangeState_ServerRpc(ServerStates newState)
-    {
-        _networkState.Value = (int)newState;
+        if (IsServer)
+        {
+            _networkState.Value = (int)newState;
+        }
     }
 
     private void Idle_OnEnter()
@@ -96,7 +94,9 @@ public class Enemy : NetworkBehaviour
             }
         }
 
-        if (_closestPlayer != null && closestDistance < minimumFollowDistance && _closestPlayerState.Health.Value > 0)
+        if (_closestPlayer != null && closestDistance < minimumFollowDistance && 
+            _closestPlayerState.Health.Value > 0 &&
+            _currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
         {
             ChangeState(ServerStates.FollowingPlayer);
         }

@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class AttachmentCrane : NetworkBehaviour, IInteractable
@@ -11,8 +12,12 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     private ClientStateMachine _stateMachine;
     private NetworkVariable<int> _networkedState = new NetworkVariable<int>(0);
     private NetworkObject _hookedLoot = null;
-    private GameObject _craneHookOnLoot = null;
+    private CraneHook _craneHookOnLoot = null;
     private GameObject _localHookedLoot = null;
+
+    public float MaxCraneDistance = 10f;
+
+    public GameObject CraneHookParent {get {return craneHookParent;}}
     
     enum LocalStates
     {
@@ -41,7 +46,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         BaseState closestItemState = new BaseState(OnClosestItemStateEnter, null, OnClosestItemStateExit);
         _stateMachine.AddState((int)LocalStates.ClosestItem, closestItemState);
         
-        BaseState hookHeldState = new BaseState(OnHookHeldStateEnter, null, OnHookHeldStateExit);
+        BaseState hookHeldState = new BaseState(OnHookHeldStateEnter, OnHookHeldStateUpdate, OnHookHeldStateExit);
         _stateMachine.AddState((int)LocalStates.HookHeld, hookHeldState);
         
         BaseState attachedToLootState = new BaseState(OnHookAttachedEnter, null, null);
@@ -102,11 +107,12 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         InteractionController interactionController = playerObject.GetComponent<InteractionController>();
         if (interactionController != null)
         {
-            GameObject craneHookInstantiated = interactionController.AttachToPoint(craneHookPrefab);
-            IHoldable heldObject = craneHookInstantiated.GetComponent<IHoldable>();
-            if (heldObject != null)
+            GameObject craneHookInstantiated = interactionController.AttachToPoint(craneHookPrefab, networkPlayerID);
+            CraneHook craneHook = craneHookInstantiated.GetComponent<CraneHook>();
+            if (craneHook != null)
             {
-                heldObject.ConnectedParent = gameObject;
+                craneHook.ConnectedParent = gameObject;
+                craneHook.AttachmentCrane = this;
             }
         }
     }
@@ -170,8 +176,10 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         ICranable cranableObject = hookedLoot.GetComponent<ICranable>();
         if (cranableObject != null)
         {
-            _craneHookOnLoot = Instantiate(craneHookPrefab, hookedLoot.transform);
-            _craneHookOnLoot.transform.position = cranableObject.GetAttachPoint();
+            _craneHookOnLoot = Instantiate(craneHookPrefab, hookedLoot.transform).GetComponent<CraneHook>();
+            _craneHookOnLoot.ConnectedParent = gameObject;
+            _craneHookOnLoot.AttachmentCrane = gameObject.GetComponent<AttachmentCrane>();
+            _craneHookOnLoot.transform.position = cranableObject.GetAttachPoint() - _craneHookOnLoot.GetAttachmentOffset();
         }
     }
     
@@ -185,18 +193,19 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     public void ReelFinished_ServerRpc()
     {
         _networkedState.Value = (int)NetworkStates.ReelFinished;
-        _hookedLoot.transform.position = craneHookParent.transform.position;
+        _hookedLoot.transform.position = pullEndPosition;
         int lootIndex = _hookedLoot.GetComponent<NetworkLoot>().lootIndex.Value;
         LootManager.Instance.DespawnLoot_Server(_hookedLoot);
         MoneyManager.Instance.AddCash(LootManager.Instance.LootIndextoData(lootIndex).price);
-        ReelFinished_ClientRpc(lootIndex);
+        ReelFinished_ClientRpc(lootIndex, pullEndPosition);
     }
     
     [ClientRpc(RequireOwnership = false)]
-    public void ReelFinished_ClientRpc(int lootIndex)
+    public void ReelFinished_ClientRpc(int lootIndex, Vector3 connectPosition)
     {
         LootData lootData = LootManager.Instance.LootIndextoData(lootIndex);
         _localHookedLoot = Instantiate(lootData.model, craneHookParent.transform);
+        _localHookedLoot.transform.position = connectPosition;
     }
     
     public void ResetCrane()
@@ -266,6 +275,11 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         craneHookParent.SetActive(false);
     }
     
+    private void OnHookHeldStateUpdate()
+    {
+        if (!IsServer) return;
+    }
+    
     private void OnHookHeldStateExit()
     {
         
@@ -285,6 +299,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     private float totalDistance;
     private const float pullRate = 2.0f;
     private Vector3 pullStartPosition = new Vector3();
+    private Vector3 pullEndPosition = new Vector3();
     private void OnReelingInStateEnter()
     {
         if (IsServer)
@@ -292,6 +307,9 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
             timeStart = Time.time;
             totalDistance = Vector3.Distance(craneHookParent.transform.position, _hookedLoot.transform.position);
             pullStartPosition = _hookedLoot.transform.position;
+            pullEndPosition = craneHookParent.transform.position 
+                              - _craneHookOnLoot.GetAttachmentOffset()
+                              - (_craneHookOnLoot.transform.position - _hookedLoot.transform.position);
         }
     }
     
@@ -299,9 +317,8 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
     {
         if (IsServer)
         {
-            // Debug.Log(((Time.time - timeStart) * pullRate) / totalDistance);
-            _hookedLoot.transform.position = Vector3.Lerp(pullStartPosition, craneHookParent.transform.position, ((Time.time - timeStart) * pullRate) / totalDistance);
-            if (Vector3.Distance(_hookedLoot.transform.position, craneHookParent.transform.position) < 0.01f)
+            _hookedLoot.transform.position = Vector3.Lerp(pullStartPosition, pullEndPosition, ((Time.time - timeStart) * pullRate) / totalDistance);
+            if (Vector3.Distance(_hookedLoot.transform.position, pullEndPosition) < 0.01f)
             {
                 ReelFinished_ServerRpc();
             }

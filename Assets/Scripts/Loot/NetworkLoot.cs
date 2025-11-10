@@ -12,6 +12,8 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
     public NetworkVariable<int> lootIndex;
     public NetworkVariable<bool> isInteractionLocked;
     private ClientStateMachine _stateMachine;
+
+    [HideInInspector] public LootInstanceData lootInstanceData;
     
     public bool IsInteractionLocked
     {
@@ -66,9 +68,8 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        
-        GetComponent<LootInstanceData>().LoadLootNetwork(lootIndex.Value);
-        
+        lootInstanceData = GetComponent<LootInstanceData>();
+        lootInstanceData.LoadLootNetwork(lootIndex.Value);
         
     }
 
@@ -160,9 +161,17 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
 
     public Vector3 GetAttachPoint()
     {
-        Vector3 attachPoint = new Vector3(transform.position.x, transform.position.y, transform.position.z);
-        attachPoint.y += 1.5f;
-        return attachPoint;
+        if (lootInstanceData != null && lootInstanceData.LootModel != null &&
+            lootInstanceData.LootModel.CraneAttachPoint != null)
+        {
+            return lootInstanceData.LootModel.CraneAttachPoint.transform.position;
+        }
+        else
+        {
+            Vector3 attachPoint = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+            attachPoint.y += 1.5f;
+            return attachPoint;
+        }
     }
 
     public GameObject GetLocalModel()

@@ -55,7 +55,7 @@ public class InteractionController : NetworkBehaviour
         
     }
     
-    public GameObject AttachToPoint(GameObject loot)
+    public GameObject AttachToPoint(GameObject loot, ulong heldPlayerID)
     {
         GameObject go = Instantiate(loot, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
         go.transform.localRotation = Quaternion.identity;
@@ -70,6 +70,7 @@ public class InteractionController : NetworkBehaviour
             go.transform.localScale = Vector3.one * 0.6f;
         }
         heldObject = go.GetComponent<IHoldable>();
+        heldObject.HeldPlayerID = heldPlayerID;
         playerController.ToggleCarrying(true);
         DisableCurrentInteractable();
         return go;
@@ -216,6 +217,7 @@ public class InteractionController : NetworkBehaviour
                 
                 if (heldObject != null)
                 {
+                    heldObject.HeldPlayerID = 0;
                     if (heldObject.HeldObjectType == HeldObjectType.CraneHook)
                     {
                         AttachmentCrane crane = heldObject.ConnectedParent.GetComponent<AttachmentCrane>();
@@ -241,7 +243,7 @@ public class InteractionController : NetworkBehaviour
                             LootManager.Instance.RequestDrop(
                                 heldObject.gameObject.transform.position, heldObject.gameObject);
                         }
-                    } 
+                    }
                 }
                 else
                 {

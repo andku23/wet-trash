@@ -82,7 +82,7 @@ public class LootManager : NetworkBehaviour
         
         //One on the surface just to debug
         SpawnAndLoadLoot(new Vector3(0,0,0), spawnProbabilityShallow);
-
+        
         for (int i = 0; i < _holes.Count; i++)
         {
             for (int j = 0; j < _holes[i].lootSpawnLocations.Length; j++)
@@ -104,8 +104,8 @@ public class LootManager : NetworkBehaviour
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
         NetworkLoot networkLoot = go.GetComponent<NetworkLoot>();
             
-        networkLoot.lootIndex.Value = selectedPrefabIndex;
         networkObject.Spawn();
+        networkLoot.lootIndex.Value = selectedPrefabIndex;
         _loots.Add(networkObject);
     }
     
@@ -190,7 +190,7 @@ public class LootManager : NetworkBehaviour
             
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
         InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
-        GameObject attachedLoot = pickupPlayerCollector.AttachToPoint(localLootPrefab);
+        GameObject attachedLoot = pickupPlayerCollector.AttachToPoint(localLootPrefab, targetPlayerNetworkObjectId);
         
         LootInstanceData lootInstanceData = attachedLoot.GetComponent<LootInstanceData>();
         lootInstanceData.LoadLootLocal(LootIndextoData(lootIndex), lootIndex);
@@ -223,6 +223,11 @@ public class LootManager : NetworkBehaviour
     public void Drop_ClientRpc(ulong targetPlayerNetworkObjectId)
     {
         DestroyLootInHand(targetPlayerNetworkObjectId);
+    }
+    
+    public void ResetLootHolesServer()
+    {
+        _holes.Clear();
     }
     
     public void RegisterHoleServer(Hole hole)

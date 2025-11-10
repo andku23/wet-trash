@@ -6,6 +6,7 @@ public interface IHoldable
     // Reference to whatever object it calls back to (like used mostly for cranes)
     public GameObject ConnectedParent { get; set; }
     public GameObject gameObject { get ; }
+    public ulong HeldPlayerID { get; set; }
 
     public float GetWeightMultiplier()
     {

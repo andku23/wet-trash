@@ -193,6 +193,7 @@ public class TerrainManager : NetworkBehaviour
             }
         }
         _terrain.terrainData.SetHoles(0, 0, clearHoles);
+        LootManager.Instance.ResetLootHolesServer();
     }
     
     private void Update()

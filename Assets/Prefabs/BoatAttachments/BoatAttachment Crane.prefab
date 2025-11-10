@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '"E" to interact'
+  m_text: '"E" to hold hook'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -981,7 +981,8 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 796484053162343167, guid: 36a597f8860d4f84ebfa84b795564eae, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 844159844575816296, guid: 36a597f8860d4f84ebfa84b795564eae,
@@ -1059,3 +1060,4 @@ MonoBehaviour:
   craneHookParent: {fileID: 9006109253805445186}
   craneHookPrefab: {fileID: 2064127683699735951, guid: 47e375fbb8e125245851d49724cf6787,
     type: 3}
+  MaxCraneDistance: 25

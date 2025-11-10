@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using Unity.Collections;
@@ -11,7 +12,14 @@ public class TerrainManager : NetworkBehaviour
 {
     public static TerrainManager Instance;
     [SerializeField] private GameObject[] caveRoomEnds;
+    [SerializeField] private GameObject[] enemyPrefabs;
+    public int NUM_OF_HOLES;
 
+    public List<GameObject> SpawnedHoles;
+    public List<NetworkObject> SpawnedEnemies;
+
+    private Vector2[] currentHolePositions;
+    
     private void Start()
     {
         if (Instance == null)
@@ -37,14 +45,25 @@ public class TerrainManager : NetworkBehaviour
     private void GenerateTerrain_ServerRpc()
     {
         int seed = Random.Range(0, 999999);
-        GenerateTerrain_ClientRpc(seed);
+        Vector2[] holePosition = new Vector2[NUM_OF_HOLES];
+
+        for (int i = 0; i < NUM_OF_HOLES; i++)
+        {
+            holePosition[i] = new Vector2(
+                Random.Range(32, _terrain.terrainData.heightmapResolution - 32),
+                Random.Range(32, _terrain.terrainData.heightmapResolution - 32));
+        }
+        
+        GenerateTerrain_ClientRpc(seed,holePosition);
     }
     
     [ClientRpc]
-    private void GenerateTerrain_ClientRpc(int seed)
+    private void GenerateTerrain_ClientRpc(int seed, Vector2[] holePositions)
     {
         int resolution = _terrain.terrainData.heightmapResolution; 
         float scale = 5f;
+
+        currentHolePositions = holePositions;
         
         noiseMap = new NativeArray<float>(resolution * resolution, Allocator.Persistent);
         holesMap = new NativeArray<float>(resolution * resolution, Allocator.Persistent);
@@ -136,6 +155,7 @@ public class TerrainManager : NetworkBehaviour
         }
         _terrain.terrainData.SetHoles(xbase, zbase, holeMap);
         _terrain.terrainData.SetHeights(xbase, zbase, heightMap);
+        
         GameObject caveRoom = Instantiate(caveRoomEnds[Random.Range(0, caveRoomEnds.Length)]);
         lowestHolePosition.x /=  _terrain.terrainData.heightmapResolution;
         lowestHolePosition.z /=  _terrain.terrainData.heightmapResolution;
@@ -152,7 +172,18 @@ public class TerrainManager : NetworkBehaviour
         bool[,] clearHoles  = new bool[
             _terrain.terrainData.heightmapResolution - 1,
             _terrain.terrainData.heightmapResolution - 1];
+
+        for (int holeIndex = 0; holeIndex < SpawnedHoles.Count; holeIndex++)
+        {
+            Destroy(SpawnedHoles[holeIndex]);
+        }
+        SpawnedHoles.Clear();
         
+        for (int enemyIndex = 0; enemyIndex < SpawnedEnemies.Count; enemyIndex++)
+        {
+            SpawnedEnemies[enemyIndex].Despawn(true);
+        }
+        SpawnedEnemies.Clear();
 
         for (int i = 0; i < _terrain.terrainData.heightmapResolution - 1; i++)
         {
@@ -195,13 +226,27 @@ public class TerrainManager : NetworkBehaviour
             }
         
             _terrain.terrainData.SetHeights(0, 0, heights);
-            Hole hole = CreateHole(_terrain.terrainData.heightmapResolution/3, 
-                _terrain.terrainData.heightmapResolution/3,
-                32, 32);
-
-            if (IsServer)
+            
+            SpawnedHoles = new List<GameObject>();
+            SpawnedEnemies = new List<NetworkObject>();
+            for (int i = 0; i < currentHolePositions.Length; i++)
             {
-                LootManager.Instance.RegisterHoleServer(hole);
+                Hole hole = CreateHole((int)currentHolePositions[i].x, 
+                    (int)currentHolePositions[i].y,
+                    32, 32);
+                
+                SpawnedHoles.Add(hole.gameObject);
+
+                if (IsServer)
+                {
+                    NetworkObject no = Instantiate(enemyPrefabs[0],
+                        hole.transform.position,
+                        Quaternion.identity
+                    ).GetComponent<NetworkObject>();
+                    no.Spawn();
+                    SpawnedEnemies.Add(no);
+                    LootManager.Instance.RegisterHoleServer(hole);
+                }
             }
 
             GameManager.Instance.PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);

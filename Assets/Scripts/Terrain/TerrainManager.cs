@@ -5,7 +5,6 @@ using UnityEngine;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using Unity.Mathematics.Geometry;
 using Random = UnityEngine.Random;
 
 public class TerrainManager : NetworkBehaviour
@@ -120,28 +119,27 @@ public class TerrainManager : NetworkBehaviour
         int xbase = xPos - holeWidth / 2;
         int zbase = zPos - holeHeight / 2;
         
-        Vector3 lowestHolePosition = new Vector3(xPos, 0, zPos);
+        float[,] heights = _terrain.terrainData.GetHeights(xbase, zbase,  holeWidth, holeHeight);
         
-        lowestHolePosition.y = _terrain.terrainData.GetHeight((int)lowestHolePosition.x, (int)lowestHolePosition.z);
-        float lowestHoleHeight = lowestHolePosition.y / _terrain.terrainData.size.y - 0.1f;
+        Vector3 lowestHolePosition = new Vector3(xPos, 0, zPos);
+        lowestHolePosition.y = heights[holeWidth/2, holeHeight/2] - 0.2f;
+        float lowestHoleHeight = lowestHolePosition.y;
         float fullSize = holeWidth / 2;
         float holeSize = holeWidth / 4;
-        float edgeFromCenter = Vector2.Distance(new Vector2(holeWidth, holeHeight), originOfCircle);
-        
+        float outsideToHoleEdge = fullSize - holeSize;
         
         for (int x = 0; x < holeWidth; x++)
         {
             for (int y = 0; y < holeHeight; y++)
             {
-                float currentHeight = _terrain.terrainData.GetHeight(zbase + y, xbase + x)/_terrain.terrainData.size.y;
+                float currentHeight = heights[x, y];
                 float distanceFromCenter = Vector2.Distance(new Vector2(x, y), originOfCircle);
                 
                 heightMap[x, y] = currentHeight;
-                //heightMap[x, y] -= (1.0f - distanceFromCenter/fullSize) * 0.4f;
 
                 float targetDepth = currentHeight - lowestHoleHeight;
                 
-                heightMap[x, y] -= Mathf.Clamp(targetDepth * (1.0f-((distanceFromCenter - holeSize) / (edgeFromCenter - holeSize))), 0.0f, targetDepth);
+                heightMap[x, y] -= targetDepth * Mathf.Clamp(1.0f-((distanceFromCenter - holeSize) / outsideToHoleEdge), 0.0f, 1.0f);
                 
                 if (distanceFromCenter <= holeSize)
                 {
@@ -156,12 +154,17 @@ public class TerrainManager : NetworkBehaviour
         _terrain.terrainData.SetHoles(xbase, zbase, holeMap);
         _terrain.terrainData.SetHeights(xbase, zbase, heightMap);
         
+        // TODO It currently places the hole at the lowest height which is too low
+        // and it needs to place it at the edge height where the hole starts drawing
+        // and while im at it, i should make the height lerp to the edge height 
+        
         GameObject caveRoom = Instantiate(caveRoomEnds[Random.Range(0, caveRoomEnds.Length)]);
         lowestHolePosition.x /=  _terrain.terrainData.heightmapResolution;
+        lowestHolePosition.y /=  _terrain.terrainData.heightmapResolution;
         lowestHolePosition.z /=  _terrain.terrainData.heightmapResolution;
         lowestHolePosition.x *=  _terrain.terrainData.size.x;
+        lowestHolePosition.y *=  _terrain.terrainData.size.y + 5.0f;
         lowestHolePosition.z *=  _terrain.terrainData.size.z;
-        lowestHolePosition.y -=  3.0f;
         caveRoom.transform.position = lowestHolePosition + _terrain.transform.position;
         
         return caveRoom.GetComponent<Hole>();

@@ -291,7 +291,7 @@ public class GameManager : NetworkBehaviour
         while (secondsRemaining > 0)
         {
             _timeUpdatedEvent?.Invoke(secondsRemaining);
-            yield return new WaitForSeconds(3);
+            yield return new WaitForSeconds(1);
             secondsRemaining--;
         }
 

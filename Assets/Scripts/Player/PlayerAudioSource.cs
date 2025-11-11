@@ -13,12 +13,23 @@ public class PlayerAudioSource : MonoBehaviour
         FootStep,
         Landing,
         WaterSplash,
-        Swim
+        Swim,
+        Thump
     }
     
     public void PlaySound(SoundType soundType)
     {
-        SoundGroup soundGroup = soundGroups[(int)soundType];
+        SoundGroup soundGroup = null;
+        for (int i = 0; i < soundGroups.Count; i++)
+        {
+            if (soundType == soundGroups[i].soundType)
+            {
+                soundGroup = soundGroups[i];
+                break;
+            }
+        }
+
+        if (soundGroup == null) return;
         AudioClip clip = soundGroup.clips[Random.Range(0, soundGroup.clips.Length)];
         float volume = soundGroup.volume;
         

@@ -8,6 +8,7 @@ public class LootDeposit : NetworkBehaviour, IInteractable
     [SerializeField] public NetworkVariable<int> id;
     [SerializeField] private GameObject lootDepositBox;
     [SerializeField] private Collider collider;
+    [SerializeField] private PlayerAudioSource audio;
 
     [SerializeField] private int rows = 3;
     [SerializeField] private int columns = 3;
@@ -80,6 +81,7 @@ public class LootDeposit : NetworkBehaviour, IInteractable
         int row = Mathf.FloorToInt(indexedSize % (rows * columns) % columns);
         
         //Debug.Log("Row: " + row + " Column: " + column + "Height: " + height);
+        audio.PlaySound(PlayerAudioSource.SoundType.Thump);
         
         t.x = xStart + (row * xSpacing);
         t.y = yStart + (height * ySpacing);

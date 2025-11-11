@@ -954,7 +954,7 @@ PrefabInstance:
     - target: {fileID: 5088922632421535746, guid: 36a597f8860d4f84ebfa84b795564eae,
         type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 3751939551
+      value: 1535133125
       objectReference: {fileID: 0}
     - target: {fileID: 5088922632421535746, guid: 36a597f8860d4f84ebfa84b795564eae,
         type: 3}
@@ -1060,4 +1060,4 @@ MonoBehaviour:
   craneHookParent: {fileID: 9006109253805445186}
   craneHookPrefab: {fileID: 2064127683699735951, guid: 47e375fbb8e125245851d49724cf6787,
     type: 3}
-  MaxCraneDistance: 25
+  MaxCraneDistance: 40

@@ -16,10 +16,6 @@ using UnityEngine.InputSystem;
 public class PlayerController : NetworkBehaviour
 {
     public PlayerState playerState;
-
-    public AudioClip LandingAudioClip;
-    public AudioClip[] FootstepAudioClips;
-    [Range(0, 1)] public float FootstepAudioVolume = 0.5f;
     
 
     [Tooltip("The character uses its own gravity value. The engine default is -9.81f")]
@@ -101,6 +97,7 @@ public class PlayerController : NetworkBehaviour
     private PlayerInput _playerInput;
 #endif
     [SerializeField] private Animator _animator;
+    [SerializeField] private PlayerAudioSource _playerAudioSource;
     private CharacterController _controller;
     private StarterAssetsInputs _input;
     public GameObject MainCamera;
@@ -273,8 +270,16 @@ public class PlayerController : NetworkBehaviour
     {
         // set sphere position, with offset
         Vector3 spherePosition = WaterCheckCenter.transform.position;
-        playerState.InWater = Physics.CheckSphere(spherePosition, WaterRadius, WaterLayers,
+        
+        bool isNextInWater = Physics.CheckSphere(spherePosition, WaterRadius, WaterLayers,
             QueryTriggerInteraction.Collide);
+
+        if (isNextInWater && !playerState.InWater)
+        {
+            _playerAudioSource.PlaySound(PlayerAudioSource.SoundType.WaterSplash);
+        }
+        
+        playerState.InWater = isNextInWater;
 
         if (playerState.InWater)
         {

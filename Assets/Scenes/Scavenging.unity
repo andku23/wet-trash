@@ -2087,6 +2087,97 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 291367310}
   m_CullTransparentMesh: 1
+--- !u!1001 &361851082
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1226984022}
+    m_Modifications:
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2.6814
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.5347
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 4.7917833
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.256
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.56
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 270
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 803266792670709627, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_Name
+      value: CubeBottleContainer (1)
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 5371574484944626899, guid: 58d5f595f920b7246a8b6b48526d641b, type: 3}
+    - {fileID: 1097038335732188000, guid: 58d5f595f920b7246a8b6b48526d641b, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 58d5f595f920b7246a8b6b48526d641b, type: 3}
+--- !u!4 &361851083 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+    type: 3}
+  m_PrefabInstance: {fileID: 361851082}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &405387105
 GameObject:
   m_ObjectHideFlags: 0
@@ -5147,7 +5238,9 @@ Transform:
   m_LocalPosition: {x: -0.417, y: 1.859, z: 1.202}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1556025734}
+  - {fileID: 361851083}
   m_Father: {fileID: 803462015}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &1226984023
@@ -5716,7 +5809,7 @@ MonoBehaviour:
   lootList: {fileID: 11400000, guid: 4623b85544d214945bd6f8e8f852d1ce, type: 2}
   moneyText: {fileID: 1420962018}
   _lootDeposits: []
-  _holes: []
+  _lootGroups: []
   spawnCutoff: {fileID: 161932798}
 --- !u!4 &1379245674
 Transform:
@@ -6647,6 +6740,97 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1522880989}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &1556025733
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1226984022}
+    m_Modifications:
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2.6814
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.5347
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 4.725491
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5.26
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 803266792670709627, guid: 58d5f595f920b7246a8b6b48526d641b,
+        type: 3}
+      propertyPath: m_Name
+      value: CubeBottleContainer
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 5371574484944626899, guid: 58d5f595f920b7246a8b6b48526d641b, type: 3}
+    - {fileID: 1097038335732188000, guid: 58d5f595f920b7246a8b6b48526d641b, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 58d5f595f920b7246a8b6b48526d641b, type: 3}
+--- !u!4 &1556025734 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 30986749281902017, guid: 58d5f595f920b7246a8b6b48526d641b,
+    type: 3}
+  m_PrefabInstance: {fileID: 1556025733}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1556792120
 GameObject:
   m_ObjectHideFlags: 0
@@ -6696,8 +6880,12 @@ MonoBehaviour:
   - {fileID: 6761049422850096718, guid: 282d08b761b871d4f8d2de506e6a8eab, type: 3}
   enemyPrefabs:
   - {fileID: 4819457247987509043, guid: 7500bbb7360b2b9429f36a861a60d432, type: 3}
+  lootGroupPrefabs:
+  - {fileID: 7466929072936789752, guid: 7d7d61c3e1cf8a049be03f92b7cb46f1, type: 3}
   NUM_OF_HOLES: 4
+  NUM_OF_LOOT_GROUPS: 4
   SpawnedHoles: []
+  SpawnedLootGroups: []
   SpawnedEnemies: []
   _terrain: {fileID: 1917169612}
 --- !u!1 &1562635054 stripped

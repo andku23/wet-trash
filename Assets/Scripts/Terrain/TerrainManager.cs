@@ -12,12 +12,16 @@ public class TerrainManager : NetworkBehaviour
     public static TerrainManager Instance;
     [SerializeField] private GameObject[] caveRoomEnds;
     [SerializeField] private GameObject[] enemyPrefabs;
+    [SerializeField] private GameObject[] lootGroupPrefabs;
     public int NUM_OF_HOLES;
+    public int NUM_OF_LOOT_GROUPS;
 
     public List<GameObject> SpawnedHoles;
+    public List<GameObject> SpawnedLootGroups;
     public List<NetworkObject> SpawnedEnemies;
 
     private Vector2[] currentHolePositions;
+    private Vector2[] currentLootGroupPositions;
     
     private void Start()
     {
@@ -45,6 +49,7 @@ public class TerrainManager : NetworkBehaviour
     {
         int seed = Random.Range(0, 999999);
         Vector2[] holePosition = new Vector2[NUM_OF_HOLES];
+        Vector2[] lootGroupPosition = new Vector2[NUM_OF_LOOT_GROUPS];
 
         for (int i = 0; i < NUM_OF_HOLES; i++)
         {
@@ -53,16 +58,24 @@ public class TerrainManager : NetworkBehaviour
                 Random.Range(32, _terrain.terrainData.heightmapResolution - 32));
         }
         
-        GenerateTerrain_ClientRpc(seed,holePosition);
+        for (int i = 0; i < NUM_OF_LOOT_GROUPS; i++)
+        {
+            lootGroupPosition[i] = new Vector2(
+                Random.Range(32, _terrain.terrainData.heightmapResolution - 32),
+                Random.Range(32, _terrain.terrainData.heightmapResolution - 32));
+        }
+        
+        GenerateTerrain_ClientRpc(seed,holePosition, lootGroupPosition);
     }
     
     [ClientRpc]
-    private void GenerateTerrain_ClientRpc(int seed, Vector2[] holePositions)
+    private void GenerateTerrain_ClientRpc(int seed, Vector2[] holePositions, Vector2[] lootGroupPositions)
     {
         int resolution = _terrain.terrainData.heightmapResolution; 
         float scale = 5f;
 
         currentHolePositions = holePositions;
+        currentLootGroupPositions = lootGroupPositions;
         
         noiseMap = new NativeArray<float>(resolution * resolution, Allocator.Persistent);
         holesMap = new NativeArray<float>(resolution * resolution, Allocator.Persistent);
@@ -111,7 +124,25 @@ public class TerrainManager : NetworkBehaviour
         return new Vector3(x, height + terrainPosition.y, z);
     }
 
-    private Hole CreateHole(int xPos, int zPos, int holeWidth, int holeHeight)
+    private LootGroup CreateLootGroup(int xPos, int zPos)
+    {
+        float[,] heights = _terrain.terrainData.GetHeights(xPos, zPos,  1, 1);
+        Vector3 lowestHolePosition = new Vector3(xPos, 0, zPos);
+        lowestHolePosition.y = heights[0, 0];
+        
+        GameObject lootGroup = Instantiate(lootGroupPrefabs[Random.Range(0, lootGroupPrefabs.Length)]);
+        lowestHolePosition.x /=  _terrain.terrainData.heightmapResolution;
+        lowestHolePosition.z /=  _terrain.terrainData.heightmapResolution;
+        lowestHolePosition.x *=  _terrain.terrainData.size.x;
+        lowestHolePosition.y *=  _terrain.terrainData.size.y;
+        lowestHolePosition.z *=  _terrain.terrainData.size.z;
+        //lowestHolePosition = Vector3.Scale(lowestHolePosition, _terrain.terrainData.size);
+        lootGroup.transform.position = lowestHolePosition + _terrain.transform.position;
+        
+        return lootGroup.GetComponent<LootGroup>();
+    }
+
+    private LootGroup CreateHole(int xPos, int zPos, int holeWidth, int holeHeight)
     {
         bool[,] holeMap = new bool[holeWidth, holeHeight];
         float[,] heightMap = new float[holeWidth, holeHeight];
@@ -137,9 +168,9 @@ public class TerrainManager : NetworkBehaviour
                 
                 heightMap[x, y] = currentHeight;
 
-                float targetDepth = currentHeight - lowestHoleHeight;
+                float targetDepthOffset = currentHeight - lowestHoleHeight;
                 
-                heightMap[x, y] -= targetDepth * Mathf.Clamp(1.0f-((distanceFromCenter - holeSize) / outsideToHoleEdge), 0.0f, 1.0f);
+                heightMap[x, y] -= targetDepthOffset * (1.0f-Mathf.Clamp((distanceFromCenter - holeSize) / outsideToHoleEdge, 0.0f, 1.0f));
                 
                 if (distanceFromCenter <= holeSize)
                 {
@@ -160,14 +191,14 @@ public class TerrainManager : NetworkBehaviour
         
         GameObject caveRoom = Instantiate(caveRoomEnds[Random.Range(0, caveRoomEnds.Length)]);
         lowestHolePosition.x /=  _terrain.terrainData.heightmapResolution;
-        lowestHolePosition.y /=  _terrain.terrainData.heightmapResolution;
+        //lowestHolePosition.y /=  _terrain.terrainData.heightmapResolution;
         lowestHolePosition.z /=  _terrain.terrainData.heightmapResolution;
         lowestHolePosition.x *=  _terrain.terrainData.size.x;
-        lowestHolePosition.y *=  _terrain.terrainData.size.y + 5.0f;
+        //lowestHolePosition.y *=  _terrain.terrainData.size.y + 5.0f;
         lowestHolePosition.z *=  _terrain.terrainData.size.z;
         caveRoom.transform.position = lowestHolePosition + _terrain.transform.position;
         
-        return caveRoom.GetComponent<Hole>();
+        return caveRoom.GetComponent<LootGroup>();
     }
 
     private void ClearAllHoles()
@@ -181,6 +212,12 @@ public class TerrainManager : NetworkBehaviour
             Destroy(SpawnedHoles[holeIndex]);
         }
         SpawnedHoles.Clear();
+        
+        for (int lootGroupIndex = 0; lootGroupIndex < SpawnedLootGroups.Count; lootGroupIndex++)
+        {
+            Destroy(SpawnedLootGroups[lootGroupIndex]);
+        }
+        SpawnedLootGroups.Clear();
         
         for (int enemyIndex = 0; enemyIndex < SpawnedEnemies.Count; enemyIndex++)
         {
@@ -233,9 +270,10 @@ public class TerrainManager : NetworkBehaviour
             
             SpawnedHoles = new List<GameObject>();
             SpawnedEnemies = new List<NetworkObject>();
+            SpawnedLootGroups = new List<GameObject>();
             for (int i = 0; i < currentHolePositions.Length; i++)
             {
-                Hole hole = CreateHole((int)currentHolePositions[i].x, 
+                LootGroup hole = CreateHole((int)currentHolePositions[i].x, 
                     (int)currentHolePositions[i].y,
                     32, 32);
                 
@@ -249,7 +287,21 @@ public class TerrainManager : NetworkBehaviour
                     ).GetComponent<NetworkObject>();
                     no.Spawn();
                     SpawnedEnemies.Add(no);
-                    LootManager.Instance.RegisterHoleServer(hole);
+                    LootManager.Instance.RegisterLootGroupServer(hole);
+                }
+            }
+            
+            for (int i = 0; i < currentLootGroupPositions.Length; i++)
+            {
+                LootGroup lootGroup = CreateLootGroup(
+                    (int)currentLootGroupPositions[i].x, 
+                    (int)currentLootGroupPositions[i].y);
+                
+                SpawnedLootGroups.Add(lootGroup.gameObject);
+
+                if (IsServer)
+                {
+                    LootManager.Instance.RegisterLootGroupServer(lootGroup);
                 }
             }
 

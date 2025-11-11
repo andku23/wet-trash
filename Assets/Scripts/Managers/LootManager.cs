@@ -13,7 +13,7 @@ public class LootManager : NetworkBehaviour
     [SerializeField] private LootList lootList;
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] private List<LootDeposit> _lootDeposits;
-    [SerializeField] private List<Hole> _holes;
+    [SerializeField] private List<LootGroup> _lootGroups;
     [SerializeField] private GameObject spawnCutoff;
 
     public Action<int> OnLootDeposited;
@@ -83,11 +83,11 @@ public class LootManager : NetworkBehaviour
         //One on the surface just to debug
         SpawnAndLoadLoot(new Vector3(0,0,0), spawnProbabilityShallow);
         
-        for (int i = 0; i < _holes.Count; i++)
+        for (int i = 0; i < _lootGroups.Count; i++)
         {
-            for (int j = 0; j < _holes[i].lootSpawnLocations.Length; j++)
+            for (int j = 0; j < _lootGroups[i].lootSpawnLocations.Length; j++)
             {
-                SpawnAndLoadLoot(_holes[i].lootSpawnLocations[j].position, spawnProbabilityDeep);
+                SpawnAndLoadLoot(_lootGroups[i].lootSpawnLocations[j].position, spawnProbabilityDeep);
             }
         }
     }
@@ -227,13 +227,13 @@ public class LootManager : NetworkBehaviour
     
     public void ResetLootHolesServer()
     {
-        _holes.Clear();
+        _lootGroups.Clear();
     }
     
-    public void RegisterHoleServer(Hole hole)
+    public void RegisterLootGroupServer(LootGroup hole)
     {
-        _holes.Add(hole);
-        int id = _holes.Count - 1;
+        _lootGroups.Add(hole);
+        int id = _lootGroups.Count - 1;
         hole.id = id;
     }
     

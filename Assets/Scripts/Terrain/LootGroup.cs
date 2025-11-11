@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Hole : MonoBehaviour
+public class LootGroup : MonoBehaviour
 {
     public int id;
     [SerializeField] public Transform[] lootSpawnLocations;

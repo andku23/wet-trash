@@ -129,7 +129,7 @@ public class UI : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void PopulateShopContent_ServerRpc()
     {
-        int shopSize = 4;
+        int shopSize = 6;
         List<int> fullShop = new List<int>();
         for (int i = 0; i < ShopManager.Instance.shopList.items.Length; i++)
         {

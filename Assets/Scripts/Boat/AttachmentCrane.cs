@@ -2,7 +2,7 @@ using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class AttachmentCrane : NetworkBehaviour, IInteractable
+public class AttachmentCrane : NetworkBehaviour, IInteractable, IAttachment
 {
     [SerializeField] private GameObject useInstructions;
     [SerializeField] private GameObject reelInstructions;
@@ -63,8 +63,6 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable
         
         _stateMachine.ChangeState(_networkedState.Value);
         _networkedState.OnValueChanged += OnNetworkStateUpdated;
-        
-        
     }
 
     public override void OnNetworkSpawn()

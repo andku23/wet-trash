@@ -1,3 +1,4 @@
+using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
@@ -5,6 +6,7 @@ using UnityEngine;
 public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
 {
     [SerializeField] private GameObject instructions;
+    [SerializeField] private TextMeshProUGUI priceText;
     [SerializeField] private GameObject dropInstructions;
     [SerializeField] private GameObject heavyInstructions;
     [SerializeField] private GameObject craneHookInstructions;
@@ -70,7 +72,7 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
         base.OnNetworkSpawn();
         lootInstanceData = GetComponent<LootInstanceData>();
         lootInstanceData.LoadLootNetwork(lootIndex.Value);
-        
+        priceText.text = "$" + LootManager.Instance.LootList.pairs[lootIndex.Value].price;
     }
 
     public bool EnableInteractable(IHoldable heldObject)

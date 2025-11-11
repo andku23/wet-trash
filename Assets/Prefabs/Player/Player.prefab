@@ -2628,7 +2628,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 94792807
+  GlobalObjectIdHash: 3994523073
   InScenePlacedSourceGlobalObjectIdHash: 3994523073
   DeferredDespawnTick: 0
   Ownership: 1
@@ -2806,10 +2806,10 @@ MonoBehaviour:
   SpeedChangeRate: 10
   JumpHeight: 1.2
   WaterSurfaceJumpHeight: 10
-  BreathFullAmount: 300
-  BreathFullAmount_UpgradeIncrement: 1
+  BreathFullAmount: 25
+  BreathFullAmount_UpgradeIncrement: 5
   BreathDepleteRate: 1
-  BreathReplenishRate: 2
+  BreathReplenishRate: 3
   Health:
     m_InternalValue: 10
   MAX_HEALTH: 10

@@ -28,11 +28,11 @@ MonoBehaviour:
     name: Swim Speed +1
     price: 400
     placePrefab: {fileID: 0}
-  - id: item-0
-    type: 2
-    name: Item 0
-    price: 100
-    placePrefab: {fileID: 5312557331888019442, guid: 36a597f8860d4f84ebfa84b795564eae,
+  - id: motor-0
+    type: 3
+    name: Motor
+    price: 200
+    placePrefab: {fileID: 1051254977657525796, guid: 387254b3fd4a84c4ea845103eaee2736,
       type: 3}
   - id: item-crane-0
     type: 3

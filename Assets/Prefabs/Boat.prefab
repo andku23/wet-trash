@@ -523,6 +523,7 @@ GameObject:
   - component: {fileID: 7665541032325031522}
   - component: {fileID: 2582495107743138813}
   - component: {fileID: 5400300526895849149}
+  - component: {fileID: 5018123549751685162}
   m_Layer: 0
   m_Name: Boat
   m_TagString: Untagged
@@ -591,7 +592,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3849195495
+  GlobalObjectIdHash: 3095711529
   InScenePlacedSourceGlobalObjectIdHash: 3095711529
   DeferredDespawnTick: 0
   Ownership: 1
@@ -657,10 +658,31 @@ MonoBehaviour:
   _rb: {fileID: 9217688489280121579}
   _boatVirtualCamera: {fileID: 6502060144009447104}
   RotationSmoothTime: 2
-  BoatSpeed: 23
+  BoatState: {fileID: 5018123549751685162}
   BoatAttachmentPoints:
   - {fileID: 4134017611891853089}
   - {fileID: 246672686618251258}
+--- !u!114 &5018123549751685162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8906400828373403108}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f6e8df69670263499906352262d0eb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoatState
+  ShowTopMostFoldoutHeaderGroup: 1
+  MoveSpeed:
+    m_InternalValue: 30
+  TurnSpeed:
+    m_InternalValue: 700
+  HasDriver:
+    m_InternalValue: 0
+  DriverID:
+    m_InternalValue: 0
 --- !u!1001 &2021170149208973337
 PrefabInstance:
   m_ObjectHideFlags: 0

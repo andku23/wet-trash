@@ -87,7 +87,7 @@ public class LootDeposit : NetworkBehaviour, IInteractable
 
         
         go.transform.localPosition = t;
-        go.transform.localScale = go.transform.localScale * scale;
+        go.transform.localScale *= scale;
         _lootDepositsBoxes.Add(go);
     }
     

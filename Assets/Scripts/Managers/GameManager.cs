@@ -26,6 +26,8 @@ public class GameManager : NetworkBehaviour
     private Coroutine _co_TimerCountdown;
     private int _day = 0;
     private int _quota = 0;
+
+    public int INCREMENT_QUOTA;
     
     public enum TimeState
     {
@@ -145,6 +147,7 @@ public class GameManager : NetworkBehaviour
         {
             case TimeState.None:
             case TimeState.BetweenDays:
+            case TimeState.QuotaFailed:
                 _timeState = TimeState.LoadingNextDay;
                 break;
             case TimeState.LoadingNextDay:
@@ -171,7 +174,7 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.LoadingNextDay:
                 _day++;
-                _quota += 200;
+                _quota += INCREMENT_QUOTA;
                 WaitForPlayerResponse(ToNextGameState_ServerRpc);
                 MoneyManager.Instance.ResetCurrentCollected();
                 TerrainManager.Instance.GenerateTerrain();
@@ -188,6 +191,9 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.QuotaFailed:
                 DeleteLoot();
+                RespawnAllPlayers_ServerRpc();
+                _day = 0;
+                _quota = 0;
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
         }
@@ -225,7 +231,6 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.QuotaFailed:
                 StopCountdown();
-                Debug.Log("Game Lost");
                 break;
         }
     }
@@ -259,6 +264,12 @@ public class GameManager : NetworkBehaviour
         no.Spawn();
         no.transform.parent = Boat.transform;
         boatAttachmentPoint.heldItem.Value = no.NetworkObjectId;
+        
+        IAttachment attachable = no.GetComponent<IAttachment>();
+        if (attachable != null)
+        {
+            attachable.OnAttach(Boat);
+        }
     }
     
     private void SpawnLoot()

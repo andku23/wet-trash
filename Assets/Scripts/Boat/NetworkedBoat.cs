@@ -5,6 +5,7 @@ using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class NetworkedBoat : NetworkBehaviour
 {
@@ -12,17 +13,16 @@ public class NetworkedBoat : NetworkBehaviour
     [SerializeField] private Rigidbody _rb;
     [SerializeField] private CinemachineVirtualCamera _boatVirtualCamera;
     [SerializeField] private float RotationSmoothTime = 0.12f;
-    [SerializeField] private float BoatSpeed = 2.0f;
+    [SerializeField] public NetworkBoatState BoatState;
     
     public List<BoatAttachmentPoint> BoatAttachmentPoints = new List<BoatAttachmentPoint>();
     
-    private NetworkVariable<bool> _hasDriver = new NetworkVariable<bool>(false);
-    private NetworkVariable<ulong> _driverID = new NetworkVariable<ulong>(0);
+    
     private float _targetRotation = 0.0f;
     private float _rotationVelocity;
     
-    public bool HasDriver => _hasDriver.Value;
-    public ulong DriverID => _driverID.Value;
+    public bool HasDriver => BoatState.HasDriver.Value;
+    public ulong DriverID => BoatState.DriverID.Value;
     
 #if ENABLE_INPUT_SYSTEM 
     private PlayerInput _playerInput;
@@ -44,7 +44,7 @@ public class NetworkedBoat : NetworkBehaviour
 
     private void FixedUpdate()
     {
-        if (IsOwner && _hasDriver.Value)
+        if (IsOwner && HasDriver)
         {
             //transform.position += new Vector3(_input.move.x * Time.deltaTime * 3.0f, 0.0f, _input.move.y * Time.deltaTime * 3.0f);
             if (_input.move != Vector2.zero)
@@ -57,14 +57,13 @@ public class NetworkedBoat : NetworkBehaviour
                 // rotate to face input direction relative to camera position
                 //transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
                 
-                float torqueMagnitude = 500f; // Adjust this value for desired rotational speed
-                _rb.AddTorque(transform.up * torqueMagnitude * _input.move.x); 
+                _rb.AddTorque(transform.up * BoatState.TurnSpeed.Value * _input.move.x); 
                 
                 Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * transform.forward;
 
                 if (_input.move.y != 0.0f)
                 {
-                    _rb.AddForce(targetDirection.normalized * BoatSpeed, ForceMode.Impulse);
+                    _rb.AddForce(targetDirection.normalized * BoatState.MoveSpeed.Value, ForceMode.Impulse);
                 }
             }
         }
@@ -85,9 +84,9 @@ public class NetworkedBoat : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void RequestToDrive_ServerRpc(ulong playerNetworkObjectId)
     {
-        if (_hasDriver.Value) return;
-        _hasDriver.Value = true;
-        _driverID.Value = playerNetworkObjectId;
+        if (HasDriver) return;
+        BoatState.HasDriver.Value = true;
+        BoatState.DriverID.Value = playerNetworkObjectId;
         GetComponent<NetworkObject>().ChangeOwnership(playerNetworkObjectId);
         GetComponent<NetworkTransformFixed>().ForceApplyAuthoritativeState();
         RequestToDrive_ClientRpc(playerNetworkObjectId);
@@ -96,9 +95,9 @@ public class NetworkedBoat : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void RequestToUndrive_ServerRpc(ulong playerNetworkObjectId)
     {
-        if (!_hasDriver.Value) return;
-        if (playerNetworkObjectId != _driverID.Value) return;
-        _hasDriver.Value = false;
+        if (!HasDriver) return;
+        if (playerNetworkObjectId != DriverID) return;
+        BoatState.HasDriver.Value = false;
         GetComponent<NetworkObject>().ChangeOwnership(NetworkManager.ServerClientId);
         RequestToUndrive_ClientRpc(playerNetworkObjectId);
     }

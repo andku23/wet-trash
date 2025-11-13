@@ -18,14 +18,14 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private PlayerState playerState;
 
-    private float rotationPlaceOffset = 0.0f;
-    
-    public InteractionMode CurrentInteractionMode;
+    private float rotationPlaceOffset;
 
-    public enum InteractionMode
+    public enum InteractionStates
     {
-        Default = 0,
-        BoatBuilding = 1
+        Standard = 0,
+        BoatBuilding = 1,
+        HeldObject = 2,
+        PersistentInteractable = 3
     }
     
 #if ENABLE_INPUT_SYSTEM 
@@ -37,10 +37,10 @@ public class InteractionController : NetworkBehaviour
     private IInteractable persistentInteractable;
     private IHoldable heldObject;
     private BoatAttachment placingBoatAttachment;
-    private const float MAX_DROP_DISTANCE = 1.5f;
     private int _shopItemIndex;
     private TagHandle _interactableTag;
     private TagHandle _buildingTag;
+    private ClientStateMachine _stateMachine;
     
     public override void OnNetworkSpawn()
     {
@@ -52,8 +52,21 @@ public class InteractionController : NetworkBehaviour
         
         _interactableTag = TagHandle.GetExistingTag("Untagged");
         _buildingTag = TagHandle.GetExistingTag("AttachmentPoint");
+        
+        _stateMachine = new ClientStateMachine();
+        
+        _stateMachine.AddState((int)InteractionStates.Standard, 
+            new BaseState(OnStandardEnter, OnStandardUpdate, null));
+        
+        _stateMachine.AddState((int)InteractionStates.BoatBuilding, 
+            new BaseState(null, OnInteractionUpdate, null));
+        
+        _stateMachine.ChangeState((int)InteractionStates.Standard);
     }
     
+    // functions that are called from other players or the server
+    // or sometimes just other functions
+    #region External Calls
     public GameObject AttachToPoint(GameObject loot, ulong heldPlayerID)
     {
         GameObject go = Instantiate(loot, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
@@ -74,6 +87,15 @@ public class InteractionController : NetworkBehaviour
         DisableCurrentInteractable();
         return go;
     }
+    
+    public void ChangeToBuildMode(int shopItemIndex)
+    {
+        _stateMachine.ChangeState((int)InteractionStates.BoatBuilding);
+        _shopItemIndex = shopItemIndex;
+        placingBoatAttachment = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab).GetComponent<BoatAttachment>();
+        placingBoatAttachment.gameObject.SetActive(false);
+        rotationPlaceOffset = 0.0f;
+    }
 
     public void DestroyHeldObject()
     {
@@ -83,16 +105,13 @@ public class InteractionController : NetworkBehaviour
         DisableCurrentInteractable();
     }
     
+    #endregion
+    
     private void FixedUpdate()
     {
-        switch (CurrentInteractionMode)
+        if (IsOwner)
         {
-            case InteractionMode.Default:
-                DoInteractionStandard();
-                break;
-            case InteractionMode.BoatBuilding:
-                DoInteractionBuilding();
-                break;
+            _stateMachine.Update();
         }
 
         if (heldObject != null)
@@ -107,6 +126,8 @@ public class InteractionController : NetworkBehaviour
         }
     }
 
+    // functionality called by interaction controller that are used a lot
+    #region Internal Utility
     private void DisableCurrentInteractable()
     {
         if (lastClosestInteractable != null)
@@ -165,10 +186,17 @@ public class InteractionController : NetworkBehaviour
         return closestCollider;
     }
     
-    private void DoInteractionStandard()
+    #endregion
+
+    #region Interaction States
+    private void OnStandardEnter()
+    {
+        
+    }
+
+    private void OnStandardUpdate()
     {
         if (!IsOwner) return;
-        
         Collider closestCollider = GetClosestInteractable(interactableLayerMask, _interactableTag);
         if (closestCollider != null)
         {
@@ -291,8 +319,9 @@ public class InteractionController : NetworkBehaviour
             }
         }
     }
+    
 
-    private void DoInteractionBuilding()
+    private void OnInteractionUpdate()
     {
         if (!IsOwner) return;
 
@@ -323,14 +352,14 @@ public class InteractionController : NetworkBehaviour
                     Destroy(placingBoatAttachment.gameObject);
                     GameManager.Instance.PlaceAttachmentPoint(_shopItemIndex, boatAttachmentPoint, rotationPlaceOffset);
                     placingBoatAttachment = null;
-                    CurrentInteractionMode = InteractionMode.Default;
+                    _stateMachine.ChangeState((int)InteractionStates.Standard);
                     _input.interact = false;
                 }
 
                 if (_input.respawn)
                 {
                     rotationPlaceOffset += 90;
-                    rotationPlaceOffset = rotationPlaceOffset % 360;
+                    rotationPlaceOffset %= 360;
                     _input.respawn = false;
                 }
             }
@@ -345,12 +374,7 @@ public class InteractionController : NetworkBehaviour
         }
     }
 
-    public void ChangeToBuildMode(int shopItemIndex)
-    {
-        CurrentInteractionMode = InteractionMode.BoatBuilding;
-        _shopItemIndex = shopItemIndex;
-        placingBoatAttachment = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab).GetComponent<BoatAttachment>();
-        placingBoatAttachment.gameObject.SetActive(false);
-        rotationPlaceOffset = 0.0f;
-    }
+    
+    
+    #endregion
 }

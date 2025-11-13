@@ -14,6 +14,11 @@ public class PlayerAnimationReceiver : MonoBehaviour
         _playerAudioSource.PlaySound(PlayerAudioSource.SoundType.Landing);
     }
     
+    private void OnSplash(AnimationEvent animationEvent)
+    {
+        _playerAudioSource.PlaySound(PlayerAudioSource.SoundType.WaterSplash);
+    }
+    
     private void OnSwim(AnimationEvent animationEvent)
     {
         _playerAudioSource.PlaySound(PlayerAudioSource.SoundType.Swim);

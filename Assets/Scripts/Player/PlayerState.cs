@@ -37,6 +37,7 @@ public class PlayerState : NetworkBehaviour
     [Tooltip("The height the player can jump")]
     public float JumpHeight = 1.2f;
     public float WaterSurfaceJumpHeight = 10.0f;
+    public float WaterVerticalSwimSpeed = 4.0f;
     
     public float BreathFullAmount;
     public float BreathFullAmount_UpgradeIncrement = 1f;

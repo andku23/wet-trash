@@ -565,7 +565,7 @@ Rigidbody:
   m_LinearDamping: 3
   m_AngularDamping: 2
   m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 100, y: 100, z: 100}
+  m_InertiaTensor: {x: 140, y: 140, z: 140}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
   m_IncludeLayers:
     serializedVersion: 2
@@ -592,7 +592,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3095711529
+  GlobalObjectIdHash: 3849195495
   InScenePlacedSourceGlobalObjectIdHash: 3095711529
   DeferredDespawnTick: 0
   Ownership: 1

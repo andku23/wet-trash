@@ -274,10 +274,6 @@ public class PlayerController : NetworkBehaviour
         bool isNextInWater = Physics.CheckSphere(spherePosition, WaterRadius, WaterLayers,
             QueryTriggerInteraction.Collide);
 
-        if (isNextInWater && !playerState.InWater)
-        {
-            _playerAudioSource.PlaySound(PlayerAudioSource.SoundType.WaterSplash);
-        }
         
         playerState.InWater = isNextInWater;
 
@@ -536,13 +532,13 @@ public class PlayerController : NetworkBehaviour
                 }
                 else
                 {
-                    _verticalVelocity = 5.0f;
+                    _verticalVelocity = playerState.WaterVerticalSwimSpeed;
                     
                 }
             }
             else if (_input.descend)
             {
-                _verticalVelocity = -5.0f;
+                _verticalVelocity = -playerState.WaterVerticalSwimSpeed;
             }
             else
             {

@@ -38,8 +38,9 @@ public class InteractionController : NetworkBehaviour
     private IHoldable heldObject;
     private BoatAttachment placingBoatAttachment;
     private const float MAX_DROP_DISTANCE = 1.5f;
-    private const float MAX_INTERACTION_DISTANCE = 5.0f;
     private int _shopItemIndex;
+    private TagHandle _interactableTag;
+    private TagHandle _buildingTag;
     
     public override void OnNetworkSpawn()
     {
@@ -47,12 +48,10 @@ public class InteractionController : NetworkBehaviour
         if (!IsOwner) return;
         if(Instance == null) Instance = this;
         _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
-#if ENABLE_INPUT_SYSTEM
         _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
-#else
-			Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
-#endif
         
+        _interactableTag = TagHandle.GetExistingTag("Untagged");
+        _buildingTag = TagHandle.GetExistingTag("AttachmentPoint");
     }
     
     public GameObject AttachToPoint(GameObject loot, ulong heldPlayerID)
@@ -108,22 +107,29 @@ public class InteractionController : NetworkBehaviour
         }
     }
 
-    private void DoInteractionStandard()
+    private void DisableCurrentInteractable()
     {
-        if (!IsOwner) return;
+        if (lastClosestInteractable != null)
+        {
+            lastClosestInteractable.DisableInteractable();
+            lastClosestInteractable = null;
+        }
+    }
 
+    private Collider GetClosestInteractable(LayerMask layerMask, TagHandle tag)
+    {
         Collider[] hitColliders = Array.Empty<Collider>();
         if (playerController.ControlMode == PlayerController.ControlModeEnum.ThirdPerson)
         {
-            hitColliders = Physics.OverlapSphere(transform.position, 2.0f, interactableLayerMask);
+            hitColliders = Physics.OverlapSphere(transform.position, 2.0f, buildingLayerMask);
         } else if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
         {
             Physics.Raycast(
                 playerController.MainCamera.transform.position, 
                 playerController.MainCamera.transform.forward,
                 out RaycastHit raycastHit,
-                MAX_INTERACTION_DISTANCE,
-                interactableLayerMask);
+                playerState.MAX_INTERACTION_DISTANCE,
+                layerMask);
             
             if (raycastHit.collider != null)
             {
@@ -134,11 +140,12 @@ public class InteractionController : NetworkBehaviour
             {
                 hitColliders = Array.Empty<Collider>();
             }
+            
         }
         
-       
         float minDistance = Mathf.Infinity;
         Collider closestCollider = null;
+
         //Calculate closest interactable
         foreach (Collider collider in hitColliders)
         {
@@ -148,14 +155,22 @@ public class InteractionController : NetworkBehaviour
 
             float distance = Vector3.Distance(transform.position, collider.transform.position); 
 
-            if (distance < minDistance)
+            if (distance < minDistance && collider.CompareTag(tag))
             {
                 minDistance = distance;
                 closestCollider = collider;
             }
         }
-
-        if (closestCollider != null && minDistance < MAX_INTERACTION_DISTANCE)
+        
+        return closestCollider;
+    }
+    
+    private void DoInteractionStandard()
+    {
+        if (!IsOwner) return;
+        
+        Collider closestCollider = GetClosestInteractable(interactableLayerMask, _interactableTag);
+        if (closestCollider != null)
         {
             GameObject parentHitObject = closestCollider.gameObject;
             // Expects collider reference
@@ -190,7 +205,6 @@ public class InteractionController : NetworkBehaviour
         {
             DisableCurrentInteractable();
         }
-       
 
         if (_input.interact)
         {
@@ -278,67 +292,14 @@ public class InteractionController : NetworkBehaviour
         }
     }
 
-    private void DisableCurrentInteractable()
-    {
-        if (lastClosestInteractable != null)
-        {
-            lastClosestInteractable.DisableInteractable();
-            lastClosestInteractable = null;
-        }
-    }
-
     private void DoInteractionBuilding()
     {
         if (!IsOwner) return;
 
-        Collider[] hitColliders = Array.Empty<Collider>();
-        if (playerController.ControlMode == PlayerController.ControlModeEnum.ThirdPerson)
-        {
-            hitColliders = Physics.OverlapSphere(transform.position, 2.0f, buildingLayerMask);
-        } else if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
-        {
-            Physics.Raycast(
-                playerController.MainCamera.transform.position, 
-                playerController.MainCamera.transform.forward,
-                out RaycastHit raycastHit,
-                MAX_INTERACTION_DISTANCE,
-                buildingLayerMask);
-            
-            if (raycastHit.collider != null)
-            {
-                hitColliders = new Collider[1];
-                hitColliders[0] = raycastHit.collider;
-            }
-            else
-            {
-                hitColliders = Array.Empty<Collider>();
-            }
-            
-        }
-        
-        float minDistance = Mathf.Infinity;
-        Collider closestCollider = null;
-
-        //Calculate closest interactable
-        foreach (Collider collider in hitColliders)
-        {
-            // Exclude self if the script is on an object with a collider
-            if (collider.gameObject == gameObject) continue;
-            if (heldObject != null && heldObject.gameObject == collider.gameObject) continue;
-
-            float distance = Vector3.Distance(transform.position, collider.transform.position); 
-
-            if (distance < minDistance && collider.CompareTag("AttachmentPoint"))
-            {
-                minDistance = distance;
-                closestCollider = collider;
-            }
-        }
+        Collider closestCollider = GetClosestInteractable(buildingLayerMask, _buildingTag);
 
         if (closestCollider != null)
         {
-            Debug.Log(closestCollider.ToString());
-            
             GameObject parentHitObject = closestCollider.gameObject;
             ColliderReference colliderReference = closestCollider.GetComponent<ColliderReference>();
             // Expects collider reference

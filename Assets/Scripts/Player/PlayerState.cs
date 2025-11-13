@@ -46,7 +46,7 @@ public class PlayerState : NetworkBehaviour
 
     public NetworkVariable<float> Health = new NetworkVariable<float>(10);
     public float MAX_HEALTH = 10;
-    
+    public float MAX_INTERACTION_DISTANCE = 5.0f;
     
     [Header("Dynamic Continuous Values")]
     
@@ -58,4 +58,5 @@ public class PlayerState : NetworkBehaviour
     public bool IsDriving = false;
     public bool IsDead = false;
     public bool InWaterOnSurface = false;
+    
 }

@@ -6883,8 +6883,8 @@ MonoBehaviour:
   - {fileID: 4819457247987509043, guid: 7500bbb7360b2b9429f36a861a60d432, type: 3}
   lootGroupPrefabs:
   - {fileID: 7466929072936789752, guid: 7d7d61c3e1cf8a049be03f92b7cb46f1, type: 3}
-  NUM_OF_HOLES: 4
-  NUM_OF_LOOT_GROUPS: 4
+  NUM_OF_HOLES: 1
+  NUM_OF_LOOT_GROUPS: 1
   SpawnedHoles: []
   SpawnedLootGroups: []
   SpawnedEnemies: []

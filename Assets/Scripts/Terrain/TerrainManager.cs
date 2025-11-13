@@ -155,6 +155,7 @@ public class TerrainManager : NetworkBehaviour
         Vector3 lowestHolePosition = new Vector3(xPos, 0, zPos);
         lowestHolePosition.y = heights[holeWidth/2, holeHeight/2] - 0.2f;
         float lowestHoleHeight = lowestHolePosition.y;
+        Debug.Log(lowestHoleHeight);
         float fullSize = holeWidth / 2;
         float holeSize = holeWidth / 4;
         float outsideToHoleEdge = fullSize - holeSize;
@@ -191,10 +192,9 @@ public class TerrainManager : NetworkBehaviour
         
         GameObject caveRoom = Instantiate(caveRoomEnds[Random.Range(0, caveRoomEnds.Length)]);
         lowestHolePosition.x /=  _terrain.terrainData.heightmapResolution;
-        //lowestHolePosition.y /=  _terrain.terrainData.heightmapResolution;
         lowestHolePosition.z /=  _terrain.terrainData.heightmapResolution;
         lowestHolePosition.x *=  _terrain.terrainData.size.x;
-        //lowestHolePosition.y *=  _terrain.terrainData.size.y + 5.0f;
+        lowestHolePosition.y *=  _terrain.terrainData.size.y;
         lowestHolePosition.z *=  _terrain.terrainData.size.z;
         caveRoom.transform.position = lowestHolePosition + _terrain.transform.position;
         

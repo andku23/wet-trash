@@ -57,13 +57,13 @@ public class InteractionController : NetworkBehaviour
         _stateMachine = new ClientStateMachine();
         
         _stateMachine.AddState((int)InteractionStates.Standard, 
-            new BaseState(OnStandardEnter, OnStandardUpdate, null));
+            new BaseState(null, OnStandardUpdate, null));
         
         _stateMachine.AddState((int)InteractionStates.BoatBuilding, 
             new BaseState(null, OnBoatBuildingUpdate, null));
         
         _stateMachine.AddState((int)InteractionStates.HeldObject, 
-            new BaseState(null, OnHeldObjectUpdate, null));
+            new BaseState(OnHeldObjectEnter, OnHeldObjectUpdate, OnHeldObjectEnter));
         
         _stateMachine.AddState((int)InteractionStates.PersistentInteractable, 
             new BaseState(null, OnPersistentInteractableUpdate, null));
@@ -115,25 +115,6 @@ public class InteractionController : NetworkBehaviour
     }
     
     #endregion
-    
-    private void FixedUpdate()
-    {
-        if (IsOwner)
-        {
-            _stateMachine.Update();
-        }
-
-        if (heldObject != null)
-        {
-            playerState.SwimWeightMultiplier = heldObject.GetWeightMultiplier();
-            playerState.SprintWeightMultiplier = heldObject.GetWeightMultiplier();
-        }
-        else
-        {
-            playerState.SwimWeightMultiplier = 1.0f;
-            playerState.SprintWeightMultiplier = 1.0f;
-        }
-    }
 
     // functionality called by interaction controller that are used a lot
     #region Internal Utility
@@ -236,12 +217,8 @@ public class InteractionController : NetworkBehaviour
     
     #endregion
 
+    // Interaction logic per state
     #region Interaction States
-    private void OnStandardEnter()
-    {
-        
-    }
-
     private void OnStandardUpdate()
     {
         Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag);
@@ -340,6 +317,13 @@ public class InteractionController : NetworkBehaviour
         }
     }
 
+    private void OnHeldObjectEnter()
+    {
+        if(!IsOwner) return;
+        playerState.SwimWeightMultiplier = heldObject.GetWeightMultiplier();
+        playerState.SprintWeightMultiplier = heldObject.GetWeightMultiplier();
+    }
+
     private void OnHeldObjectUpdate()
     {
         Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag);
@@ -382,6 +366,13 @@ public class InteractionController : NetworkBehaviour
         }
     }
     
+    private void OnHeldObjectExit()
+    {
+        if(!IsOwner) return;
+        playerState.SwimWeightMultiplier = 1.0f;
+        playerState.SprintWeightMultiplier = 1.0f;
+    }
+    
     private void OnPersistentInteractableUpdate()
     {
         if (_input.interact)
@@ -398,6 +389,14 @@ public class InteractionController : NetworkBehaviour
         }
     }
     #endregion
+    
+    private void FixedUpdate()
+    {
+        if (IsOwner)
+        {
+            _stateMachine.Update();
+        }
+    }
 }
 
 public struct InteractableTypes

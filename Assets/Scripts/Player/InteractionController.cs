@@ -41,6 +41,7 @@ public class InteractionController : NetworkBehaviour
     private TagHandle _interactableTag;
     private TagHandle _buildingTag;
     private ClientStateMachine _stateMachine;
+    private InteractableTypes _currentInteractableTypes;
     
     public override void OnNetworkSpawn()
     {
@@ -59,7 +60,13 @@ public class InteractionController : NetworkBehaviour
             new BaseState(OnStandardEnter, OnStandardUpdate, null));
         
         _stateMachine.AddState((int)InteractionStates.BoatBuilding, 
-            new BaseState(null, OnInteractionUpdate, null));
+            new BaseState(null, OnBoatBuildingUpdate, null));
+        
+        _stateMachine.AddState((int)InteractionStates.HeldObject, 
+            new BaseState(null, OnHeldObjectUpdate, null));
+        
+        _stateMachine.AddState((int)InteractionStates.PersistentInteractable, 
+            new BaseState(null, OnPersistentInteractableUpdate, null));
         
         _stateMachine.ChangeState((int)InteractionStates.Standard);
     }
@@ -83,6 +90,7 @@ public class InteractionController : NetworkBehaviour
         }
         heldObject = go.GetComponent<IHoldable>();
         heldObject.HeldPlayerID = heldPlayerID;
+        _stateMachine.ChangeState((int)InteractionStates.HeldObject);
         playerController.ToggleCarrying(true);
         DisableCurrentInteractable();
         return go;
@@ -100,6 +108,7 @@ public class InteractionController : NetworkBehaviour
     public void DestroyHeldObject()
     {
         Destroy(heldObject.gameObject);
+        _stateMachine.ChangeState((int)InteractionStates.Standard);
         heldObject = null;
         playerController.ToggleCarrying(false);
         DisableCurrentInteractable();
@@ -137,7 +146,7 @@ public class InteractionController : NetworkBehaviour
         }
     }
 
-    private Collider GetClosestInteractable(LayerMask layerMask, TagHandle tag)
+    private Collider GetClosestCollider(LayerMask layerMask, TagHandle tag)
     {
         Collider[] hitColliders = Array.Empty<Collider>();
         if (playerController.ControlMode == PlayerController.ControlModeEnum.ThirdPerson)
@@ -185,6 +194,45 @@ public class InteractionController : NetworkBehaviour
         
         return closestCollider;
     }
+
+    private void UpdateCurrentInteractable(Collider closestCollider)
+    {
+        if (closestCollider == null)
+        {
+            DisableCurrentInteractable();
+            return;
+        }
+        GameObject parentHitObject = closestCollider.gameObject;
+        // Expects collider reference
+        ColliderReference colliderReference = closestCollider.GetComponent<ColliderReference>();
+        if (colliderReference != null)
+        {
+            if (colliderReference.reference != null)
+            {
+                parentHitObject = colliderReference.reference;
+            }
+        }
+        IInteractable interactable = parentHitObject.GetComponent<IInteractable>();
+        if (interactable != null && interactable != lastClosestInteractable)
+        {
+            bool isInteractable = interactable.EnableInteractable(heldObject);
+
+            if (isInteractable)
+            {
+                DisableCurrentInteractable();
+                lastClosestInteractable = interactable;
+            }
+        }
+    }
+
+    private void QueryInteractableTypes(IInteractable interactable)
+    {
+        if (interactable != null)
+        {
+            _currentInteractableTypes.loot = interactable.gameObject.GetComponent<NetworkLoot>();
+            _currentInteractableTypes.deposit = interactable.gameObject.GetComponent<LootDeposit>();
+        }
+    }
     
     #endregion
 
@@ -196,136 +244,54 @@ public class InteractionController : NetworkBehaviour
 
     private void OnStandardUpdate()
     {
-        if (!IsOwner) return;
-        Collider closestCollider = GetClosestInteractable(interactableLayerMask, _interactableTag);
-        if (closestCollider != null)
-        {
-            GameObject parentHitObject = closestCollider.gameObject;
-            // Expects collider reference
-            ColliderReference colliderReference = closestCollider.GetComponent<ColliderReference>();
-            if (colliderReference != null)
-            {
-                if (colliderReference.reference != null)
-                {
-                    parentHitObject = colliderReference.reference;
-                }
-            }
-            IInteractable interactable = parentHitObject.GetComponent<IInteractable>();
-            if (interactable != null && interactable != lastClosestInteractable)
-            {
-                bool isInteractable = interactable.EnableInteractable(heldObject);
-
-                if (persistentInteractable == null)
-                {
-                    if (isInteractable)
-                    {
-                        if (lastClosestInteractable != null)
-                        {
-                            lastClosestInteractable.DisableInteractable();
-                        }
-                
-                        lastClosestInteractable = interactable;
-                    }
-                }
-            }
-        }
-        else
-        {
-            DisableCurrentInteractable();
-        }
+        Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag);
+        UpdateCurrentInteractable(closestCollider);
 
         if (_input.interact)
         {
             //Turn it off immediately so we don't get double events
             _input.interact = false;
-
-            if (persistentInteractable != null)
+            
+            QueryInteractableTypes(lastClosestInteractable);
+            
+            if (_currentInteractableTypes.loot != null)
             {
-                persistentInteractable.Interact(NetworkManager.Singleton.LocalClientId);
-                persistentInteractable = null;
-                DisableCurrentInteractable();
-            }
-            else
-            {
-                NetworkLoot loot = null;
-                LootDeposit deposit = null;
-                
-                if (lastClosestInteractable != null)
+                LootData data = LootManager.Instance.LootIndextoData(_currentInteractableTypes.loot.lootIndex.Value);
+                if (data.lootType == LootType.Heavy)
                 {
-                    loot = lastClosestInteractable.gameObject.GetComponent<NetworkLoot>();
-                    deposit = lastClosestInteractable.gameObject.GetComponent<LootDeposit>();
-                }
-                
-                if (heldObject != null)
-                {
-                    heldObject.HeldPlayerID = 0;
-                    if (heldObject.HeldObjectType == HeldObjectType.CraneHook)
-                    {
-                        AttachmentCrane crane = heldObject.ConnectedParent.GetComponent<AttachmentCrane>();
-                        if (loot != null)
-                        {
-                            crane.AttachCraneHook(NetworkManager.Singleton.LocalClientId, loot.transform, loot.NetworkObject);
-                        }
-                        else
-                        {
-                            crane.DropCraneHook(NetworkManager.Singleton.LocalClientId);
-                        }
-                    }
-                    else if (heldObject.HeldObjectType == HeldObjectType.Loot)
-                    {
-                        if (deposit != null)
-                        {
-                            LootManager.Instance.RequestDeposit(deposit, heldObject.gameObject);
-                            deposit.DisableInteractable();
-                        }
-                        else
-                        {
-                            Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
-                            LootManager.Instance.RequestDrop(
-                                heldObject.gameObject.transform.position, heldObject.gameObject);
-                        }
-                    }
+                    _currentInteractableTypes.loot.SetAsTooHeavy();
                 }
                 else
                 {
-                    if (loot != null)
+                    DisableCurrentInteractable();
+                    LootManager.Instance.RequestPickup(_currentInteractableTypes.loot);
+                }
+            }
+            else
+            {
+                if (lastClosestInteractable != null)
+                {
+                    bool isPersistentInteractable = false;
+                    if (lastClosestInteractable.IsPersistentInteractable)
                     {
-                        LootData data = LootManager.Instance.LootIndextoData(loot.lootIndex.Value);
-                        if (data.lootType == LootType.Heavy)
-                        {
-                            loot.SetAsTooHeavy();
-                        }
-                        else
-                        {
-                            DisableCurrentInteractable();
-                            LootManager.Instance.RequestPickup(loot);
-                        }
+                        persistentInteractable = lastClosestInteractable;
+                        isPersistentInteractable = true;
                     }
-                    else
-                    {
-                        if (lastClosestInteractable != null)
-                        {
-                            if (lastClosestInteractable.IsPersistentInteractable)
-                            {
-                                
-                                persistentInteractable = lastClosestInteractable;
-                            }
-                            
-                            lastClosestInteractable.Interact(NetworkManager.Singleton.LocalClientId);
-                            
-                        }
-                    }
+                    
+                    lastClosestInteractable.Interact(NetworkManager.Singleton.LocalClientId);
+                    
+                    // Have to set this after because sometimes interacting will make it forget about itself
+                    if(isPersistentInteractable) _stateMachine.ChangeState((int)InteractionStates.PersistentInteractable);
                 }
             }
         }
     }
-    
 
-    private void OnInteractionUpdate()
+    private void OnBoatBuildingUpdate()
     {
         if (!IsOwner) return;
 
-        Collider closestCollider = GetClosestInteractable(buildingLayerMask, _buildingTag);
+        Collider closestCollider = GetClosestCollider(buildingLayerMask, _buildingTag);
 
         if (closestCollider != null)
         {
@@ -374,7 +340,68 @@ public class InteractionController : NetworkBehaviour
         }
     }
 
+    private void OnHeldObjectUpdate()
+    {
+        Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag);
+        UpdateCurrentInteractable(closestCollider);
+        QueryInteractableTypes(lastClosestInteractable);
+
+        if (_input.interact)
+        {
+            //Turn it off immediately so we don't get double events
+            _input.interact = false;
+            
+            heldObject.HeldPlayerID = 0;
+            if (heldObject.HeldObjectType == HeldObjectType.CraneHook)
+            {
+                AttachmentCrane crane = heldObject.ConnectedParent.GetComponent<AttachmentCrane>();
+                if (_currentInteractableTypes.loot != null)
+                {
+                    crane.AttachCraneHook(NetworkManager.Singleton.LocalClientId, 
+                        _currentInteractableTypes.loot.transform, _currentInteractableTypes.loot.NetworkObject);
+                }
+                else
+                {
+                    crane.DropCraneHook(NetworkManager.Singleton.LocalClientId);
+                }
+            }
+            else if (heldObject.HeldObjectType == HeldObjectType.Loot)
+            {
+                if (_currentInteractableTypes.deposit != null)
+                {
+                    LootManager.Instance.RequestDeposit(_currentInteractableTypes.deposit, heldObject.gameObject);
+                    _currentInteractableTypes.deposit.DisableInteractable();
+                }
+                else
+                {
+                    Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
+                    LootManager.Instance.RequestDrop(
+                        heldObject.gameObject.transform.position, heldObject.gameObject);
+                }
+            }
+        }
+    }
     
-    
+    private void OnPersistentInteractableUpdate()
+    {
+        if (_input.interact)
+        {
+            _input.interact = false;
+
+            if (persistentInteractable != null)
+            {
+                persistentInteractable.Interact(NetworkManager.Singleton.LocalClientId);
+                persistentInteractable = null;
+                _stateMachine.ChangeState((int)InteractionStates.Standard);
+                DisableCurrentInteractable();
+            }
+        }
+    }
     #endregion
+}
+
+public struct InteractableTypes
+{
+    public NetworkLoot loot;
+    public LootDeposit deposit;
 }

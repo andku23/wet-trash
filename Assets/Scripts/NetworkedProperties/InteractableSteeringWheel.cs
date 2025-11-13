@@ -34,6 +34,12 @@ public class InteractableSteeringWheel : MonoBehaviour, IInteractable
             instructions.SetActive(false);
             return false;
         }
+
+        if (heldObject != null)
+        {
+            instructions.SetActive(false);
+            return false;
+        }
         instructions.SetActive(true);
         return true;
     }

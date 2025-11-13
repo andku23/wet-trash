@@ -14,7 +14,8 @@ public class PlayerAudioSource : MonoBehaviour
         Landing,
         WaterSplash,
         Swim,
-        Thump
+        Thump,
+        EnemyAttack
     }
     
     public void PlaySound(SoundType soundType)

@@ -22,6 +22,7 @@ public class Enemy : NetworkBehaviour
     private Collider _currentWaterBody;
     
     [SerializeField] private Animator _animator;
+    [SerializeField] private PlayerAudioSource _audioSource;
     
     enum ServerStates
     {
@@ -197,6 +198,7 @@ public class Enemy : NetworkBehaviour
     private void DoAttack_ClientRpc(ulong networkPlayerID)
     {
         _animator.SetTrigger("Attack");
+        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyAttack);
         if (NetworkManager.Singleton.LocalClientId == networkPlayerID)
         {
             StartCoroutine(InflictDamage(2));

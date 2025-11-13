@@ -7,7 +7,6 @@ public class AttachmentMotor : NetworkBehaviour, IAttachment
     
     public void OnAttach(NetworkedBoat boat)
     {
-        Debug.Log("On attach");
         boat.BoatState.MoveSpeed.Value += speedIncrease;
     }
 

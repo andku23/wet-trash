@@ -199,7 +199,6 @@ public class InteractionController : NetworkBehaviour
 
             if (persistentInteractable != null)
             {
-                
                 persistentInteractable.Interact(NetworkManager.Singleton.LocalClientId);
                 persistentInteractable = null;
                 DisableCurrentInteractable();

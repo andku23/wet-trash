@@ -18,8 +18,9 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable, IAttachment
     public float MaxCraneDistance = 10f;
 
     public GameObject CraneHookParent {get {return craneHookParent;}}
+    public int LocalState {get {return _networkedState.Value;}}
     
-    enum LocalStates
+    public enum LocalStates
     {
         Default = 0,
         ClosestItem = 1,
@@ -305,9 +306,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable, IAttachment
             timeStart = Time.time;
             totalDistance = Vector3.Distance(craneHookParent.transform.position, _hookedLoot.transform.position);
             pullStartPosition = _hookedLoot.transform.position;
-            pullEndPosition = craneHookParent.transform.position 
-                              - _craneHookOnLoot.GetAttachmentOffset()
-                              - (_craneHookOnLoot.transform.position - _hookedLoot.transform.position);
+            
         }
     }
     
@@ -315,6 +314,9 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable, IAttachment
     {
         if (IsServer)
         {
+            pullEndPosition = craneHookParent.transform.position 
+                              - _craneHookOnLoot.GetAttachmentOffset()
+                              - (_craneHookOnLoot.transform.position - _hookedLoot.transform.position);
             _hookedLoot.transform.position = Vector3.Lerp(pullStartPosition, pullEndPosition, ((Time.time - timeStart) * pullRate) / totalDistance);
             if (Vector3.Distance(_hookedLoot.transform.position, pullEndPosition) < 0.01f)
             {

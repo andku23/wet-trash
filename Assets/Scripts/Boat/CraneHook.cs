@@ -28,7 +28,10 @@ public class CraneHook : MonoBehaviour, IHoldable
                 if (Vector3.Distance(HookTop.transform.position, AttachmentCrane.CraneHookParent.transform.position) >
                     AttachmentCrane.MaxCraneDistance)
                 {
-                    AttachmentCrane.DropCraneHook(HeldPlayerID);
+                    if (AttachmentCrane.LocalState == (int)AttachmentCrane.LocalStates.HookHeld)
+                    {
+                        AttachmentCrane.DropCraneHook(HeldPlayerID);
+                    }
                 }
             }
         }

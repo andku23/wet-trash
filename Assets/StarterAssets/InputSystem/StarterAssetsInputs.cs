@@ -1,6 +1,7 @@
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 #endif
 
 namespace StarterAssets
@@ -16,6 +17,7 @@ namespace StarterAssets
 		public bool interact;
 		public bool respawn;
 		public bool inventory;
+		public float scroll;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -67,6 +69,11 @@ namespace StarterAssets
 		{
 			InventoryInput(value.isPressed);
 		}
+		
+		public void OnScroll(InputValue value)
+		{
+			ScrollInput(value.Get<float>());
+		}
 #endif
 
 
@@ -110,6 +117,10 @@ namespace StarterAssets
 			inventory = newState;
 		}
 
+		public void ScrollInput(float newState)
+		{
+			scroll = newState;
+		}
 
 		private void OnApplicationFocus(bool hasFocus)
 		{

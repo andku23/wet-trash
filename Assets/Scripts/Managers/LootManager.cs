@@ -113,7 +113,7 @@ public class LootManager : NetworkBehaviour
     {
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
         InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
-        pickupPlayerCollector.DestroyHeldObject();
+        pickupPlayerCollector.DropItem(targetPlayerNetworkObjectId);
     }
 
     public void DeleteAllLoot()
@@ -190,10 +190,10 @@ public class LootManager : NetworkBehaviour
             
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
         InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
-        GameObject attachedLoot = pickupPlayerCollector.AttachToPoint(localLootPrefab, targetPlayerNetworkObjectId);
+        //GameObject attachedLoot = pickupPlayerCollector.AttachToPoint(localLootPrefab, targetPlayerNetworkObjectId);
+        GameObject attachedLoot = pickupPlayerCollector.PickupItem(lootIndex, targetPlayerNetworkObjectId);
         
-        LootInstanceData lootInstanceData = attachedLoot.GetComponent<LootInstanceData>();
-        lootInstanceData.LoadLootLocal(LootIndextoData(lootIndex), lootIndex);
+       
     }
 
     public void RequestDrop(Vector3 position, GameObject loot)

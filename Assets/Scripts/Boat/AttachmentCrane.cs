@@ -106,7 +106,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable, IAttachment
         InteractionController interactionController = playerObject.GetComponent<InteractionController>();
         if (interactionController != null)
         {
-            GameObject craneHookInstantiated = interactionController.AttachToPoint(craneHookPrefab, networkPlayerID);
+            GameObject craneHookInstantiated = interactionController.AttachToPointTemporary(craneHookPrefab, networkPlayerID);
             CraneHook craneHook = craneHookInstantiated.GetComponent<CraneHook>();
             if (craneHook != null)
             {

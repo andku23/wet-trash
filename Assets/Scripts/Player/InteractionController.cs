@@ -18,6 +18,10 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private PlayerState playerState;
 
+    private const int INVENTORY_SIZE = 4;
+    private int[] _inventory = new int[INVENTORY_SIZE];
+    private int _currentInventoryIndex = 0;
+    
     private float rotationPlaceOffset;
 
     public enum InteractionStates
@@ -69,12 +73,73 @@ public class InteractionController : NetworkBehaviour
             new BaseState(null, OnPersistentInteractableUpdate, null));
         
         _stateMachine.ChangeState((int)InteractionStates.Standard);
+
+        for (int i = 0; i < _inventory.Length; i++)
+        {
+            _inventory[i] = -1;
+        }
     }
     
     // functions that are called from other players or the server
     // or sometimes just other functions
     #region External Calls
-    public GameObject AttachToPoint(GameObject loot, ulong heldPlayerID)
+
+    public GameObject PickupItem(int lootIndex, ulong heldPlayerID)
+    {
+        if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
+        {
+            _inventory[_currentInventoryIndex] = lootIndex;
+        }
+        
+        ChangeHeldObject(_inventory[_currentInventoryIndex], heldPlayerID);
+        
+        return heldObject.gameObject;
+    }
+    
+    public void DropItem(ulong heldPlayerID)
+    {
+        if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
+        {
+            _inventory[_currentInventoryIndex] = -1;
+        }
+        
+        ChangeHeldObject(_inventory[_currentInventoryIndex], heldPlayerID);
+    }
+    
+    // TODO Change held object needs to be made so I can call it via server rpc
+    // And then also do the update on the owner client first and then 
+    // ignore it on the rpc call
+
+    public void ChangeHeldObject(int lootIndex, ulong heldPlayerID)
+    {
+        if (heldObject != null)
+        {
+            DestroyHeldObject();
+        }
+        
+        if (lootIndex != -1)
+        {
+            
+            LoadAndAttachHeldObject(lootIndex, heldPlayerID);
+            playerController.ToggleCarrying(true);
+            DisableCurrentInteractable();
+            if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
+            {
+                _stateMachine.ChangeState((int)InteractionStates.HeldObject);
+            }
+        }
+        else
+        {
+            if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
+            {
+                _stateMachine.ChangeState((int)InteractionStates.Standard);
+            }
+            playerController.ToggleCarrying(false);
+        }
+        
+    }
+    
+    public GameObject AttachToPointTemporary(GameObject loot, ulong heldPlayerID)
     {
         GameObject go = Instantiate(loot, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
         go.transform.localRotation = Quaternion.identity;
@@ -118,6 +183,43 @@ public class InteractionController : NetworkBehaviour
 
     // functionality called by interaction controller that are used a lot
     #region Internal Utility
+
+    private GameObject LoadAndAttachHeldObject(int lootIndex, ulong heldPlayerID)
+    {
+        GameObject localLootPrefab = LootManager.Instance.LootList.localLootPrefab;
+        GameObject go = Instantiate(localLootPrefab, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
+        go.transform.localRotation = Quaternion.identity;
+        if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
+        {
+            go.transform.localPosition = new Vector3(0, 0.4f, 0);
+            go.transform.localScale = Vector3.one * 0.3f;
+        }
+        else
+        {
+            go.transform.localPosition = new Vector3(0, -0.3f, -0.1f);
+            go.transform.localScale = Vector3.one * 0.6f;
+        }
+        heldObject = go.GetComponent<IHoldable>();
+        heldObject.HeldPlayerID = heldPlayerID;
+        
+        LootInstanceData lootInstanceData = heldObject.gameObject.GetComponent<LootInstanceData>();
+        lootInstanceData.LoadLootLocal(LootManager.Instance.LootIndextoData(lootIndex), lootIndex);
+        return go;
+    }
+
+    private void IncrementInventoryIndex(int amount)
+    {
+        _currentInventoryIndex += amount;
+        if (_currentInventoryIndex >= _inventory.Length)
+        {
+            _currentInventoryIndex %= _inventory.Length;
+        } else if (_currentInventoryIndex < 0)
+        {
+            int remainder = -_currentInventoryIndex%_inventory.Length;
+            _currentInventoryIndex = _inventory.Length - remainder;
+        }
+    }
+    
     private void DisableCurrentInteractable()
     {
         if (lastClosestInteractable != null)
@@ -395,6 +497,24 @@ public class InteractionController : NetworkBehaviour
         if (IsOwner)
         {
             _stateMachine.Update();
+
+            if (_input.scroll != 0)
+            {
+                if (_input.scroll > 0)
+                {
+                    IncrementInventoryIndex(1);
+                    ChangeHeldObject(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
+                }
+                else
+                {
+                    IncrementInventoryIndex(-1);
+                    ChangeHeldObject(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
+                }
+                _input.scroll = 0;
+                Debug.Log(_currentInventoryIndex);
+                
+            }
+            
         }
     }
 }

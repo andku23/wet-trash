@@ -490,10 +490,11 @@ public class PlayerController : NetworkBehaviour
                 
             transform.rotation = Quaternion.Euler(0.0f,
                 firstPersonYaw, 0.0f);
-                
+
             if (_hasAnimator)
             {
-                _animator.SetFloat(_animIDVerticalLookAmount, ((firstPersonPitch + 89) / (89+89)));
+                float remapPitchAngle = ((firstPersonPitch + 89) / (89 + 89));
+                _animator.SetFloat(_animIDVerticalLookAmount, remapPitchAngle);
                 _cameraControl.CinemachineCameraTarget.transform.localEulerAngles = new Vector3(firstPersonPitch, 0, 0);
             }
 

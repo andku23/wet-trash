@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class LootModel : MonoBehaviour
+public class ItemModel : MonoBehaviour
 {
     public GameObject CraneAttachPoint;
 }

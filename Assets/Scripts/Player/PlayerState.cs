@@ -14,7 +14,7 @@ public class PlayerState : NetworkBehaviour
     public float SprintSpeed = 5.335f;
     
     [Tooltip("Multiplier based on held item")]
-    public float SprintWeightMultiplier = 1.0f;
+    public float SprintWeightMultiplier = 0.01f;
     
     public float SprintSpeed_UpgradeIncrement = 0.5f;
     
@@ -22,7 +22,7 @@ public class PlayerState : NetworkBehaviour
     public float SprintSwimSpeed = 4.335f;
     
     [Tooltip("Multiplier based on held item")]
-    public float SwimWeightMultiplier = 1.0f;
+    public float SwimWeightMultiplier = 0.01f;
 
     public float SprintSwimSpeed_UpgradeIncrement = 0.5f;
     
@@ -38,6 +38,7 @@ public class PlayerState : NetworkBehaviour
     public float JumpHeight = 1.2f;
     public float WaterSurfaceJumpHeight = 10.0f;
     public float WaterVerticalSwimSpeed = 4.0f;
+    public float WeightCarried = 0f;
     
     public float BreathFullAmount;
     public float BreathFullAmount_UpgradeIncrement = 1f;

@@ -8,7 +8,7 @@ public class PlayerDeath : NetworkBehaviour
 {
     private int _animIDIsDead;
     [SerializeField] private PlayerState playerState;
-    [FormerlySerializedAs("_animator")] public Animator Animator;
+    public Animator Animator;
     
     private float _breath;
     private StarterAssetsInputs _input;

@@ -202,8 +202,8 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable, IAttachment
     [ClientRpc(RequireOwnership = false)]
     public void ReelFinished_ClientRpc(int lootIndex, Vector3 connectPosition)
     {
-        LootData lootData = LootManager.Instance.LootIndextoData(lootIndex);
-        _localHookedLoot = Instantiate(lootData.model, craneHookParent.transform);
+        ItemData itemData = LootManager.Instance.LootIndextoData(lootIndex);
+        _localHookedLoot = Instantiate(itemData.model, craneHookParent.transform);
         _localHookedLoot.transform.position = connectPosition;
     }
     

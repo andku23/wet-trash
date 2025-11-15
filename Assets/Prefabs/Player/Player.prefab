@@ -2797,16 +2797,17 @@ MonoBehaviour:
   MoveSpeed: 2
   MaxSwimmingSpeed: 2
   SprintSpeed: 5.335
-  SprintWeightMultiplier: 1
+  SprintWeightMultiplier: 0.05
   SprintSpeed_UpgradeIncrement: 0.5
   SprintSwimSpeed: 4.335
-  SwimWeightMultiplier: 1
+  SwimWeightMultiplier: 0.05
   SprintSwimSpeed_UpgradeIncrement: 0.5
   RotationSmoothTime: 0.12
   SpeedChangeRate: 10
   JumpHeight: 1.2
   WaterSurfaceJumpHeight: 10
   WaterVerticalSwimSpeed: 4
+  WeightCarried: 0
   BreathFullAmount: 25
   BreathFullAmount_UpgradeIncrement: 5
   BreathDepleteRate: 1

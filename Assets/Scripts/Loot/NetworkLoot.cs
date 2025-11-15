@@ -2,6 +2,7 @@ using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
 {
@@ -15,7 +16,7 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
     public NetworkVariable<bool> isInteractionLocked;
     private ClientStateMachine _stateMachine;
 
-    [HideInInspector] public LootInstanceData lootInstanceData;
+    [HideInInspector] public ItemInstance itemInstance;
     
     public bool IsInteractionLocked
     {
@@ -70,9 +71,9 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        lootInstanceData = GetComponent<LootInstanceData>();
-        lootInstanceData.LoadLootNetwork(lootIndex.Value);
-        priceText.text = "$" + LootManager.Instance.LootList.pairs[lootIndex.Value].price;
+        itemInstance = GetComponent<ItemInstance>();
+        itemInstance.LoadNetwork(lootIndex.Value);
+        priceText.text = "$" + LootManager.Instance.ItemList.pairs[lootIndex.Value].price;
     }
 
     public bool EnableInteractable(IHoldable heldObject)
@@ -163,10 +164,10 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
 
     public Vector3 GetAttachPoint()
     {
-        if (lootInstanceData != null && lootInstanceData.LootModel != null &&
-            lootInstanceData.LootModel.CraneAttachPoint != null)
+        if (itemInstance != null && itemInstance.Model != null &&
+            itemInstance.Model.CraneAttachPoint != null)
         {
-            return lootInstanceData.LootModel.CraneAttachPoint.transform.position;
+            return itemInstance.Model.CraneAttachPoint.transform.position;
         }
         else
         {

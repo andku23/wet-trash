@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class LootManager : NetworkBehaviour
@@ -10,7 +11,7 @@ public class LootManager : NetworkBehaviour
     public static LootManager Instance;
     
     [SerializeField] private int _numLoot;
-    [SerializeField] private LootList lootList;
+    [SerializeField] private ItemList itemList;
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] private List<LootDeposit> _lootDeposits;
     [SerializeField] private List<LootGroup> _lootGroups;
@@ -20,9 +21,9 @@ public class LootManager : NetworkBehaviour
     
     private List<NetworkObject> _loots = new List<NetworkObject>();
     
-    public LootList LootList
+    public ItemList ItemList
     {
-        get { return lootList; }
+        get { return itemList; }
     }
 
     private void Start()
@@ -49,17 +50,17 @@ public class LootManager : NetworkBehaviour
         List<int> spawnProbabilityShallow = new List<int>();
         List<int> spawnProbabilityDeep = new List<int>();
         
-        for (int i = 0; i < lootList.pairs.Length; i++)
+        for (int i = 0; i < itemList.pairs.Length; i++)
         {
-            for (int j = 0; j < lootList.pairs[i].spawnRateShallow; j++)
+            for (int j = 0; j < itemList.pairs[i].spawnRateShallow; j++)
             {
                 spawnProbabilityShallow.Add(i);
             }
         }
         
-        for (int i = 0; i < lootList.pairs.Length; i++)
+        for (int i = 0; i < itemList.pairs.Length; i++)
         {
-            for (int j = 0; j < lootList.pairs[i].spawnRateDeep; j++)
+            for (int j = 0; j < itemList.pairs[i].spawnRateDeep; j++)
             {
                 spawnProbabilityDeep.Add(i);
             }
@@ -94,7 +95,7 @@ public class LootManager : NetworkBehaviour
 
     private void SpawnAndLoadLoot(Vector3 spawnPosition, List<int> spawnProbabilityTable)
     {
-        GameObject go = Instantiate(lootList.networkLootPrefab,
+        GameObject go = Instantiate(itemList.networkLootPrefab,
             spawnPosition,
             Quaternion.identity);
         //LootBaseData lootBaseData = go.GetComponent<LootBaseData>();
@@ -125,24 +126,24 @@ public class LootManager : NetworkBehaviour
         _loots.Clear();
     }
 
-    public LootData LootIndextoData(int lootIndex)
+    public ItemData LootIndextoData(int lootIndex)
     {
-        if (lootIndex < lootList.pairs.Length)
+        if (lootIndex < itemList.pairs.Length)
         {
-            return lootList.pairs[lootIndex];
+            return itemList.pairs[lootIndex];
         }
 
         return null;
     }
     
-    public LootData LootPrefabtoData(GameObject prefabInstance)
+    public ItemData LootPrefabtoData(GameObject prefabInstance)
     {
-        LootInstanceData lootData = prefabInstance.GetComponent<LootInstanceData>();
-        if (lootData != null)
+        ItemInstance item = prefabInstance.GetComponent<ItemInstance>();
+        if (item != null)
         {
-            if (lootData.LootIndex < lootList.pairs.Length)
+            if (item.ItemIndex < itemList.pairs.Length)
             {
-                return lootList.pairs[lootData.LootIndex];
+                return itemList.pairs[item.ItemIndex];
             }
         }
         return null;
@@ -150,10 +151,10 @@ public class LootManager : NetworkBehaviour
     
     public int LootPrefabtoIndex(GameObject prefabInstance)
     {
-        LootInstanceData lootData = prefabInstance.GetComponent<LootInstanceData>();
-        if (lootData != null)
+        ItemInstance item = prefabInstance.GetComponent<ItemInstance>();
+        if (item != null)
         {
-            return lootData.LootIndex;
+            return item.ItemIndex;
         }
         return -1;
     }
@@ -186,8 +187,6 @@ public class LootManager : NetworkBehaviour
     public void Pickup_ClientRpc(ulong targetPlayerNetworkObjectId, int lootIndex)
     {
         // Lookup who picked it up and get the client for it
-        GameObject localLootPrefab = lootList.localLootPrefab;
-            
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
         InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
         //GameObject attachedLoot = pickupPlayerCollector.AttachToPoint(localLootPrefab, targetPlayerNetworkObjectId);
@@ -203,9 +202,9 @@ public class LootManager : NetworkBehaviour
     public void Drop_ServerRpc(ulong targetPlayerNetworkObjectId, Vector3 position, int lootIndex)
     {
         // GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
-        GameObject go = Instantiate(lootList.networkLootPrefab, position, Quaternion.identity);
+        GameObject go = Instantiate(itemList.networkLootPrefab, position, Quaternion.identity);
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
-        LootInstanceData lootInstanceData = go.GetComponent<LootInstanceData>();
+        ItemInstance itemInstance = go.GetComponent<ItemInstance>();
         NetworkLoot networkLoot = go.GetComponent<NetworkLoot>();
         
         networkLoot.lootIndex.Value = lootIndex;
@@ -250,7 +249,7 @@ public class LootManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void Deposit_ServerRpc(ulong targetPlayerNetworkObjectId, int lootDepositIndex, int lootIndex)
     {
-        MoneyManager.Instance.AddCash(lootList.pairs[lootIndex].price);
+        MoneyManager.Instance.AddCash(itemList.pairs[lootIndex].price);
         Deposit_ClientRpc(targetPlayerNetworkObjectId, lootDepositIndex);
     }
     

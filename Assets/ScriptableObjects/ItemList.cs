@@ -1,15 +1,15 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "LootList", menuName = "Scriptable Objects/LootList")]
-public class LootList : ScriptableObject
+public class ItemList : ScriptableObject
 {
     public GameObject networkLootPrefab;
     public GameObject localLootPrefab;
-    public LootData[] pairs;
+    public ItemData[] pairs;
 }
 
 [System.Serializable]
-public class LootData
+public class ItemData
 {
     public LootType lootType;
     public GameObject model;

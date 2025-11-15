@@ -336,7 +336,7 @@ public class PlayerController : NetworkBehaviour
         float speedOffset = 0.1f;
         float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
         
-        targetSpeed *= playerState.SwimWeightMultiplier;
+        targetSpeed *= 1/(playerState.SwimWeightMultiplier * playerState.WeightCarried + 1);
         
         if (currentSpeed < targetSpeed - speedOffset ||
             currentSpeed > targetSpeed + speedOffset)
@@ -433,7 +433,7 @@ public class PlayerController : NetworkBehaviour
         float speedOffset = 0.1f;
         float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
 
-        targetSpeed *= playerState.SprintWeightMultiplier;
+        targetSpeed *= 1/(playerState.SprintWeightMultiplier * playerState.WeightCarried + 1);;
 
         // accelerate or decelerate to target speed
         if (currentHorizontalSpeed < targetSpeed - speedOffset ||
@@ -546,6 +546,7 @@ public class PlayerController : NetworkBehaviour
                 // the square root of H * -2 * G = how much velocity needed to reach desired height
                 _verticalVelocity = 0.0f;
             }
+            _verticalVelocity *= 1/(playerState.SwimWeightMultiplier*playerState.WeightCarried + 1);
         }
         else if (playerState.Grounded)
         {

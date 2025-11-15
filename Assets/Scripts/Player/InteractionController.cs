@@ -86,12 +86,17 @@ public class InteractionController : NetworkBehaviour
 
     public GameObject PickupItemNetwork(int lootIndex, ulong heldPlayerID)
     {
+        ChangeHeldObjectLocal(lootIndex, heldPlayerID);
+        
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
         {
-            _inventory[_currentInventoryIndex] = lootIndex;
+            IInventorable inventorableItem = heldObject.gameObject.GetComponent<IInventorable>();
+            if (inventorableItem != null)
+            {
+                _inventory[_currentInventoryIndex] = lootIndex;
+                playerState.WeightCarried += inventorableItem.GetWeight();
+            }
         }
-        
-        ChangeHeldObjectLocal(lootIndex, heldPlayerID);
         
         return heldObject.gameObject;
     }
@@ -101,6 +106,11 @@ public class InteractionController : NetworkBehaviour
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
         {
             _inventory[_currentInventoryIndex] = -1;
+            IInventorable inventorableItem = heldObject.gameObject.GetComponent<IInventorable>();
+            if (inventorableItem != null)
+            {
+                playerState.WeightCarried -= inventorableItem.GetWeight();
+            }
         }
         
         ChangeHeldObjectLocal(-1, heldPlayerID);
@@ -145,10 +155,8 @@ public class InteractionController : NetworkBehaviour
     {
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId) return;
 
-        Debug.Log("lois");
         if (heldObject != null)
         {
-            Debug.Log("hdestroying");
             DestroyHeldObject();
         }
         
@@ -227,7 +235,7 @@ public class InteractionController : NetworkBehaviour
 
     private GameObject LoadAndAttachHeldObject(int lootIndex, ulong heldPlayerID)
     {
-        GameObject localLootPrefab = LootManager.Instance.LootList.localLootPrefab;
+        GameObject localLootPrefab = LootManager.Instance.ItemList.localLootPrefab;
         GameObject go = Instantiate(localLootPrefab, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
         go.transform.localRotation = Quaternion.identity;
         if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
@@ -243,8 +251,8 @@ public class InteractionController : NetworkBehaviour
         heldObject = go.GetComponent<IHoldable>();
         heldObject.HeldPlayerID = heldPlayerID;
         
-        LootInstanceData lootInstanceData = heldObject.gameObject.GetComponent<LootInstanceData>();
-        lootInstanceData.LoadLootLocal(LootManager.Instance.LootIndextoData(lootIndex), lootIndex);
+        ItemInstance itemInstance = heldObject.gameObject.GetComponent<ItemInstance>();
+        itemInstance.LoadLocal(LootManager.Instance.LootIndextoData(lootIndex), lootIndex);
         return go;
     }
 
@@ -376,7 +384,7 @@ public class InteractionController : NetworkBehaviour
             
             if (_currentInteractableTypes.loot != null)
             {
-                LootData data = LootManager.Instance.LootIndextoData(_currentInteractableTypes.loot.lootIndex.Value);
+                ItemData data = LootManager.Instance.LootIndextoData(_currentInteractableTypes.loot.lootIndex.Value);
                 if (data.lootType == LootType.Heavy)
                 {
                     _currentInteractableTypes.loot.SetAsTooHeavy();

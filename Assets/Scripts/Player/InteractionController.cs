@@ -304,7 +304,8 @@ public class InteractionController : NetworkBehaviour
     
     private void DisableCurrentInteractable()
     {
-        if (lastClosestInteractable != null)
+        if (lastClosestInteractable is MonoBehaviour monoBehaviour && monoBehaviour != null
+            && lastClosestInteractable != null)
         {
             lastClosestInteractable.DisableInteractable();
             lastClosestInteractable = null;

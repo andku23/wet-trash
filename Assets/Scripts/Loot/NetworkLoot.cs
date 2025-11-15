@@ -57,6 +57,12 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
         isInteractionLocked.OnValueChanged += OnInteractionLockedChanged;
     }
 
+    void OnDestroy()
+    {
+        isInteractionLocked.OnValueChanged -= OnInteractionLockedChanged;
+        _stateMachine = null;
+    }
+
     private void OnInteractionLockedChanged(bool prev, bool next)
     {
         if (prev != next)

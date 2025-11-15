@@ -104,8 +104,8 @@ public class LootManager : NetworkBehaviour
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
         NetworkLoot networkLoot = go.GetComponent<NetworkLoot>();
             
-        networkObject.Spawn();
         networkLoot.lootIndex.Value = selectedPrefabIndex;
+        networkObject.Spawn();
         _loots.Add(networkObject);
     }
     
@@ -113,7 +113,7 @@ public class LootManager : NetworkBehaviour
     {
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
         InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
-        pickupPlayerCollector.DropItem(targetPlayerNetworkObjectId);
+        pickupPlayerCollector.DropItemNetwork(targetPlayerNetworkObjectId);
     }
 
     public void DeleteAllLoot()
@@ -191,9 +191,7 @@ public class LootManager : NetworkBehaviour
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
         InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
         //GameObject attachedLoot = pickupPlayerCollector.AttachToPoint(localLootPrefab, targetPlayerNetworkObjectId);
-        GameObject attachedLoot = pickupPlayerCollector.PickupItem(lootIndex, targetPlayerNetworkObjectId);
-        
-       
+        GameObject attachedLoot = pickupPlayerCollector.PickupItemNetwork(lootIndex, targetPlayerNetworkObjectId);
     }
 
     public void RequestDrop(Vector3 position, GameObject loot)

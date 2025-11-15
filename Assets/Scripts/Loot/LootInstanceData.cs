@@ -16,7 +16,6 @@ public class LootInstanceData : MonoBehaviour, IHoldable
     public void LoadLootLocal(LootData lootData, int lootIndex)
     {
         LootIndex = lootIndex;
-        
         GameObject model = Instantiate(lootData.model, transform);
         model.GetComponent<ColliderReference>().enabled = false;
         model.GetComponent<Collider>().enabled = false;

@@ -84,33 +84,35 @@ public class InteractionController : NetworkBehaviour
     // or sometimes just other functions
     #region External Calls
 
-    public GameObject PickupItem(int lootIndex, ulong heldPlayerID)
+    public GameObject PickupItemNetwork(int lootIndex, ulong heldPlayerID)
     {
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
         {
             _inventory[_currentInventoryIndex] = lootIndex;
         }
         
-        ChangeHeldObject(_inventory[_currentInventoryIndex], heldPlayerID);
+        ChangeHeldObjectLocal(lootIndex, heldPlayerID);
         
         return heldObject.gameObject;
     }
     
-    public void DropItem(ulong heldPlayerID)
+    public void DropItemNetwork(ulong heldPlayerID)
     {
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
         {
             _inventory[_currentInventoryIndex] = -1;
         }
         
-        ChangeHeldObject(_inventory[_currentInventoryIndex], heldPlayerID);
+        ChangeHeldObjectLocal(-1, heldPlayerID);
     }
     
     // TODO Change held object needs to be made so I can call it via server rpc
     // And then also do the update on the owner client first and then 
     // ignore it on the rpc call
 
-    public void ChangeHeldObject(int lootIndex, ulong heldPlayerID)
+    // updateLocal flag is for if you want to ignore updating it if its your own
+    // item assuming youve already updated it before sending off the request
+    public void ChangeHeldObjectLocal(int lootIndex, ulong heldPlayerID)
     {
         if (heldObject != null)
         {
@@ -122,9 +124,9 @@ public class InteractionController : NetworkBehaviour
             
             LoadAndAttachHeldObject(lootIndex, heldPlayerID);
             playerController.ToggleCarrying(true);
-            DisableCurrentInteractable();
             if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
             {
+                DisableCurrentInteractable();
                 _stateMachine.ChangeState((int)InteractionStates.HeldObject);
             }
         }
@@ -137,6 +139,28 @@ public class InteractionController : NetworkBehaviour
             playerController.ToggleCarrying(false);
         }
         
+    }
+    
+    public void ChangeHeldObjectNetwork(int lootIndex, ulong heldPlayerID)
+    {
+        if (heldPlayerID == NetworkManager.Singleton.LocalClientId) return;
+
+        Debug.Log("lois");
+        if (heldObject != null)
+        {
+            Debug.Log("hdestroying");
+            DestroyHeldObject();
+        }
+        
+        if (lootIndex != -1)
+        {
+            LoadAndAttachHeldObject(lootIndex, heldPlayerID);
+            playerController.ToggleCarrying(true);
+        }
+        else
+        {
+            playerController.ToggleCarrying(false);
+        }
     }
     
     public GameObject AttachToPointTemporary(GameObject loot, ulong heldPlayerID)
@@ -155,7 +179,6 @@ public class InteractionController : NetworkBehaviour
         }
         heldObject = go.GetComponent<IHoldable>();
         heldObject.HeldPlayerID = heldPlayerID;
-        _stateMachine.ChangeState((int)InteractionStates.HeldObject);
         playerController.ToggleCarrying(true);
         DisableCurrentInteractable();
         return go;
@@ -173,10 +196,28 @@ public class InteractionController : NetworkBehaviour
     public void DestroyHeldObject()
     {
         Destroy(heldObject.gameObject);
-        _stateMachine.ChangeState((int)InteractionStates.Standard);
         heldObject = null;
         playerController.ToggleCarrying(false);
-        DisableCurrentInteractable();
+        
+        //Might have to figure these out again when doing crane
+        //_stateMachine.ChangeState((int)InteractionStates.Standard);
+        //DisableCurrentInteractable();
+    }
+    
+    #endregion
+    
+    #region Networked Functions
+
+    [ServerRpc(RequireOwnership = false)]
+    public void RequestChange_ServerRpc(ulong heldPlayerID, int lootIndex)
+    {
+        RequestChange_ClientRpc(heldPlayerID, lootIndex);
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void RequestChange_ClientRpc(ulong heldPlayerID, int lootIndex)
+    {
+        ChangeHeldObjectNetwork(lootIndex, heldPlayerID);
     }
     
     #endregion
@@ -422,8 +463,8 @@ public class InteractionController : NetworkBehaviour
     private void OnHeldObjectEnter()
     {
         if(!IsOwner) return;
-        playerState.SwimWeightMultiplier = heldObject.GetWeightMultiplier();
-        playerState.SprintWeightMultiplier = heldObject.GetWeightMultiplier();
+        //playerState.SwimWeightMultiplier = heldObject.GetWeightMultiplier();
+        //playerState.SprintWeightMultiplier = heldObject.GetWeightMultiplier();
     }
 
     private void OnHeldObjectUpdate()
@@ -471,8 +512,8 @@ public class InteractionController : NetworkBehaviour
     private void OnHeldObjectExit()
     {
         if(!IsOwner) return;
-        playerState.SwimWeightMultiplier = 1.0f;
-        playerState.SprintWeightMultiplier = 1.0f;
+        //playerState.SwimWeightMultiplier = 1.0f;
+        //playerState.SprintWeightMultiplier = 1.0f;
     }
     
     private void OnPersistentInteractableUpdate()
@@ -503,12 +544,14 @@ public class InteractionController : NetworkBehaviour
                 if (_input.scroll > 0)
                 {
                     IncrementInventoryIndex(1);
-                    ChangeHeldObject(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
+                    ChangeHeldObjectLocal(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
+                    RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex]);
                 }
                 else
                 {
                     IncrementInventoryIndex(-1);
-                    ChangeHeldObject(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
+                    ChangeHeldObjectLocal(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
+                    RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex]);
                 }
                 _input.scroll = 0;
                 Debug.Log(_currentInventoryIndex);

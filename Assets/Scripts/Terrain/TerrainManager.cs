@@ -155,7 +155,6 @@ public class TerrainManager : NetworkBehaviour
         Vector3 lowestHolePosition = new Vector3(xPos, 0, zPos);
         lowestHolePosition.y = heights[holeWidth/2, holeHeight/2] - 0.2f;
         float lowestHoleHeight = lowestHolePosition.y;
-        Debug.Log(lowestHoleHeight);
         float fullSize = holeWidth / 2;
         float holeSize = holeWidth / 4;
         float outsideToHoleEdge = fullSize - holeSize;

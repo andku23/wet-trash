@@ -18,6 +18,7 @@ public class ItemData
     public int price;
     public float weight;
     public float weightSpeedMultiplier;
+    public Sprite hotbarIcon;
 }
 
 public enum LootType

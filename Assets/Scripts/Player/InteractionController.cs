@@ -124,6 +124,7 @@ public class InteractionController : NetworkBehaviour
             {
                 _inventory[_currentInventoryIndex] = lootIndex;
                 playerState.WeightCarried += inventorableItem.GetWeight();
+                UI.Instance.AddHotbarItem(_currentInventoryIndex, lootIndex);
             }
         }
         
@@ -141,6 +142,7 @@ public class InteractionController : NetworkBehaviour
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
         {
             _inventory[_currentInventoryIndex] = -1;
+            UI.Instance.RemoveHotbarItem(_currentInventoryIndex);
             IInventorable inventorableItem = heldObject.gameObject.GetComponent<IInventorable>();
             if (inventorableItem != null)
             {
@@ -179,6 +181,7 @@ public class InteractionController : NetworkBehaviour
             }
             playerController.ToggleCarrying(false);
         }
+        UI.Instance.SetActiveHotbarItem(_currentInventoryIndex);
         
     }
     

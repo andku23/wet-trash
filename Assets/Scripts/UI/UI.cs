@@ -35,6 +35,8 @@ public class UI : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI startDayText;
     [SerializeField] private TextMeshProUGUI startQuotaText;
 
+    [SerializeField] private HotbarItem[] hotbarItems;
+
     private List<UIShopItem> uiShopItems = new List<UIShopItem>();
 
     public Action OnUIOpened;
@@ -44,6 +46,25 @@ public class UI : NetworkBehaviour
     {
         if(Instance == null) Instance = this;
         CloseAllPanels(true, false);
+    }
+    
+    public void SetActiveHotbarItem(int hotbarIndex)
+    {
+        for (int i = 0; i < hotbarItems.Length; i++)
+        {
+            hotbarItems[i].SetActiveItem(false);
+        }
+        hotbarItems[hotbarIndex].SetActiveItem(true);
+    }
+
+    public void AddHotbarItem(int hotbarIndex, int itemIndex)
+    {
+        hotbarItems[hotbarIndex].ItemImage.sprite = LootManager.Instance.LootIndextoData(itemIndex).hotbarIcon;
+    }
+    
+    public void RemoveHotbarItem(int hotbarIndex)
+    {
+        hotbarItems[hotbarIndex].ItemImage.sprite = null;
     }
 
     public void ButtonEvt_CloseAllPanels()

@@ -71,6 +71,7 @@ public class PlayerDeath : NetworkBehaviour
     {
         Animator.SetBool(_animIDIsDead, true);
         playerState.IsDead = true;
+        UI.Instance.ShowDeadPanel(true);
     }
     
     // Client Rpc Callback
@@ -80,5 +81,6 @@ public class PlayerDeath : NetworkBehaviour
         //playerState.Health.Value = playerState.MAX_HEALTH;
         Animator.SetBool(_animIDIsDead, false);
         playerState.IsDead = false;
+        UI.Instance.CloseAllPanels(false);
     }
 }

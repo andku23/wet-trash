@@ -34,6 +34,8 @@ public class UI : NetworkBehaviour
     [SerializeField] private Panel startDayPanel;
     [SerializeField] private TextMeshProUGUI startDayText;
     [SerializeField] private TextMeshProUGUI startQuotaText;
+    
+    [SerializeField] private Panel deadPanel;
 
     [SerializeField] private HotbarItem[] hotbarItems;
 
@@ -79,6 +81,7 @@ public class UI : NetworkBehaviour
         sharedInventoryPanel.FadeOut(immediate);
         endScreenPanel.FadeOut(immediate);
         startDayPanel.FadeOut(immediate);
+        deadPanel.FadeOut(immediate);
         if(lockCursor)
             Cursor.lockState = CursorLockMode.Locked;
     }
@@ -102,6 +105,13 @@ public class UI : NetworkBehaviour
     public void ShowShopPanel(bool isVisible)
     {
         shopPanel.FadeIn(false);
+        Cursor.lockState = CursorLockMode.None;
+        OnUIOpened?.Invoke();
+    }
+    
+    public void ShowDeadPanel(bool isVisible)
+    {
+        deadPanel.FadeIn(false);
         Cursor.lockState = CursorLockMode.None;
         OnUIOpened?.Invoke();
     }

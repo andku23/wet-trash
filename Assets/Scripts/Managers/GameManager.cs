@@ -79,6 +79,8 @@ public class GameManager : NetworkBehaviour
             playerWaitConfirm.Add(client.Key, false);
         }
 
+        
+        Debug.Log("start wait corout");
         StartCoroutine(Co_WaitForPlayerResponse(onComplete));
     }
     
@@ -93,6 +95,7 @@ public class GameManager : NetworkBehaviour
         bool allPlayersResponded = false;
         while (!allPlayersResponded)
         {
+            yield return new WaitForSeconds(0.5f);
             allPlayersResponded = true;
             foreach (var player in playerWaitConfirm)
             {
@@ -102,7 +105,7 @@ public class GameManager : NetworkBehaviour
                     break;
                 }
             }
-            yield return null;
+            Debug.Log("waiting for players");
         }
         onComplete?.Invoke();
     }
@@ -175,10 +178,10 @@ public class GameManager : NetworkBehaviour
             case TimeState.LoadingNextDay:
                 _day++;
                 _quota += INCREMENT_QUOTA;
-                WaitForPlayerResponse(ToNextGameState_ServerRpc);
                 MoneyManager.Instance.ResetCurrentCollected();
-                TerrainManager.Instance.GenerateTerrain();
+                WaitForPlayerResponse(ToNextGameState_ServerRpc);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
+                TerrainManager.Instance.GenerateTerrain_ServerRpc();
                 break;
             case TimeState.DayActive:
                 SpawnLoot();

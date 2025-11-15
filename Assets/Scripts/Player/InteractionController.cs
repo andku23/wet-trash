@@ -28,8 +28,9 @@ public class InteractionController : NetworkBehaviour
     {
         Standard = 0,
         BoatBuilding = 1,
-        HeldObject = 2,
-        PersistentInteractable = 3
+        PersistentInteractable = 2,
+        HoldingInventoryObject = 3,
+        HoldingTemporaryObject = 4
     }
     
 #if ENABLE_INPUT_SYSTEM 
@@ -66,11 +67,14 @@ public class InteractionController : NetworkBehaviour
         _stateMachine.AddState((int)InteractionStates.BoatBuilding, 
             new BaseState(null, OnBoatBuildingUpdate, null));
         
-        _stateMachine.AddState((int)InteractionStates.HeldObject, 
-            new BaseState(OnHeldObjectEnter, OnHeldObjectUpdate, OnHeldObjectEnter));
-        
         _stateMachine.AddState((int)InteractionStates.PersistentInteractable, 
             new BaseState(null, OnPersistentInteractableUpdate, null));
+        
+        _stateMachine.AddState((int)InteractionStates.HoldingInventoryObject, 
+            new BaseState(null, OnHeldInventoryItemUpdate, null));
+        
+        _stateMachine.AddState((int)InteractionStates.HoldingTemporaryObject, 
+            new BaseState(null, OnHeldTemporaryItemUpdate, null));
         
         _stateMachine.ChangeState((int)InteractionStates.Standard);
 
@@ -83,6 +87,31 @@ public class InteractionController : NetworkBehaviour
     // functions that are called from other players or the server
     // or sometimes just other functions
     #region External Calls
+    
+    public GameObject PickupTemporaryItemNetwork(GameObject item, ulong heldPlayerID)
+    {
+        GameObject go = Instantiate(item, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
+        go.transform.localRotation = Quaternion.identity;
+        if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
+        {
+            go.transform.localPosition = new Vector3(0, 0.4f, 0);
+            go.transform.localScale = Vector3.one * 0.3f;
+        }
+        else
+        {
+            go.transform.localPosition = new Vector3(0, -0.3f, -0.1f);
+            go.transform.localScale = Vector3.one * 0.6f;
+        }
+        heldObject = go.GetComponent<IHoldable>();
+        heldObject.HeldPlayerID = heldPlayerID;
+        playerController.ToggleCarrying(true);
+        if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
+        {
+            _stateMachine.ChangeState((int)InteractionStates.HoldingTemporaryObject);
+            DisableCurrentInteractable();
+        }
+        return go;
+    }
 
     public GameObject PickupItemNetwork(int lootIndex, ulong heldPlayerID)
     {
@@ -101,6 +130,12 @@ public class InteractionController : NetworkBehaviour
         return heldObject.gameObject;
     }
     
+    public void DropTemporaryItemNetwork(ulong heldPlayerID)
+    {
+        ChangeHeldObjectLocal(_inventory[_currentInventoryIndex], heldPlayerID);
+        //RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex]);
+    }
+    
     public void DropItemNetwork(ulong heldPlayerID)
     {
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
@@ -115,10 +150,6 @@ public class InteractionController : NetworkBehaviour
         
         ChangeHeldObjectLocal(-1, heldPlayerID);
     }
-    
-    // TODO Change held object needs to be made so I can call it via server rpc
-    // And then also do the update on the owner client first and then 
-    // ignore it on the rpc call
 
     // updateLocal flag is for if you want to ignore updating it if its your own
     // item assuming youve already updated it before sending off the request
@@ -137,7 +168,7 @@ public class InteractionController : NetworkBehaviour
             if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
             {
                 DisableCurrentInteractable();
-                _stateMachine.ChangeState((int)InteractionStates.HeldObject);
+                _stateMachine.ChangeState((int)InteractionStates.HoldingInventoryObject);
             }
         }
         else
@@ -169,27 +200,6 @@ public class InteractionController : NetworkBehaviour
         {
             playerController.ToggleCarrying(false);
         }
-    }
-    
-    public GameObject AttachToPointTemporary(GameObject loot, ulong heldPlayerID)
-    {
-        GameObject go = Instantiate(loot, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
-        go.transform.localRotation = Quaternion.identity;
-        if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
-        {
-            go.transform.localPosition = new Vector3(0, 0.4f, 0);
-            go.transform.localScale = Vector3.one * 0.3f;
-        }
-        else
-        {
-            go.transform.localPosition = new Vector3(0, -0.3f, -0.1f);
-            go.transform.localScale = Vector3.one * 0.6f;
-        }
-        heldObject = go.GetComponent<IHoldable>();
-        heldObject.HeldPlayerID = heldPlayerID;
-        playerController.ToggleCarrying(true);
-        DisableCurrentInteractable();
-        return go;
     }
     
     public void ChangeToBuildMode(int shopItemIndex)
@@ -232,6 +242,26 @@ public class InteractionController : NetworkBehaviour
 
     // functionality called by interaction controller that are used a lot
     #region Internal Utility
+
+    private void CheckItemScroll()
+    {
+        if (_input.scroll != 0)
+        {
+            if (_input.scroll > 0)
+            {
+                IncrementInventoryIndex(1);
+                ChangeHeldObjectLocal(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
+                RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex]);
+            }
+            else
+            {
+                IncrementInventoryIndex(-1);
+                ChangeHeldObjectLocal(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
+                RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex]);
+            }
+            _input.scroll = 0;
+        }
+    }
 
     private GameObject LoadAndAttachHeldObject(int lootIndex, ulong heldPlayerID)
     {
@@ -374,6 +404,7 @@ public class InteractionController : NetworkBehaviour
     {
         Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag);
         UpdateCurrentInteractable(closestCollider);
+        CheckItemScroll();
 
         if (_input.interact)
         {
@@ -468,14 +499,37 @@ public class InteractionController : NetworkBehaviour
         }
     }
 
-    private void OnHeldObjectEnter()
+    private void OnHeldInventoryItemUpdate()
     {
-        if(!IsOwner) return;
-        //playerState.SwimWeightMultiplier = heldObject.GetWeightMultiplier();
-        //playerState.SprintWeightMultiplier = heldObject.GetWeightMultiplier();
-    }
+        Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag);
+        UpdateCurrentInteractable(closestCollider);
+        QueryInteractableTypes(lastClosestInteractable);
+        CheckItemScroll();
 
-    private void OnHeldObjectUpdate()
+        if (_input.interact)
+        {
+            //Turn it off immediately so we don't get double events
+            _input.interact = false;
+            
+            heldObject.HeldPlayerID = 0;
+            if (heldObject.HeldObjectType == HeldObjectType.Loot)
+            {
+                if (_currentInteractableTypes.deposit != null)
+                {
+                    LootManager.Instance.RequestDeposit(_currentInteractableTypes.deposit, heldObject.gameObject);
+                    _currentInteractableTypes.deposit.DisableInteractable();
+                }
+                else
+                {
+                    Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
+                    LootManager.Instance.RequestDrop(
+                        heldObject.gameObject.transform.position, heldObject.gameObject);
+                }
+            }
+        }
+    }
+    
+    private void OnHeldTemporaryItemUpdate()
     {
         Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag);
         UpdateCurrentInteractable(closestCollider);
@@ -500,28 +554,7 @@ public class InteractionController : NetworkBehaviour
                     crane.DropCraneHook(NetworkManager.Singleton.LocalClientId);
                 }
             }
-            else if (heldObject.HeldObjectType == HeldObjectType.Loot)
-            {
-                if (_currentInteractableTypes.deposit != null)
-                {
-                    LootManager.Instance.RequestDeposit(_currentInteractableTypes.deposit, heldObject.gameObject);
-                    _currentInteractableTypes.deposit.DisableInteractable();
-                }
-                else
-                {
-                    Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
-                    LootManager.Instance.RequestDrop(
-                        heldObject.gameObject.transform.position, heldObject.gameObject);
-                }
-            }
         }
-    }
-    
-    private void OnHeldObjectExit()
-    {
-        if(!IsOwner) return;
-        //playerState.SwimWeightMultiplier = 1.0f;
-        //playerState.SprintWeightMultiplier = 1.0f;
     }
     
     private void OnPersistentInteractableUpdate()
@@ -546,26 +579,6 @@ public class InteractionController : NetworkBehaviour
         if (IsOwner)
         {
             _stateMachine.Update();
-
-            if (_input.scroll != 0)
-            {
-                if (_input.scroll > 0)
-                {
-                    IncrementInventoryIndex(1);
-                    ChangeHeldObjectLocal(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
-                    RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex]);
-                }
-                else
-                {
-                    IncrementInventoryIndex(-1);
-                    ChangeHeldObjectLocal(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
-                    RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex]);
-                }
-                _input.scroll = 0;
-                Debug.Log(_currentInventoryIndex);
-                
-            }
-            
         }
     }
 }

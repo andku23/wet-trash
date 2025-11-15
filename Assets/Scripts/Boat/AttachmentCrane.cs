@@ -106,7 +106,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable, IAttachment
         InteractionController interactionController = playerObject.GetComponent<InteractionController>();
         if (interactionController != null)
         {
-            GameObject craneHookInstantiated = interactionController.AttachToPointTemporary(craneHookPrefab, networkPlayerID);
+            GameObject craneHookInstantiated = interactionController.PickupTemporaryItemNetwork(craneHookPrefab, networkPlayerID);
             CraneHook craneHook = craneHookInstantiated.GetComponent<CraneHook>();
             if (craneHook != null)
             {
@@ -136,7 +136,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable, IAttachment
         InteractionController interactionController = playerObject.GetComponent<InteractionController>();
         if (interactionController != null)
         {
-            interactionController.DestroyHeldObject();
+            interactionController.DropTemporaryItemNetwork(networkPlayerID);
         }
     }
 
@@ -169,7 +169,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable, IAttachment
         NetworkObject hookedLoot = NetworkManager.Singleton.SpawnManager.SpawnedObjects[lootNetworkObjectID];
         if (interactionController != null)
         {
-            interactionController.DestroyHeldObject();
+            interactionController.DropTemporaryItemNetwork(networkPlayerID);
         }
         
         ICranable cranableObject = hookedLoot.GetComponent<ICranable>();

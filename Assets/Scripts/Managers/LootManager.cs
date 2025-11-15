@@ -190,7 +190,7 @@ public class LootManager : NetworkBehaviour
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
         InteractionController pickupPlayerCollector = pickupPlayerClient.PlayerObject.GetComponent<InteractionController>();
         //GameObject attachedLoot = pickupPlayerCollector.AttachToPoint(localLootPrefab, targetPlayerNetworkObjectId);
-        GameObject attachedLoot = pickupPlayerCollector.PickupItemNetwork(lootIndex, targetPlayerNetworkObjectId);
+        pickupPlayerCollector.PickupItemNetwork(lootIndex, targetPlayerNetworkObjectId);
     }
 
     public void RequestDrop(Vector3 position, GameObject loot)

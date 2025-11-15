@@ -21,6 +21,8 @@ public class Panel : MonoBehaviour
         }
         
         gameObject.SetActive(true);
+        _canvasGroup.blocksRaycasts = true;
+        _canvasGroup.interactable = true;
 
         if (immediate)
         {
@@ -42,6 +44,7 @@ public class Panel : MonoBehaviour
         if (immediate)
         {
             _canvasGroup.alpha = 0;
+            OnFadeoutComplete();
         }
         else
         {
@@ -52,6 +55,8 @@ public class Panel : MonoBehaviour
 
     private void OnFadeoutComplete()
     {
+        _canvasGroup.blocksRaycasts = false;
+        _canvasGroup.interactable = false;
         gameObject.SetActive(false);
     }
 }

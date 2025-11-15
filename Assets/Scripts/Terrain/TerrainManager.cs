@@ -39,13 +39,8 @@ public class TerrainManager : NetworkBehaviour
     private JobHandle holesJobHandle;
     private bool terrainGenerationRequested = false;
     
-    public void GenerateTerrain()
-    {
-        GenerateTerrain_ServerRpc();
-    }
-    
     [ServerRpc]
-    private void GenerateTerrain_ServerRpc()
+    public void GenerateTerrain_ServerRpc()
     {
         int seed = Random.Range(0, 999999);
         Vector2[] holePosition = new Vector2[NUM_OF_HOLES];

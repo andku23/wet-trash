@@ -48,6 +48,24 @@ public class UI : NetworkBehaviour
     {
         if(Instance == null) Instance = this;
         CloseAllPanels(true, false);
+        
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        GameManager.Instance.TimeUpdatedEvent.AddListener(UpdateCountdownText);
+        GameManager.Instance.OnDayUpdatedEvent.AddListener(UpdateDayText);
+        GameManager.Instance.OnBreathUpdated.AddListener(UpdateBreathBar);
+        MoneyManager.Instance.OnCashChanged.AddListener(UpdateCashText);
+    }
+
+    private void OnDestroy()
+    {
+        if(Instance == this) Instance = null;
+        GameManager.Instance.TimeUpdatedEvent.RemoveListener(UpdateCountdownText);
+        GameManager.Instance.OnDayUpdatedEvent.RemoveListener(UpdateDayText);
+        GameManager.Instance.OnBreathUpdated.RemoveListener(UpdateBreathBar);
+        MoneyManager.Instance.OnCashChanged.RemoveListener(UpdateCashText);
     }
     
     public void SetActiveHotbarItem(int hotbarIndex)
@@ -160,7 +178,7 @@ public class UI : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void PopulateShopContent_ServerRpc()
     {
-        int shopSize = 6;
+        int shopSize = ShopManager.Instance.shopList.items.Length;
         List<int> fullShop = new List<int>();
         for (int i = 0; i < ShopManager.Instance.shopList.items.Length; i++)
         {

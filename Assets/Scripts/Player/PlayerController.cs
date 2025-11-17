@@ -52,6 +52,7 @@ public class PlayerController : NetworkBehaviour
     public bool ForceThirdPerson;
     public GameObject ControlModeThirdPerson;
     public GameObject ControlModeFirstPerson;
+    public GameObject ControlModeStatic;
     public ControlModeEnum ControlMode;
     
     public OwnerNetworkAnimator OwnerNetworkAnimator;
@@ -64,7 +65,8 @@ public class PlayerController : NetworkBehaviour
     public enum ControlModeEnum
     {
         FirstPerson,
-        ThirdPerson
+        ThirdPerson,
+        StaticControl
     }
 
     // player
@@ -123,54 +125,22 @@ public class PlayerController : NetworkBehaviour
         //Set control to first person if youre the controller
         if (IsOwner && !ForceThirdPerson)
         {
-            ControlMode = ControlModeEnum.FirstPerson;
+            ChangeControlMode(ControlModeEnum.FirstPerson);
         }
         else
         {
-            ControlMode = ControlModeEnum.ThirdPerson;
+            ChangeControlMode(ControlModeEnum.ThirdPerson);
         }
         
         // Disable whichever version isnt being used
-        _selectedControlMode = (ControlMode == ControlModeEnum.FirstPerson) ? ControlModeFirstPerson : ControlModeThirdPerson;
-        if (_selectedControlMode == ControlModeFirstPerson)
-            ControlModeThirdPerson.SetActive(false);
-        else 
-            ControlModeFirstPerson.SetActive(false);
-        
-        OwnerNetworkAnimator.Animator = _selectedControlMode.GetComponent<Animator>();
-        
-        GetComponent<PlayerDeath>().Animator = _selectedControlMode.GetComponent<Animator>();
-        _animator = _selectedControlMode.GetComponent<Animator>();
-        _cameraControl = _selectedControlMode.GetComponent<ICameraControl>();
         
         if (IsOwner)
         {
-            if (MainCamera == null)
-            {
-                MainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-            }
-            
-            _cameraControl.SetupCinemachineCamera();
-            
-            _hasAnimator = _animator != null;
             _controller = GetComponent<CharacterController>();
             _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
 #if ENABLE_INPUT_SYSTEM
             _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
-#else
-		Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
-
-            AssignAnimationIDs();
-
-            // reset our timeouts on start
-            _jumpTimeoutDelta = JumpTimeout;
-            _fallTimeoutDelta = FallTimeout;
-
-            if (_animator != null)
-            {
-                _animator.SetFloat(_animIDVerticalLookAmount, 0.5f);
-            }
             UI.Instance.OnUIOpened += LockCamera;
             UI.Instance.OnUIClosed += UnlockCamera;
         }
@@ -185,8 +155,54 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    public void ChangeControlMode(ControlModeEnum controlMode)
+    {
+        ControlMode = controlMode;
+        if (_cameraControl != null)
+        {
+            _cameraControl.DesetupCinemachineCamera();
+        }
+        
+        ControlModeFirstPerson.SetActive(controlMode == ControlModeEnum.FirstPerson);
+        ControlModeThirdPerson.SetActive(controlMode == ControlModeEnum.ThirdPerson);
+        ControlModeStatic.SetActive(controlMode == ControlModeEnum.StaticControl);
+        
+        switch (controlMode)
+        {
+            case ControlModeEnum.FirstPerson:
+                _selectedControlMode = ControlModeFirstPerson;
+                break;
+            case ControlModeEnum.ThirdPerson:
+                _selectedControlMode = ControlModeThirdPerson;
+                break;
+            case ControlModeEnum.StaticControl:
+                _selectedControlMode = ControlModeStatic;
+                break;
+        }
+        
+        OwnerNetworkAnimator.Animator = _selectedControlMode.GetComponent<Animator>();
+        GetComponent<PlayerDeath>().Animator = _selectedControlMode.GetComponent<Animator>();
+        _animator = _selectedControlMode.GetComponent<Animator>();
+        _cameraControl = _selectedControlMode.GetComponent<ICameraControl>();
+
+        if (IsOwner)
+        {
+            if (MainCamera == null) MainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+            _cameraControl.SetupCinemachineCamera();
+            _hasAnimator = _animator != null;
+            AssignAnimationIDs();
+            _jumpTimeoutDelta = JumpTimeout;
+            _fallTimeoutDelta = FallTimeout;
+            if (_animator != null)
+            {
+                _animator.SetFloat(_animIDVerticalLookAmount, 0.5f);
+            }
+        }
+    }
+
     private void LockCamera()
     {
+        Debug.Log("LockCamera");
         _isCameraAndMovementLocked = true;
     }
     
@@ -213,6 +229,23 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsOwner) return;
         _cameraControl.UpdateCameraRotation();
+
+        if (_input.debug)
+        {
+            _input.debug = false;
+            if (_selectedControlMode == ControlModeFirstPerson)
+            {
+                ChangeControlMode(ControlModeEnum.ThirdPerson);
+            }
+            else if (_selectedControlMode == ControlModeThirdPerson)
+            {
+                ChangeControlMode(ControlModeEnum.StaticControl);
+            }
+            else
+            {
+                ChangeControlMode(ControlModeEnum.FirstPerson);
+            }
+        }
     }
 
     private void AssignAnimationIDs()
@@ -352,7 +385,6 @@ public class PlayerController : NetworkBehaviour
         }
         else
         {
-            
             _speed = targetSpeed;
         }
 
@@ -376,7 +408,7 @@ public class PlayerController : NetworkBehaviour
                 _controller.Move(targetDirection.normalized * (inputDirection.magnitude * (_speed * Time.deltaTime)) +
                                  new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
             }
-            else
+            else if (ControlMode == ControlModeEnum.FirstPerson)
             {
                 float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 
@@ -406,9 +438,6 @@ public class PlayerController : NetworkBehaviour
                                  leftDirection.normalized * (inputDirection.x * (_speed * Time.deltaTime)));
             }
             
-
-            
-        
         if (_hasAnimator)
         {
             float dampTime = 0.2f;
@@ -478,10 +507,11 @@ public class PlayerController : NetworkBehaviour
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
                              new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
         }
-        else
+        else if (ControlMode == ControlModeEnum.FirstPerson)
         {
             float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 
+            Debug.Log(_input.look.y);
             firstPersonPitch += _input.look.y * deltaTimeMultiplier;
             firstPersonYaw += _input.look.x * deltaTimeMultiplier;
             
@@ -508,10 +538,6 @@ public class PlayerController : NetworkBehaviour
                              new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime +
                 leftDirection.normalized * (inputDirection.x * (_speed * Time.deltaTime)));
         }
-        
-
-        
-        
 
         // update animator if using character
         if (_hasAnimator)

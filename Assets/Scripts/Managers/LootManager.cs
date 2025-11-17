@@ -117,6 +117,22 @@ public class LootManager : NetworkBehaviour
         pickupPlayerCollector.DropItemNetwork(targetPlayerNetworkObjectId);
     }
 
+    private NetworkObject SpawnItemServer(Vector3 position, int itemIndex)
+    {
+        GameObject go = Instantiate(itemList.networkLootPrefab, position, Quaternion.identity);
+        NetworkObject networkObject = go.GetComponent<NetworkObject>();
+        NetworkLoot networkLoot = go.GetComponent<NetworkLoot>();
+
+        if (networkLoot != null) networkLoot.lootIndex.Value = itemIndex;
+        networkObject.Spawn();
+        
+        NetworkFall networkFall = networkObject.GetComponent<NetworkFall>();
+        if (networkFall != null) networkFall.enabled = true;
+        
+        //_loots.Add(networkObject);
+        return networkObject;
+    }
+
     public void DeleteAllLoot()
     {
         for (int i = 0; i < _loots.Count; i++)
@@ -201,17 +217,7 @@ public class LootManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void Drop_ServerRpc(ulong targetPlayerNetworkObjectId, Vector3 position, int lootIndex)
     {
-        // GameObject go = Instantiate(IDtoPrefabs(lootID).network, position, Quaternion.identity);
-        GameObject go = Instantiate(itemList.networkLootPrefab, position, Quaternion.identity);
-        NetworkObject networkObject = go.GetComponent<NetworkObject>();
-        ItemInstance itemInstance = go.GetComponent<ItemInstance>();
-        NetworkLoot networkLoot = go.GetComponent<NetworkLoot>();
-        
-        networkLoot.lootIndex.Value = lootIndex;
-        //lootBaseData.LoadLootNetwork();
-        networkObject.Spawn();
-        NetworkFall networkFall = networkObject.GetComponent<NetworkFall>();
-        if (networkFall != null) networkFall.enabled = true;
+        NetworkObject networkObject = SpawnItemServer(position, lootIndex);
         _loots.Add(networkObject);
         Drop_ClientRpc(targetPlayerNetworkObjectId);
     }
@@ -220,6 +226,17 @@ public class LootManager : NetworkBehaviour
     public void Drop_ClientRpc(ulong targetPlayerNetworkObjectId)
     {
         DestroyLootInHand(targetPlayerNetworkObjectId);
+    }
+
+    public void RequestSpawnItem(Vector3 position, int itemIndex)
+    {
+        RequestSpawnItem_ServerRpc(position, itemIndex, NetworkManager.Singleton.LocalClientId);
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void RequestSpawnItem_ServerRpc(Vector3 position, int itemIndex, ulong targetPlayerNetworkObjectId)
+    {
+        SpawnItemServer(position, itemIndex);
     }
     
     public void ResetLootHolesServer()

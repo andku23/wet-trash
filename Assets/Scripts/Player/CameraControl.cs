@@ -33,6 +33,8 @@ public class ThirdPersonCameraControl : MonoBehaviour, ICameraControl
     [Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
     public float CameraAngleOverride = 0.0f;
     
+    private CinemachineVirtualCamera _followCamera;
+    
     private bool IsCurrentDeviceMouse
     {
         get
@@ -58,9 +60,6 @@ public class ThirdPersonCameraControl : MonoBehaviour, ICameraControl
         _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
 #if ENABLE_INPUT_SYSTEM
         _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
-        Debug.Log(_playerInput);
-#else
-		Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
 
         _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
@@ -90,7 +89,7 @@ public class ThirdPersonCameraControl : MonoBehaviour, ICameraControl
     public void SetupCinemachineCamera()
     {
         var _followCameras = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        var _followCamera = _followCameras[0];
+        _followCamera = _followCameras[0];
         for (int i = 0; i < _followCameras.Length; i++)
         {
             if (_followCameras[i].gameObject.CompareTag("ThirdPersonCamera"))
@@ -100,6 +99,11 @@ public class ThirdPersonCameraControl : MonoBehaviour, ICameraControl
         }
         _followCamera.Follow = CinemachineCameraTarget.transform;
         _followCamera.Priority += 1;
+    }
+
+    public void DesetupCinemachineCamera()
+    {
+        _followCamera.Priority -= 1;
     }
 
     public static float ClampAngle(float lfAngle, float lfMin, float lfMax)
@@ -115,6 +119,8 @@ public interface ICameraControl
     public void UpdateCameraRotation();
 
     public void SetupCinemachineCamera();
+    
+    public void DesetupCinemachineCamera();
     
     public GameObject CinemachineCameraTarget { get; }
     

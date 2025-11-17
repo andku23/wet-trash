@@ -16,6 +16,7 @@ public class ShopItem
     public ShopItemType type;
     public string name;
     public int price;
+    public int itemListIndex;
     public GameObject placePrefab;
 }
 

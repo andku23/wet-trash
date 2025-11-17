@@ -7,17 +7,14 @@ public interface IHoldable
     public GameObject ConnectedParent { get; set; }
     public GameObject gameObject { get ; }
     public ulong HeldPlayerID { get; set; }
-
-    public float GetWeightMultiplier()
-    {
-        return 1.0f;
-    }
+    // Only gets called if held object type is UsableItem
+    public void UseItem(){}
+   
 }
 
 public enum HeldObjectType
 {
-    Default = 0,
-    Loot = 1,
-    CraneHook = 2,
-    SteeringWheel = 3
+    None = 0,
+    Inventorable = 1, //I should one day change this to check if IInventorable type on holdable
+    TemporaryHold = 2
 }

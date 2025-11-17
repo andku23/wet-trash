@@ -13,8 +13,13 @@ public class Billboard : MonoBehaviour
 
     protected void LateUpdate()
     {
-        transform.rotation = Quaternion.LookRotation(Camera.main.transform.forward,
-            Vector3.up);
+        Camera camera = Camera.main;
+        if (camera != null)
+        {
+            transform.rotation = Quaternion.LookRotation(camera.transform.forward,
+                Vector3.up);
+        }
+        
         
         var rot = _transform.localRotation;
         _transform.localRotation = rot;

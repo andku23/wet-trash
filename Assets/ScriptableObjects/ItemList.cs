@@ -11,7 +11,7 @@ public class ItemList : ScriptableObject
 [System.Serializable]
 public class ItemData
 {
-    public LootType lootType;
+    public ItemType itemType;
     public GameObject model;
     public int spawnRateShallow;
     public int spawnRateDeep;
@@ -21,9 +21,9 @@ public class ItemData
     public Sprite hotbarIcon;
 }
 
-public enum LootType
+public enum ItemType
 {
     Default = 0,
-    Special = 1,
-    Heavy = 2,
+    Loot = 1,
+    UsableItem = 2,
 }

@@ -8,18 +8,24 @@ using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
 
-public class NetworkModeDebugOverlay : MonoBehaviour
+public class NetworkModeConnector : MonoBehaviour
 {
-    private static string _joinCode;
+    public string JoinCode;
     private bool connectionStarted;
+    public static NetworkModeConnector Instance;
     
     [SerializeField] private TextMeshProUGUI joinCodeText;
     [SerializeField] private GameObject connectionButtons;
     [SerializeField] private UnityTransport transport;
+
+    private void Start()
+    {
+        Instance = this;
+    }
     
     public void OnInputEnd(string joinCode)
     {
-        _joinCode = joinCode;
+        JoinCode = joinCode;
     }
 
     public void StartHost()
@@ -60,9 +66,9 @@ public class NetworkModeDebugOverlay : MonoBehaviour
         connectionStarted = true;
         string joinCode = await StartHostWithRelay(4, "udp");
         if(joinCode != null)
-            joinCodeText.text = "Join Code: " + joinCode;
+            JoinCode = joinCode;
         else 
-            joinCodeText.text = "Join Failed idk why";
+            Debug.Log("Join Failed idk why");
 
         OnConnectionFinished();
     }
@@ -72,7 +78,7 @@ public class NetworkModeDebugOverlay : MonoBehaviour
         if (connectionStarted) return;
         connectionStarted = true;
         
-        await StartClientWithRelay(_joinCode, "udp");
+        await StartClientWithRelay(JoinCode, "udp");
         
         OnConnectionFinished();
     }

@@ -12,6 +12,8 @@ public class FirstPersonCameraControl : MonoBehaviour, ICameraControl
 
     public GameObject CinemachineCameraTarget { get => cinemachineCameraTarget; }
 
+    private CinemachineVirtualCamera _followCamera;
+
     private void Start()
     {
         // get a reference to our main camera
@@ -19,13 +21,12 @@ public class FirstPersonCameraControl : MonoBehaviour, ICameraControl
         {
             _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
         }
-        
     }
     
     public void SetupCinemachineCamera()
     {
         var _followCameras = FindObjectsByType<CinemachineVirtualCamera>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        var _followCamera = _followCameras[0];
+        _followCamera = _followCameras[0];
         for (int i = 0; i < _followCameras.Length; i++)
         {
             if (_followCameras[i].CompareTag("FirstPersonCamera"))
@@ -35,6 +36,11 @@ public class FirstPersonCameraControl : MonoBehaviour, ICameraControl
         }
         _followCamera.Follow = CinemachineCameraTarget.transform;
         _followCamera.Priority += 1;
+    }
+    
+    public void DesetupCinemachineCamera()
+    {
+        _followCamera.Priority -= 1;
     }
     
     public void UpdateCameraRotation()

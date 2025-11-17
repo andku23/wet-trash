@@ -5,6 +5,7 @@ using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
 public class GameManager : NetworkBehaviour
@@ -14,9 +15,9 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private float _timeFullDaySeconds;
     [SerializeField] private GameObject _boatPrefab;
     [SerializeField] private GameObject _boatSpawnLocation;
-    [SerializeField] private UnityEvent<int> _timeUpdatedEvent;
+    [SerializeField] public UnityEvent<int> TimeUpdatedEvent;
     [SerializeField] public UnityEvent TimeFinishedEvent;
-    [SerializeField] private UnityEvent<int> _onDayUpdatedEvent;
+    [SerializeField] public UnityEvent<int> OnDayUpdatedEvent;
     [SerializeField] public UnityEvent<float> OnBreathUpdated;
 
     public NetworkedBoat Boat;
@@ -47,6 +48,11 @@ public class GameManager : NetworkBehaviour
         {
             Instance = this;
         }
+        
+        SceneManager.LoadScene("Scavenging", LoadSceneMode.Additive);
+
+        //NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
+        //NetworkManager.Singleton.SceneManager.LoadScene("MainScreen", LoadSceneMode.Additive);
     }
     
     public override void OnNetworkSpawn()
@@ -58,7 +64,8 @@ public class GameManager : NetworkBehaviour
         if (IsServer)
         {
             GameObject boat = Instantiate(_boatPrefab);
-            boat.transform.position = _boatSpawnLocation.transform.position;
+            //boat.transform.position = _boatSpawnLocation.transform.position;
+            boat.transform.position = new Vector3(0.98f, 0, 5.92f);
             NetworkObject networkObject = boat.GetComponent<NetworkObject>();
             networkObject.Spawn();
         }
@@ -289,13 +296,13 @@ public class GameManager : NetworkBehaviour
     private void StartCountdown()
     {
         StopCountdown();
-        _onDayUpdatedEvent.Invoke(_day);
+        OnDayUpdatedEvent.Invoke(_day);
         _co_TimerCountdown = StartCoroutine(Co_TimerCountdown());
     }
     
     private void StopCountdown()
     {
-        _timeUpdatedEvent?.Invoke(0);
+        TimeUpdatedEvent?.Invoke(0);
         if(_co_TimerCountdown != null) StopCoroutine(_co_TimerCountdown);
     }
     
@@ -304,7 +311,7 @@ public class GameManager : NetworkBehaviour
         int secondsRemaining = Mathf.FloorToInt(_timeFullDaySeconds);
         while (secondsRemaining > 0)
         {
-            _timeUpdatedEvent?.Invoke(secondsRemaining);
+            TimeUpdatedEvent?.Invoke(secondsRemaining);
             yield return new WaitForSeconds(1);
             secondsRemaining--;
         }

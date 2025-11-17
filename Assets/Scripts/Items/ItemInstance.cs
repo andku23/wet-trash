@@ -31,11 +31,6 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
         Model = model.GetComponent<ItemModel>();
     }
 
-    public float GetWeightMultiplier()
-    {
-        return LootManager.Instance.LootIndextoData(ItemIndex).weightSpeedMultiplier;
-    }
-
     public void OnAddedToInventory()
     {
         

@@ -88,7 +88,7 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
         if (isInteractionLocked.Value) return false;
         if (heldObject != null)
         {
-            if (heldObject.HeldObjectType == HeldObjectType.CraneHook)
+            if (heldObject.HeldObjectType == HeldObjectType.TemporaryHold)
             {
                 _stateMachine.ChangeState((int)LocalStates.ClosestItemCrane);
                 isInteractable = true;

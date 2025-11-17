@@ -13,6 +13,11 @@ public class ShopManager : NetworkBehaviour
     public List<int> boughtItems = new List<int>();
 
     public Dictionary<ShopItemType, string> ShopItemTypeLookup = new Dictionary<ShopItemType, string>();
+
+    private void Start()
+    {
+        
+    }
     
     public override void OnNetworkSpawn()
     {
@@ -22,7 +27,6 @@ public class ShopManager : NetworkBehaviour
         {
             Instance = this;
         }
-        //ui.PopulateShopContent();
         InitializeLookupDictionaries();
     }
 
@@ -56,10 +60,21 @@ public class ShopManager : NetworkBehaviour
                 ApplyPlayerPowerUp(shopItem);
                 break;
             case ShopItemType.InventoryItem:
+                SpawnInventoryItem(shopItem);
+                break;
             case ShopItemType.BoatPart:
-                AddToInventory(shopItem, index);
+                AddToStorage(shopItem, index);
                 break;
         }
+    }
+
+    private void SpawnInventoryItem(ShopItem shopItem)
+    {
+        GameObject playerObject = NetworkManager.Singleton.LocalClient.PlayerObject.gameObject;
+        Vector3 spawnPosition = playerObject.transform.position;
+        spawnPosition += new Vector3(playerObject.transform.forward.x, 0, playerObject.transform.forward.z).normalized;
+        spawnPosition.y += 1.5f;
+        LootManager.Instance.RequestSpawnItem(spawnPosition, shopItem.itemListIndex);
     }
 
     private void ApplyPlayerPowerUp(ShopItem shopItem)
@@ -78,24 +93,24 @@ public class ShopManager : NetworkBehaviour
         }
     }
 
-    private void AddToInventory(ShopItem shopItem, int index)
+    private void AddToStorage(ShopItem shopItem, int index)
     {
-        AddToInventory_ServerRpc(index);
+        AddToStorage_ServerRpc(index);
     }
     
     [ServerRpc(RequireOwnership = false)]
-    private void AddToInventory_ServerRpc(int shopItemIndex)
+    private void AddToStorage_ServerRpc(int shopItemIndex)
     {
         boughtItems.Add(shopItemIndex);
-        UpdateSharedInventory_ClientRpc(boughtItems.ToArray());
+        UpdateSharedStorage_ClientRpc(boughtItems.ToArray());
     }
     
     [ClientRpc(RequireOwnership = false)]
-    private void UpdateSharedInventory_ClientRpc(int[] sharedInventory)
+    private void UpdateSharedStorage_ClientRpc(int[] sharedStorage)
     {
         if (!IsServer)
         {
-            boughtItems = new List<int>(sharedInventory);
+            boughtItems = new List<int>(sharedStorage);
         }
         //LogBoughtItems();
         

@@ -18,6 +18,7 @@ namespace StarterAssets
 		public bool respawn;
 		public bool inventory;
 		public float scroll;
+		public bool debug;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -74,6 +75,11 @@ namespace StarterAssets
 		{
 			ScrollInput(value.Get<float>());
 		}
+		
+		public void OnDebugButton(InputValue value)
+		{
+			DebugInput(value.isPressed);
+		}
 #endif
 
 
@@ -115,6 +121,11 @@ namespace StarterAssets
 		public void InventoryInput(bool newState)
 		{
 			inventory = newState;
+		}
+		
+		public void DebugInput(bool newState)
+		{
+			debug = newState;
 		}
 
 		public void ScrollInput(float newState)

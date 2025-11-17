@@ -82,6 +82,8 @@ public class InteractionController : NetworkBehaviour
         {
             _inventory[i] = -1;
         }
+        
+        UI.Instance.SetActiveHotbarItem(_currentInventoryIndex);
     }
     
     // functions that are called from other players or the server
@@ -420,15 +422,8 @@ public class InteractionController : NetworkBehaviour
             if (_currentInteractableTypes.loot != null)
             {
                 ItemData data = LootManager.Instance.LootIndextoData(_currentInteractableTypes.loot.lootIndex.Value);
-                if (data.lootType == LootType.Heavy)
-                {
-                    _currentInteractableTypes.loot.SetAsTooHeavy();
-                }
-                else
-                {
-                    DisableCurrentInteractable();
-                    LootManager.Instance.RequestPickup(_currentInteractableTypes.loot);
-                }
+                DisableCurrentInteractable();
+                LootManager.Instance.RequestPickup(_currentInteractableTypes.loot);
             }
             else
             {
@@ -516,7 +511,7 @@ public class InteractionController : NetworkBehaviour
             _input.interact = false;
             
             heldObject.HeldPlayerID = 0;
-            if (heldObject.HeldObjectType == HeldObjectType.Loot)
+            if (heldObject.HeldObjectType == HeldObjectType.Inventorable)
             {
                 if (_currentInteractableTypes.deposit != null)
                 {
@@ -545,7 +540,7 @@ public class InteractionController : NetworkBehaviour
             _input.interact = false;
             
             heldObject.HeldPlayerID = 0;
-            if (heldObject.HeldObjectType == HeldObjectType.CraneHook)
+            if (heldObject.HeldObjectType == HeldObjectType.TemporaryHold)
             {
                 AttachmentCrane crane = heldObject.ConnectedParent.GetComponent<AttachmentCrane>();
                 if (_currentInteractableTypes.loot != null)

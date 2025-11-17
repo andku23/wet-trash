@@ -618,7 +618,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1528990301
+  GlobalObjectIdHash: 938353518
   InScenePlacedSourceGlobalObjectIdHash: 63239914
   DeferredDespawnTick: 0
   Ownership: 1
@@ -689,7 +689,7 @@ MonoBehaviour:
     m_InternalValue: 0
   isInteractionLocked:
     m_InternalValue: 0
-  lootInstanceData: {fileID: 0}
+  itemInstance: {fileID: 0}
 --- !u!114 &5201304859418569969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -702,9 +702,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15127824bf0ccf24e8334f7d684e4d0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LootIndex: 0
-  LootModel: {fileID: 0}
-  _heldObjectType: 0
+  ItemIndex: 0
+  Model: {fileID: 0}
+  _heldObjectType: 1
 --- !u!114 &583575609256796491
 MonoBehaviour:
   m_ObjectHideFlags: 0

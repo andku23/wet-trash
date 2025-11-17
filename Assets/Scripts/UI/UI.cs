@@ -40,9 +40,6 @@ public class UI : NetworkBehaviour
     [SerializeField] private HotbarItem[] hotbarItems;
 
     private List<UIShopItem> uiShopItems = new List<UIShopItem>();
-
-    public Action OnUIOpened;
-    public Action OnUIClosed;
     
     private void Start()
     {
@@ -94,7 +91,7 @@ public class UI : NetworkBehaviour
 
     public void CloseAllPanels(bool immediate, bool lockCursor = true)
     {
-        OnUIClosed?.Invoke();
+        GameManager.Instance.OnUIClosed?.Invoke();
         shopPanel.FadeOut(immediate);
         sharedInventoryPanel.FadeOut(immediate);
         endScreenPanel.FadeOut(immediate);
@@ -113,39 +110,39 @@ public class UI : NetworkBehaviour
     {
         startDayPanel.FadeIn(false, 1.0f);
         Cursor.lockState = CursorLockMode.None;
-        OnUIOpened?.Invoke();
+        GameManager.Instance.OnUIOpened?.Invoke();
         yield return new WaitForSeconds(1f);
         startDayPanel.FadeOut(false, 1.0f);
         Cursor.lockState = CursorLockMode.Locked;
-        OnUIClosed?.Invoke();
+        GameManager.Instance.OnUIClosed?.Invoke();
     }
     
     public void ShowShopPanel(bool isVisible)
     {
         shopPanel.FadeIn(false);
         Cursor.lockState = CursorLockMode.None;
-        OnUIOpened?.Invoke();
+        GameManager.Instance.OnUIOpened?.Invoke();
     }
     
     public void ShowDeadPanel(bool isVisible)
     {
         deadPanel.FadeIn(false);
         Cursor.lockState = CursorLockMode.None;
-        OnUIOpened?.Invoke();
+        GameManager.Instance.OnUIOpened?.Invoke();
     }
     
     public void ShowSharedInventoryPanel(bool isVisible)
     {
         sharedInventoryPanel.FadeIn(false);
         Cursor.lockState = CursorLockMode.None;
-        OnUIOpened?.Invoke();
+        GameManager.Instance.OnUIOpened?.Invoke();
     }
 
     public void ShowEndScreen(bool isVisible)
     {
         endScreenPanel.FadeIn(false);
         Cursor.lockState = CursorLockMode.None;
-        OnUIOpened?.Invoke();
+        GameManager.Instance.OnUIOpened?.Invoke();
     }
     
     public void ClearSharedInventoryUI()

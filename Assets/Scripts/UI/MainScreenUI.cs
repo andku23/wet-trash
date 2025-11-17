@@ -1,5 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MainScreenUI : NetworkBehaviour
 {
@@ -20,10 +21,16 @@ public class MainScreenUI : NetworkBehaviour
     public void HostGame()
     {
         NetworkModeConnector.Instance.StartHost();
+        NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
+        NetworkManager.Singleton.SceneManager.LoadScene("Scavenging", LoadSceneMode.Additive);
+        gameObject.SetActive(false);
     }
     
     public void JoinGame()
     {
         NetworkModeConnector.Instance.StartClient();
+        NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
+        NetworkManager.Singleton.SceneManager.LoadScene("Scavenging", LoadSceneMode.Additive);
+        gameObject.SetActive(false);
     }
 }

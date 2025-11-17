@@ -13,11 +13,6 @@ public class ShopManager : NetworkBehaviour
     public List<int> boughtItems = new List<int>();
 
     public Dictionary<ShopItemType, string> ShopItemTypeLookup = new Dictionary<ShopItemType, string>();
-
-    private void Start()
-    {
-        
-    }
     
     public override void OnNetworkSpawn()
     {
@@ -42,14 +37,14 @@ public class ShopManager : NetworkBehaviour
 
     public void ViewBoughtInventory()
     {
-        ui.ClearSharedInventoryUI();
-        ui.PopulateSharedInventoryUI(boughtItems);
-        ui.ShowSharedInventoryPanel(true);
+        UI.Instance.ClearSharedInventoryUI();
+        UI.Instance.PopulateSharedInventoryUI(boughtItems);
+        UI.Instance.ShowSharedInventoryPanel(true);
     }
     
     public void ViewShop()
     {
-        ui.ShowShopPanel(true);
+        UI.Instance.ShowShopPanel(true);
     }
 
     public void PurchaseItem(ShopItem shopItem, int index)

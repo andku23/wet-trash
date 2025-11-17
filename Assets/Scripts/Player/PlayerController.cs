@@ -104,6 +104,7 @@ public class PlayerController : NetworkBehaviour
     private StarterAssetsInputs _input;
     public GameObject MainCamera;
     private GameObject _selectedControlMode;
+    private UI _ui;
 
     private bool _hasAnimator;
     public ICameraControl CameraControl {get{return _cameraControl;}}
@@ -133,7 +134,6 @@ public class PlayerController : NetworkBehaviour
         }
         
         // Disable whichever version isnt being used
-        
         if (IsOwner)
         {
             _controller = GetComponent<CharacterController>();
@@ -141,8 +141,8 @@ public class PlayerController : NetworkBehaviour
 #if ENABLE_INPUT_SYSTEM
             _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
 #endif
-            UI.Instance.OnUIOpened += LockCamera;
-            UI.Instance.OnUIClosed += UnlockCamera;
+            GameManager.Instance.OnUIOpened += LockCamera;
+            GameManager.Instance.OnUIClosed += UnlockCamera;
         }
     }
 
@@ -150,8 +150,8 @@ public class PlayerController : NetworkBehaviour
     {
         if (IsOwner)
         {
-            UI.Instance.OnUIOpened -= LockCamera;
-            UI.Instance.OnUIClosed -= UnlockCamera;
+            GameManager.Instance.OnUIOpened -= LockCamera;
+            GameManager.Instance.OnUIClosed -= UnlockCamera;
         }
     }
 
@@ -202,7 +202,6 @@ public class PlayerController : NetworkBehaviour
 
     private void LockCamera()
     {
-        Debug.Log("LockCamera");
         _isCameraAndMovementLocked = true;
     }
     
@@ -511,7 +510,6 @@ public class PlayerController : NetworkBehaviour
         {
             float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 
-            Debug.Log(_input.look.y);
             firstPersonPitch += _input.look.y * deltaTimeMultiplier;
             firstPersonYaw += _input.look.x * deltaTimeMultiplier;
             

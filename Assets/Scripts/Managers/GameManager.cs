@@ -20,6 +20,9 @@ public class GameManager : NetworkBehaviour
     [SerializeField] public UnityEvent<int> OnDayUpdatedEvent;
     [SerializeField] public UnityEvent<float> OnBreathUpdated;
 
+    public Action OnUIOpened;
+    public Action OnUIClosed;
+
     public NetworkedBoat Boat;
     private Dictionary<ulong, bool> playerWaitConfirm;
     
@@ -49,10 +52,7 @@ public class GameManager : NetworkBehaviour
             Instance = this;
         }
         
-        SceneManager.LoadScene("Scavenging", LoadSceneMode.Additive);
-
-        //NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
-        //NetworkManager.Singleton.SceneManager.LoadScene("MainScreen", LoadSceneMode.Additive);
+        //SceneManager.LoadScene("Scavenging", LoadSceneMode.Additive);
     }
     
     public override void OnNetworkSpawn()
@@ -179,7 +179,7 @@ public class GameManager : NetworkBehaviour
         {
             case TimeState.BetweenDays:
                 RespawnAllPlayers_ServerRpc();
-                _ui.PopulateShopContent_ServerRpc();
+                UI.Instance.PopulateShopContent_ServerRpc();
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.LoadingNextDay:
@@ -224,19 +224,19 @@ public class GameManager : NetworkBehaviour
         switch (_timeState)
         {
             case TimeState.BetweenDays:
-                _ui.CloseAllPanels(false);
+                UI.Instance.CloseAllPanels(false);
                 break;
             case TimeState.LoadingNextDay:
                 break;
             case TimeState.DayActive:
-                _ui.UpdateDayInfoText(quota, day);
-                _ui.ShowDayStartPanel();
+                UI.Instance.UpdateDayInfoText(quota, day);
+                UI.Instance.ShowDayStartPanel();
                 StartCountdown();
                 break;
             case TimeState.ShowDayResult:
                 TimeFinishedEvent?.Invoke();
-                _ui.UpdateEndScreen(quota, currentDayCash);
-                _ui.ShowEndScreen(true);
+                UI.Instance.UpdateEndScreen(quota, currentDayCash);
+                UI.Instance.ShowEndScreen(true);
                 StopCountdown();
                 break;
             case TimeState.QuotaFailed:

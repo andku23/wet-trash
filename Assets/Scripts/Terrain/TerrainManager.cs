@@ -137,6 +137,11 @@ public class TerrainManager : NetworkBehaviour
         return lootGroup.GetComponent<LootGroup>();
     }
 
+    public void AssignTerrain(Terrain terrain)
+    {
+        _terrain = terrain;
+    }
+
     private LootGroup CreateHole(int xPos, int zPos, int holeWidth, int holeHeight)
     {
         bool[,] holeMap = new bool[holeWidth, holeHeight];

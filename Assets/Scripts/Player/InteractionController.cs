@@ -17,6 +17,8 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private NetworkObject networkObject;
     [SerializeField] private PlayerController playerController;
     [SerializeField] private PlayerState playerState;
+    
+    private UI _ui;
 
     private const int INVENTORY_SIZE = 4;
     private int[] _inventory = new int[INVENTORY_SIZE];
@@ -82,8 +84,6 @@ public class InteractionController : NetworkBehaviour
         {
             _inventory[i] = -1;
         }
-        
-        UI.Instance.SetActiveHotbarItem(_currentInventoryIndex);
     }
     
     // functions that are called from other players or the server

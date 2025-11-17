@@ -21,6 +21,7 @@ public class NetworkModeConnector : MonoBehaviour
     private void Start()
     {
         Instance = this;
+        transport = FindObjectsByType<UnityTransport>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
     }
     
     public void OnInputEnd(string joinCode)

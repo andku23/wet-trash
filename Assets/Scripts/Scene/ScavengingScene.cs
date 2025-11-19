@@ -11,7 +11,10 @@ public class ScavengingScene : NetworkBehaviour
         if (IsServer)
         {
             var connectedClientIds = NetworkManager.Singleton.ConnectedClientsIds;
-            GameManager.Instance.SetPlayerPositions_ServerRpc(connectedClientIds.ToArray(), playerStartLocation.position);
+            GameManager.Instance.SetPlayerPositions_ServerRpc(
+                connectedClientIds.ToArray(), 
+                playerStartLocation.position,
+                playerStartLocation.rotation);
             GameManager.Instance.ChangeAllPlayerControlModes_ServerRpc(PlayerController.ControlModeEnum.FirstPerson);
         }
         

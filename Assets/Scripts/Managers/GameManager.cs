@@ -53,8 +53,6 @@ public class GameManager : NetworkBehaviour
         {
             Instance = this;
         }
-        
-        //SceneManager.LoadScene("Scavenging", LoadSceneMode.Additive);
     }
     
     public override void OnNetworkSpawn()
@@ -66,12 +64,10 @@ public class GameManager : NetworkBehaviour
         if (IsServer)
         {
             GameObject boat = Instantiate(_boatPrefab);
-            //boat.transform.position = _boatSpawnLocation.transform.position;
             boat.transform.position = new Vector3(0.98f, 0, 5.92f);
             NetworkObject networkObject = boat.GetComponent<NetworkObject>();
             networkObject.Spawn();
         }
-        
     }
 
     public void RequestToNextGameState()
@@ -299,13 +295,13 @@ public class GameManager : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void SetPlayerPositions_ServerRpc(ulong[] playerIds, Vector3 position)
+    public void SetPlayerPositions_ServerRpc(ulong[] playerIds, Vector3 position, Quaternion rotation)
     {
-        SetPlayerPositions_ClientRpc(playerIds, position);
+        SetPlayerPositions_ClientRpc(playerIds, position, rotation);
     }
     
     [ClientRpc(RequireOwnership = false)]
-    public void SetPlayerPositions_ClientRpc(ulong[] playerIds, Vector3 position)
+    public void SetPlayerPositions_ClientRpc(ulong[] playerIds, Vector3 position, Quaternion rotation)
     {
         bool isIncludedInList = false;
         for (int i = 0; i < playerIds.Length; i++)
@@ -319,7 +315,9 @@ public class GameManager : NetworkBehaviour
 
         if (isIncludedInList)
         {
-            NetworkManager.Singleton.LocalClient.PlayerObject.transform.position = position;
+            var player = NetworkManager.Singleton.LocalClient.PlayerObject;
+            player.transform.position = position;
+            player.transform.rotation = rotation;
         }
         
     }

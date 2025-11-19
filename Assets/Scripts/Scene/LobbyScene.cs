@@ -49,11 +49,17 @@ public class LobbyScene : NetworkBehaviour
         if (currentPlayerIndex < playerPositions.Length)
         {
             
-            GameManager.Instance.SetPlayerPositions_ServerRpc(playersToSet, playerPositions[currentPlayerIndex].position);
+            GameManager.Instance.SetPlayerPositions_ServerRpc(
+                playersToSet, 
+                playerPositions[currentPlayerIndex].position,
+                playerPositions[currentPlayerIndex].rotation);
         }
         else
         {
-            GameManager.Instance.SetPlayerPositions_ServerRpc(playersToSet, Vector3.zero);
+            GameManager.Instance.SetPlayerPositions_ServerRpc(
+                playersToSet, 
+                Vector3.zero,
+                Quaternion.identity);
         }
     }
     

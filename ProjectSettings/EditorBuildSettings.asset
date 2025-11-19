@@ -9,11 +9,11 @@ EditorBuildSettings:
     path: Assets/Scenes/Root.unity
     guid: 0178b21fe18375a4fb38702ba51f4aca
   - enabled: 1
+    path: Assets/Scenes/PlayerLobby.unity
+    guid: 5381def87308d2345a538a86f1acd3eb
+  - enabled: 1
     path: Assets/Scenes/Scavenging.unity
     guid: c055c8c4e31ab4060ba7dbe350abaf54
-  - enabled: 1
-    path: Assets/Scenes/MainScreen.unity
-    guid: 5381def87308d2345a538a86f1acd3eb
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 9e7be553448fa2546aea5752021cbcf7,
       type: 2}

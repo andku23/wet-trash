@@ -10,7 +10,7 @@ TagManager:
   - Water
   - ThirdPersonCamera
   - FirstPersonCamera
-  - UICamera
+  - StaticCamera
   layers:
   - Default
   - TransparentFX

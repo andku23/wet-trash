@@ -22,15 +22,15 @@ public class MainScreenUI : NetworkBehaviour
     {
         NetworkModeConnector.Instance.StartHost();
         NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
-        NetworkManager.Singleton.SceneManager.LoadScene("Scavenging", LoadSceneMode.Additive);
+        GameManager.Instance.ChangeScene_ServerRpc(1);
         gameObject.SetActive(false);
     }
     
     public void JoinGame()
     {
         NetworkModeConnector.Instance.StartClient();
-        NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
-        NetworkManager.Singleton.SceneManager.LoadScene("Scavenging", LoadSceneMode.Additive);
+        //NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
+        //GameManager.Instance.ChangeScene_ServerRpc(1);
         gameObject.SetActive(false);
     }
 }

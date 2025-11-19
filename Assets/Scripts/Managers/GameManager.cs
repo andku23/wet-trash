@@ -32,6 +32,8 @@ public class GameManager : NetworkBehaviour
     private int _quota = 0;
 
     public int INCREMENT_QUOTA;
+    private int _currentAdditiveScene = -1;
+    private bool _isLoadingScene;
     
     public enum TimeState
     {
@@ -327,4 +329,38 @@ public class GameManager : NetworkBehaviour
         yield return new WaitForSeconds(seconds);
         callback();
     }
+    
+    #region Scene Change Logic
+
+    [ServerRpc(RequireOwnership = false)]
+    public void ChangeScene_ServerRpc(int buildIndex)
+    {
+        if (_isLoadingScene) return;
+        _isLoadingScene = true;
+        
+        if (_currentAdditiveScene != -1)
+        {
+            NetworkManager.Singleton.SceneManager.OnUnloadEventCompleted += OnUnloadFinish;
+            NetworkManager.Singleton.SceneManager.UnloadScene(SceneManager.GetSceneByBuildIndex(_currentAdditiveScene));
+            _currentAdditiveScene = buildIndex;
+            
+        }
+        else
+        {
+            _currentAdditiveScene = buildIndex;
+            OnUnloadFinish("", LoadSceneMode.Additive, null, null);
+        }
+    }
+
+    private void OnUnloadFinish(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+    {
+        NetworkManager.Singleton.SceneManager.OnUnloadEventCompleted -= OnUnloadFinish;
+        string gameScenePath = SceneUtility.GetScenePathByBuildIndex(_currentAdditiveScene);
+        string gameSceneName = System.IO.Path.GetFileNameWithoutExtension(gameScenePath);
+        Debug.Log(gameSceneName);
+        NetworkManager.Singleton.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Additive);
+        _isLoadingScene = false;
+    }
+
+    #endregion
 }

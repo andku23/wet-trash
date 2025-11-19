@@ -17,7 +17,7 @@ public class StaticCameraControl : MonoBehaviour, ICameraControl
         _followCamera = _followCameras[0];
         for (int i = 0; i < _followCameras.Length; i++)
         {
-            if (_followCameras[i].CompareTag("UICamera"))
+            if (_followCameras[i].CompareTag("StaticCamera"))
             {
                 _followCamera = _followCameras[i];
             }

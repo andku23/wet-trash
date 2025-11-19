@@ -1,9 +1,11 @@
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
 public class LobbyScene : NetworkBehaviour
 {
     [SerializeField] private Transform[] playerPositions;
+    [SerializeField] private TextMeshProUGUI joinCodeText;
     
     private void Start()
     {
@@ -18,11 +20,17 @@ public class LobbyScene : NetworkBehaviour
         }
 
         Cursor.lockState = CursorLockMode.None;
+        joinCodeText.text = NetworkModeConnector.Instance.JoinCode;
     }
 
     private void OnDestroy()
     {
         NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+    }
+
+    public void CopyCode()
+    {
+        GUIUtility.systemCopyBuffer = NetworkModeConnector.Instance.JoinCode;
     }
 
     private void OnClientConnected(ulong clientId)

@@ -9,6 +9,7 @@ public class MainScreenUI : NetworkBehaviour
     private void Start()
     {
         if(Instance == null) Instance = this;
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
     }
     
     public void OnInputEnd(string joinCode)
@@ -19,14 +20,22 @@ public class MainScreenUI : NetworkBehaviour
     public void HostGame()
     {
         NetworkModeConnector.Instance.StartHost();
-        NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
-        GameManager.Instance.ChangeScene_ServerRpc(1);
-        gameObject.SetActive(false);
     }
     
     public void JoinGame()
     {
         NetworkModeConnector.Instance.StartClient();
+        
+    }
+
+    private void OnClientConnected(ulong clientId)
+    {
+        NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+        if (IsServer)
+        {
+            NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
+            GameManager.Instance.ChangeScene_ServerRpc(1);
+        }
         gameObject.SetActive(false);
     }
 }

@@ -6,8 +6,6 @@ public class MainScreenUI : NetworkBehaviour
 {
     public static MainScreenUI Instance;
 
-    [SerializeField] private Panel HostingScreen;
-    
     private void Start()
     {
         if(Instance == null) Instance = this;
@@ -29,8 +27,6 @@ public class MainScreenUI : NetworkBehaviour
     public void JoinGame()
     {
         NetworkModeConnector.Instance.StartClient();
-        //NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
-        //GameManager.Instance.ChangeScene_ServerRpc(1);
         gameObject.SetActive(false);
     }
 }

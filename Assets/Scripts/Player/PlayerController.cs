@@ -49,7 +49,6 @@ public class PlayerController : NetworkBehaviour
     [Tooltip("What layers the character uses as water")]
     public LayerMask WaterLayers;
 
-    public bool ForceThirdPerson;
     public GameObject ControlModeThirdPerson;
     public GameObject ControlModeFirstPerson;
     public GameObject ControlModeStatic;
@@ -124,9 +123,9 @@ public class PlayerController : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         //Set control to first person if youre the controller
-        if (IsOwner && !ForceThirdPerson)
+        if (IsOwner)
         {
-            ChangeControlMode(ControlModeEnum.FirstPerson);
+            ChangeControlMode(ControlModeEnum.StaticControl);
         }
         else
         {
@@ -235,10 +234,6 @@ public class PlayerController : NetworkBehaviour
             if (_selectedControlMode == ControlModeFirstPerson)
             {
                 ChangeControlMode(ControlModeEnum.ThirdPerson);
-            }
-            else if (_selectedControlMode == ControlModeThirdPerson)
-            {
-                ChangeControlMode(ControlModeEnum.StaticControl);
             }
             else
             {

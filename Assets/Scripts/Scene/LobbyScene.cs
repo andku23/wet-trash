@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class NetworkLobbyPlacer : NetworkBehaviour
+public class LobbyScene : NetworkBehaviour
 {
     [SerializeField] private Transform[] playerPositions;
     
@@ -14,8 +14,10 @@ public class NetworkLobbyPlacer : NetworkBehaviour
     {
         if (IsServer)
         {
-            PlaceNextPlayer(NetworkManager.Singleton.LocalClientId);
+            PlaceNextPlayerServer(NetworkManager.Singleton.LocalClientId);
         }
+
+        Cursor.lockState = CursorLockMode.None;
     }
 
     private void OnDestroy()
@@ -27,21 +29,28 @@ public class NetworkLobbyPlacer : NetworkBehaviour
     {
         if (IsServer)
         {
-            Debug.Log($"Client {clientId} connected to the server.");
-            PlaceNextPlayer(clientId);
+            PlaceNextPlayerServer(clientId);
         }
     }
 
-    private void PlaceNextPlayer(ulong clientId)
+    private void PlaceNextPlayerServer(ulong clientId)
     {
         int currentPlayerIndex = NetworkManager.Singleton.ConnectedClients.Count - 1;
+        ulong[] playersToSet = new ulong[1];
+        playersToSet[0] = clientId;
         if (currentPlayerIndex < playerPositions.Length)
         {
-            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.transform.position = playerPositions[currentPlayerIndex].position;
+            
+            GameManager.Instance.SetPlayerPositions_ServerRpc(playersToSet, playerPositions[currentPlayerIndex].position);
         }
         else
         {
-            NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject.transform.position = Vector3.zero;
+            GameManager.Instance.SetPlayerPositions_ServerRpc(playersToSet, Vector3.zero);
         }
+    }
+    
+    public void ToScavengingScene()
+    {
+        GameManager.Instance.ChangeScene_ServerRpc(2);
     }
 }

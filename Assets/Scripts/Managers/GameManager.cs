@@ -248,6 +248,8 @@ public class GameManager : NetworkBehaviour
     }
     
     #endregion
+    
+    #region Player Changes
 
     public void PlaceAttachmentPoint(int shopItemIndex, BoatAttachmentPoint boatAttachmentPoint, float rotationPlaceOffset)
     {
@@ -283,6 +285,46 @@ public class GameManager : NetworkBehaviour
             attachable.OnAttach(Boat);
         }
     }
+
+    [ServerRpc]
+    public void ChangeAllPlayerControlModes_ServerRpc(PlayerController.ControlModeEnum mode)
+    {
+        ChangeAllPlayerControlModes_ClientRpc(mode);
+    }
+    
+    [ClientRpc]
+    public void ChangeAllPlayerControlModes_ClientRpc(PlayerController.ControlModeEnum mode)
+    {
+        NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerController>().ChangeControlMode(mode);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetPlayerPositions_ServerRpc(ulong[] playerIds, Vector3 position)
+    {
+        SetPlayerPositions_ClientRpc(playerIds, position);
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void SetPlayerPositions_ClientRpc(ulong[] playerIds, Vector3 position)
+    {
+        bool isIncludedInList = false;
+        for (int i = 0; i < playerIds.Length; i++)
+        {
+            if (playerIds[i] == NetworkManager.Singleton.LocalClientId)
+            {
+                isIncludedInList = true;
+                break;
+            }
+        }
+
+        if (isIncludedInList)
+        {
+            NetworkManager.Singleton.LocalClient.PlayerObject.transform.position = position;
+        }
+        
+    }
+    
+    #endregion
     
     private void SpawnLoot()
     {

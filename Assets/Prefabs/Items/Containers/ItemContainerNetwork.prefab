@@ -580,7 +580,7 @@ GameObject:
   - component: {fileID: 5201304859418569969}
   - component: {fileID: 583575609256796491}
   m_Layer: 0
-  m_Name: LootContainerNetwork
+  m_Name: ItemContainerNetwork
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

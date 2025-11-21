@@ -526,6 +526,11 @@ public class InteractionController : NetworkBehaviour
                 }
             }
         }
+
+        if (_input.useItem)
+        {
+            heldObject.UseItem();
+        }
     }
     
     private void OnHeldTemporaryItemUpdate()

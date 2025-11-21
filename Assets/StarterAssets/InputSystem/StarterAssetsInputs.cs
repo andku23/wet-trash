@@ -19,6 +19,7 @@ namespace StarterAssets
 		public bool inventory;
 		public float scroll;
 		public bool debug;
+		public bool useItem;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -80,6 +81,11 @@ namespace StarterAssets
 		{
 			DebugInput(value.isPressed);
 		}
+		
+		public void OnUseItem(InputValue value)
+		{
+			UseItemInput(value.isPressed);
+		}
 #endif
 
 
@@ -126,6 +132,11 @@ namespace StarterAssets
 		public void DebugInput(bool newState)
 		{
 			debug = newState;
+		}
+		
+		public void UseItemInput(bool newState)
+		{
+			useItem = newState;
 		}
 
 		public void ScrollInput(float newState)

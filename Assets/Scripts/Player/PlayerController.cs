@@ -511,8 +511,7 @@ public class PlayerController : NetworkBehaviour
             firstPersonYaw = ThirdPersonCameraControl.ClampAngle(firstPersonYaw, float.MinValue, float.MaxValue);
             firstPersonPitch = ThirdPersonCameraControl.ClampAngle(firstPersonPitch, -89, 89);
                 
-            transform.rotation = Quaternion.Euler(0.0f,
-                firstPersonYaw, 0.0f);
+            transform.rotation = Quaternion.Euler(0.0f, firstPersonYaw, 0.0f);
 
             if (_hasAnimator)
             {

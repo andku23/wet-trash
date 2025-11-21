@@ -16,5 +16,6 @@ public enum HeldObjectType
 {
     None = 0,
     Inventorable = 1, //I should one day change this to check if IInventorable type on holdable
-    TemporaryHold = 2
+    TemporaryHold = 2,
+    InventorableUseable = 3,
 }

@@ -52,11 +52,11 @@ MonoBehaviour:
     itemListIndex: 0
     placePrefab: {fileID: 4931818492765702189, guid: aaf2773a9c6aa1d4dace314df2c65353,
       type: 3}
-  - id: loot-item-0
+  - id: sound-item-0
     type: 2
-    name: loot-item
-    price: 150
-    itemListIndex: 0
+    name: Trumpet
+    price: 50
+    itemListIndex: 3
     placePrefab: {fileID: 0}
   itemsTypesToNames:
   - type: 2

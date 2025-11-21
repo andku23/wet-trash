@@ -17,7 +17,6 @@ public class ItemData
     public int spawnRateDeep;
     public int price;
     public float weight;
-    public float weightSpeedMultiplier;
     public Sprite hotbarIcon;
 }
 

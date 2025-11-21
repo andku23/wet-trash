@@ -5,7 +5,7 @@ using UnityEngine.Serialization;
 public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
 {
     public int ItemIndex;
-    public ItemModel Model;
+    public HeldItemModel Model;
     
     [SerializeField] private HeldObjectType _heldObjectType;
     
@@ -20,7 +20,7 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
         GameObject model = Instantiate(itemData.model, transform);
         model.GetComponent<ColliderReference>().enabled = false;
         model.GetComponent<Collider>().enabled = false;
-        Model = model.GetComponent<ItemModel>();
+        Model = model.GetComponent<HeldItemModel>();
     }
     
     public void LoadNetwork(int lootIndex)
@@ -28,7 +28,7 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
         ItemIndex = lootIndex;
         GameObject model = Instantiate(LootManager.Instance.ItemList.pairs[lootIndex].model, transform);
         model.GetComponent<ColliderReference>().reference = gameObject;
-        Model = model.GetComponent<ItemModel>();
+        Model = model.GetComponent<HeldItemModel>();
     }
 
     public void OnAddedToInventory()
@@ -44,5 +44,10 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
     public float GetWeight()
     {
         return LootManager.Instance.LootIndextoData(ItemIndex).weight;
+    }
+
+    public void UseItem()
+    {
+        Model.UseItem();
     }
 }

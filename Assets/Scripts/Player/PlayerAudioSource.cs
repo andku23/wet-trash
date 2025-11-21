@@ -15,7 +15,14 @@ public class PlayerAudioSource : MonoBehaviour
         WaterSplash,
         Swim,
         Thump,
-        EnemyAttack
+        EnemyAttack,
+        Trumpet
+    }
+
+    public void PlaySound(int index)
+    {
+        if (index >= soundGroups.Count) return;
+        PlaySound(soundGroups[index].soundType);
     }
     
     public void PlaySound(SoundType soundType)
@@ -38,7 +45,7 @@ public class PlayerAudioSource : MonoBehaviour
         {
             AudioDestroyAfterPlay audioDestroyAfterPlay = Instantiate(instantiatedAudioPrefab).GetComponent<AudioDestroyAfterPlay>();
             audioDestroyAfterPlay.transform.position = transform.position;
-            audioDestroyAfterPlay.Play(clip);
+            audioDestroyAfterPlay.Play(clip, volume);
         }
         else
         {

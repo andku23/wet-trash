@@ -141,7 +141,8 @@ namespace StarterAssets
 
 		public void ScrollInput(float newState)
 		{
-			scroll = newState;
+			if(newState != 0)
+				scroll = newState;
 		}
 
 		private void OnApplicationFocus(bool hasFocus)

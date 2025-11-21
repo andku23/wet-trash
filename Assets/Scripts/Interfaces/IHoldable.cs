@@ -8,7 +8,7 @@ public interface IHoldable
     public GameObject gameObject { get ; }
     public ulong HeldPlayerID { get; set; }
     // Only gets called if held object type is UsableItem
-    public void UseItem(){}
+    public void UseItem(PlayerController player){}
    
 }
 

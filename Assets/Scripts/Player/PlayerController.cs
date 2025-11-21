@@ -90,6 +90,7 @@ public class PlayerController : NetworkBehaviour
     private int _animIDIsCarrying;
     private int _animIDIsDriving;
     private int _animIDVerticalLookAmount;
+    private int _animIDAttacking;
 
     private float firstPersonPitch;
     private float firstPersonYaw;
@@ -151,6 +152,14 @@ public class PlayerController : NetworkBehaviour
         {
             GameManager.Instance.OnUIOpened -= LockCamera;
             GameManager.Instance.OnUIClosed -= UnlockCamera;
+        }
+    }
+
+    public void DoAttack()
+    {
+        if (_hasAnimator)
+        {
+            _animator.SetTrigger(_animIDAttacking);
         }
     }
 
@@ -253,6 +262,7 @@ public class PlayerController : NetworkBehaviour
         _animIDIsCarrying = Animator.StringToHash("IsCarrying");
         _animIDIsDriving = Animator.StringToHash("IsDriving");
         _animIDVerticalLookAmount = Animator.StringToHash("VerticalLookAmount");
+        _animIDAttacking = Animator.StringToHash("Attack");
     }
 
     private void GroundedCheck()

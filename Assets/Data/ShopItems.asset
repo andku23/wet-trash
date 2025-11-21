@@ -58,6 +58,12 @@ MonoBehaviour:
     price: 50
     itemListIndex: 3
     placePrefab: {fileID: 0}
+  - id: weapon-item
+    type: 2
+    name: Weapon
+    price: 50
+    itemListIndex: 4
+    placePrefab: {fileID: 0}
   itemsTypesToNames:
   - type: 2
     name: Inventory Item

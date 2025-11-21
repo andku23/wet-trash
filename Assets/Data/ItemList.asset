@@ -45,3 +45,10 @@ MonoBehaviour:
     price: 1
     weight: 1
     hotbarIcon: {fileID: 21300000, guid: a742642fe996a2b4cadeaf2837cc0ca9, type: 3}
+  - itemType: 2
+    model: {fileID: 7779135520556773283, guid: f52d6289a3e6a3344bbd68e6e7c4a5bb, type: 3}
+    spawnRateShallow: 0
+    spawnRateDeep: 0
+    price: 1
+    weight: 1
+    hotbarIcon: {fileID: 21300000, guid: 3a5c31faf22c54d48ab8061cc43a4b62, type: 3}

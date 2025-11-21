@@ -4,7 +4,7 @@ public abstract class HeldItemModel : MonoBehaviour
 {
     public GameObject CraneAttachPoint;
 
-    public virtual void UseItem()
+    public virtual void UseItem(PlayerController player)
     {
         
     }

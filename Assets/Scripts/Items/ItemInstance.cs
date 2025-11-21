@@ -46,8 +46,8 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
         return LootManager.Instance.LootIndextoData(ItemIndex).weight;
     }
 
-    public void UseItem()
+    public void UseItem(PlayerController player)
     {
-        Model.UseItem();
+        Model.UseItem(player);
     }
 }

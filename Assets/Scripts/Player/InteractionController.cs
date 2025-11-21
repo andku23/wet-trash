@@ -529,7 +529,8 @@ public class InteractionController : NetworkBehaviour
 
         if (_input.useItem)
         {
-            heldObject.UseItem();
+            _input.useItem = false;
+            heldObject.UseItem(playerController);
         }
     }
     

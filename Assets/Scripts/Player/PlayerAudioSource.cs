@@ -27,6 +27,20 @@ public class PlayerAudioSource : MonoBehaviour
     
     public void PlaySound(SoundType soundType)
     {
+        SoundGroup soundGroup = GetSoundGroup(soundType);
+        if (soundGroup == null) return;
+        PlaySound(soundGroup, transform.position);
+    }
+    
+    public void PlaySoundAtPosition(SoundType soundType, Vector3 position)
+    {
+        SoundGroup soundGroup = GetSoundGroup(soundType);
+        if (soundGroup == null) return;
+        PlaySound(soundGroup, position);
+    }
+
+    private SoundGroup GetSoundGroup(SoundType soundType)
+    {
         SoundGroup soundGroup = null;
         for (int i = 0; i < soundGroups.Count; i++)
         {
@@ -37,24 +51,24 @@ public class PlayerAudioSource : MonoBehaviour
             }
         }
 
-        if (soundGroup == null) return;
+        return soundGroup;
+    }
+
+    private void PlaySound(SoundGroup soundGroup, Vector3 position)
+    {
         AudioClip clip = soundGroup.clips[Random.Range(0, soundGroup.clips.Length)];
-        float volume = soundGroup.volume;
-        
         if (soundGroup.isInstantiatedAudio)
         {
             AudioDestroyAfterPlay audioDestroyAfterPlay = Instantiate(instantiatedAudioPrefab).GetComponent<AudioDestroyAfterPlay>();
-            audioDestroyAfterPlay.transform.position = transform.position;
-            audioDestroyAfterPlay.Play(clip, volume);
+            audioDestroyAfterPlay.transform.position = position;
+            audioDestroyAfterPlay.Play(clip, soundGroup.volume);
         }
         else
         {
-            audioSource.volume = volume;
+            audioSource.volume = soundGroup.volume;
             audioSource.clip = clip;
             audioSource.Play();
         }
-        
-        
     }
 }
 

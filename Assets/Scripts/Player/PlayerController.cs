@@ -546,7 +546,7 @@ public class PlayerController : NetworkBehaviour
         {
             if (_animator.GetBool(_animIDIsDriving))
             {
-                _animator.SetFloat(_animIDSpeed, _animationBlend);
+                _animator.SetFloat(_animIDSpeed, 0);
                 _animator.SetFloat(_animIDMotionSpeed, 0);
             }
             else

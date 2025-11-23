@@ -18,6 +18,7 @@ public class ItemData
     public int price;
     public float weight;
     public Sprite hotbarIcon;
+    public HoldableHandType holdableHandType;
 }
 
 public enum ItemType
@@ -25,4 +26,11 @@ public enum ItemType
     Default = 0,
     Loot = 1,
     UsableItem = 2,
+}
+
+public enum HoldableHandType
+{
+    Center = 0,
+    Left = 1,
+    Right = 2,
 }

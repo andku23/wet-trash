@@ -2,10 +2,10 @@ using UnityEngine;
 
 public class SoundItemModel : HeldItemModel
 {
-    [SerializeField] private PlayerAudioSource audioPlayer;
+    [SerializeField] private PlayerAudioSource.SoundType soundType;
     
     public override void UseItem(PlayerController player)
     {
-        audioPlayer.PlaySound(0);
+        UsableItemManager.Instance.RequestPlaySound(transform.position, soundType);
     }
 }

@@ -154,6 +154,8 @@ public class GameManager : NetworkBehaviour
         switch (_timeState)
         {
             case TimeState.None:
+                _timeState = TimeState.BetweenDays;
+                break;
             case TimeState.BetweenDays:
             case TimeState.QuotaFailed:
                 _timeState = TimeState.LoadingNextDay;

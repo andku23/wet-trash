@@ -13,7 +13,10 @@ public class CraneHook : MonoBehaviour, IHoldable
 
     public HeldObjectType HeldObjectType { get => _heldObjectType; }
     public GameObject ConnectedParent { get => _connectedParent; set => _connectedParent = value; }
-
+    public Vector3 HoldAttachOffset()
+    {
+        return -HookTop.transform.position;
+    }
     public ulong HeldPlayerID { get; set; }
 
     private void Update()

@@ -6,6 +6,7 @@ public interface IHoldable
     // Reference to whatever object it calls back to (like used mostly for cranes)
     public GameObject ConnectedParent { get; set; }
     public GameObject gameObject { get ; }
+    public Vector3 HoldAttachOffset();
     public ulong HeldPlayerID { get; set; }
     // Only gets called if held object type is UsableItem
     public void UseItem(PlayerController player){}

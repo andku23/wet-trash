@@ -11,6 +11,12 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
     
     public HeldObjectType HeldObjectType { get => _heldObjectType; }
     public GameObject ConnectedParent { get; set; }
+
+    public Vector3 HoldAttachOffset()
+    {
+        if(Model.HoldAttachPoint == null) return Vector3.zero;
+        return -Model.HoldAttachPoint.transform.localPosition;
+    }
     
     public ulong HeldPlayerID { get; set; }
     

@@ -92,7 +92,8 @@ public class InteractionController : NetworkBehaviour
     
     public GameObject PickupTemporaryItemNetwork(GameObject item, ulong heldPlayerID)
     {
-        GameObject go = Instantiate(item, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
+        ControlModeData controlModeData = playerController.CameraControl.gameObject.GetComponent<ControlModeData>();
+        GameObject go = Instantiate(item, controlModeData.GetConnectionPoint(HoldableHandType.Center).transform);
         go.transform.localRotation = Quaternion.identity;
         if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
         {
@@ -268,26 +269,21 @@ public class InteractionController : NetworkBehaviour
         }
     }
 
-    private GameObject LoadAndAttachHeldObject(int lootIndex, ulong heldPlayerID)
+    private GameObject LoadAndAttachHeldObject(int itemIndex, ulong heldPlayerID)
     {
+        ItemData itemData = LootManager.Instance.LootIndextoData(itemIndex);
         GameObject localLootPrefab = LootManager.Instance.ItemList.localLootPrefab;
-        GameObject go = Instantiate(localLootPrefab, playerController.CameraControl.gameObject.GetComponent<ControlModeData>().lootConnectPoint.transform);
-        go.transform.localRotation = Quaternion.identity;
-        if (playerController.ControlMode == PlayerController.ControlModeEnum.FirstPerson)
-        {
-            go.transform.localPosition = new Vector3(0, 0.4f, 0);
-            go.transform.localScale = Vector3.one * 0.3f;
-        }
-        else
-        {
-            go.transform.localPosition = new Vector3(0, -0.3f, -0.1f);
-            go.transform.localScale = Vector3.one * 0.6f;
-        }
+        ControlModeData controlModeData = playerController.CameraControl.gameObject.GetComponent<ControlModeData>();
+        GameObject go = Instantiate(localLootPrefab, controlModeData.GetConnectionPoint(itemData.holdableHandType).transform);
+        
         heldObject = go.GetComponent<IHoldable>();
         heldObject.HeldPlayerID = heldPlayerID;
-        
         ItemInstance itemInstance = heldObject.gameObject.GetComponent<ItemInstance>();
-        itemInstance.LoadLocal(LootManager.Instance.LootIndextoData(lootIndex), lootIndex);
+        itemInstance.LoadLocal(itemData, itemIndex);
+        
+        go.transform.localPosition = heldObject.HoldAttachOffset();
+        go.transform.localRotation = Quaternion.identity;
+        go.transform.localScale = Vector3.one;
         return go;
     }
 
@@ -502,13 +498,14 @@ public class InteractionController : NetworkBehaviour
     {
         Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag);
         UpdateCurrentInteractable(closestCollider);
-        QueryInteractableTypes(lastClosestInteractable);
         CheckItemScroll();
 
         if (_input.interact)
         {
             //Turn it off immediately so we don't get double events
             _input.interact = false;
+            
+            QueryInteractableTypes(lastClosestInteractable);
             
             heldObject.HeldPlayerID = 0;
             if (heldObject.HeldObjectType == HeldObjectType.Inventorable)
@@ -522,7 +519,8 @@ public class InteractionController : NetworkBehaviour
                 {
                     Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
                     LootManager.Instance.RequestDrop(
-                        heldObject.gameObject.transform.position, heldObject.gameObject);
+                        heldObject.gameObject.transform.position + transform.forward * 1.3f, 
+                        heldObject.gameObject);
                 }
             }
         }

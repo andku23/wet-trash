@@ -858,11 +858,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameController
   ShowTopMostFoldoutHeaderGroup: 1
   _lootManager: {fileID: 1193161554}
+  _boatManager: {fileID: 423871127}
   _ui: {fileID: 0}
   _timeFullDaySeconds: 300
-  _boatPrefab: {fileID: 8906400828373403108, guid: 9c67c1dc79ad1b14d8372972bbb2c20c,
-    type: 3}
-  _boatSpawnLocation: {fileID: 0}
   TimeUpdatedEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -875,7 +873,6 @@ MonoBehaviour:
   OnBreathUpdated:
     m_PersistentCalls:
       m_Calls: []
-  Boat: {fileID: 0}
   INCREMENT_QUOTA: 500
 --- !u!1 &225720092
 GameObject:
@@ -1400,6 +1397,54 @@ MonoBehaviour:
   OnCashChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &423871125
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 423871126}
+  - component: {fileID: 423871127}
+  m_Layer: 0
+  m_Name: BoatManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &423871126
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 423871125}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 477171340}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &423871127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 423871125}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56db36da655a2e646b6dd7332b6d5e45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoatManager
+  ShowTopMostFoldoutHeaderGroup: 1
+  Boat: {fileID: 0}
+  _baseBoatPrefab: {fileID: 8906400828373403108, guid: 9c67c1dc79ad1b14d8372972bbb2c20c,
+    type: 3}
 --- !u!1 &458851617
 GameObject:
   m_ObjectHideFlags: 0
@@ -1504,8 +1549,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1193161555}
   - {fileID: 216456632}
+  - {fileID: 1193161555}
+  - {fileID: 423871126}
   - {fileID: 410486126}
   - {fileID: 2060124982}
   - {fileID: 775486259}

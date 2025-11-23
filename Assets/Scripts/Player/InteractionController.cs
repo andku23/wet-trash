@@ -470,7 +470,7 @@ public class InteractionController : NetworkBehaviour
                 {
                     // TODO dont allow you to place if theres something already attached
                     Destroy(placingBoatAttachment.gameObject);
-                    GameManager.Instance.PlaceAttachmentPoint(_shopItemIndex, boatAttachmentPoint, rotationPlaceOffset);
+                    BoatManager.Instance.PlaceAttachmentPoint(_shopItemIndex, boatAttachmentPoint, rotationPlaceOffset);
                     placingBoatAttachment = null;
                     _stateMachine.ChangeState((int)InteractionStates.Standard);
                     _input.interact = false;

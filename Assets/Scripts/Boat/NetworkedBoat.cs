@@ -36,7 +36,7 @@ public class NetworkedBoat : NetworkBehaviour
         _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
 #else
 #endif
-        GameManager.Instance.Boat = this;
+        BoatManager.Instance.Boat = this;
         
         //Initialize all the boat logic so it can be spawned in
         

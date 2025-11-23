@@ -11,10 +11,9 @@ using UnityEngine.Serialization;
 public class GameManager : NetworkBehaviour
 {
     [SerializeField] private LootManager _lootManager;
+    [SerializeField] private BoatManager _boatManager;
     [SerializeField] private UI _ui;
     [SerializeField] private float _timeFullDaySeconds;
-    [SerializeField] private GameObject _boatPrefab;
-    [SerializeField] private GameObject _boatSpawnLocation;
     [SerializeField] public UnityEvent<int> TimeUpdatedEvent;
     [SerializeField] public UnityEvent TimeFinishedEvent;
     [SerializeField] public UnityEvent<int> OnDayUpdatedEvent;
@@ -23,7 +22,6 @@ public class GameManager : NetworkBehaviour
     public Action OnUIOpened;
     public Action OnUIClosed;
 
-    public NetworkedBoat Boat;
     private Dictionary<ulong, bool> playerWaitConfirm;
     
     private TimeState _timeState;
@@ -63,10 +61,7 @@ public class GameManager : NetworkBehaviour
 
         if (IsServer)
         {
-            GameObject boat = Instantiate(_boatPrefab);
-            boat.transform.position = new Vector3(0.98f, 0, 5.92f);
-            NetworkObject networkObject = boat.GetComponent<NetworkObject>();
-            networkObject.Spawn();
+            _boatManager.SpawnBoatServer();
         }
     }
 
@@ -248,41 +243,6 @@ public class GameManager : NetworkBehaviour
     #endregion
     
     #region Player Changes
-
-    public void PlaceAttachmentPoint(int shopItemIndex, BoatAttachmentPoint boatAttachmentPoint, float rotationPlaceOffset)
-    {
-        int attachmentPointIndex = -1;
-        for (int i = 0; i < Boat.BoatAttachmentPoints.Count; i++)
-        {
-            if (boatAttachmentPoint == Boat.BoatAttachmentPoints[i])
-            {
-                attachmentPointIndex = i;
-            }
-        }
-
-        if (attachmentPointIndex >= 0)
-        {
-            PlaceAttachmentPoint_ServerRpc(shopItemIndex, attachmentPointIndex, rotationPlaceOffset);
-        }
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    public void PlaceAttachmentPoint_ServerRpc(int shopIndex, int boatAttachmentIndex, float rotationPlaceOffset)
-    {
-        BoatAttachmentPoint boatAttachmentPoint = Boat.BoatAttachmentPoints[boatAttachmentIndex];
-        NetworkObject no = Instantiate(ShopManager.Instance.shopList.items[shopIndex].placePrefab, 
-            boatAttachmentPoint.transform.position, boatAttachmentPoint.transform.rotation).GetComponent<NetworkObject>();
-        no.transform.Rotate(boatAttachmentPoint.transform.up, rotationPlaceOffset);
-        no.Spawn();
-        no.transform.parent = Boat.transform;
-        boatAttachmentPoint.heldItem.Value = no.NetworkObjectId;
-        
-        IAttachment attachable = no.GetComponent<IAttachment>();
-        if (attachable != null)
-        {
-            attachable.OnAttach(Boat);
-        }
-    }
 
     [ServerRpc]
     public void ChangeAllPlayerControlModes_ServerRpc(PlayerController.ControlModeEnum mode)

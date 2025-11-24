@@ -1443,6 +1443,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BoatManager
   ShowTopMostFoldoutHeaderGroup: 1
   Boat: {fileID: 0}
+  BoatPartsList: {fileID: 11400000, guid: 7b6b50b2f41db084cbf034d32cb6956c, type: 2}
   _baseBoatPrefab: {fileID: 8906400828373403108, guid: 9c67c1dc79ad1b14d8372972bbb2c20c,
     type: 3}
 --- !u!1 &458851617

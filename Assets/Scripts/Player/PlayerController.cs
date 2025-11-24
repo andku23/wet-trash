@@ -240,14 +240,22 @@ public class PlayerController : NetworkBehaviour
         if (_input.debug)
         {
             _input.debug = false;
-            if (_selectedControlMode == ControlModeFirstPerson)
+            ulong anyID = 0;
+            foreach (var pair in BoatManager.Instance.Boat.BoatParts)
             {
-                ChangeControlMode(ControlModeEnum.ThirdPerson);
+                anyID = pair.Key;
             }
-            else
-            {
-                ChangeControlMode(ControlModeEnum.FirstPerson);
-            }
+            BoatManager.Instance.RequestConnectBoatPart(
+                anyID,2, 0, 0);
+            
+            //if (_selectedControlMode == ControlModeFirstPerson)
+            //{
+            //    ChangeControlMode(ControlModeEnum.ThirdPerson);
+            //}
+            //else
+            //{
+            //    ChangeControlMode(ControlModeEnum.FirstPerson);
+            //}
         }
     }
 

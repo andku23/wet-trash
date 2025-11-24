@@ -3856,7 +3856,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CopyTransform
   usePosition: 1
   useRotation: 1
-  useScale: 1
+  useScale: 0
   target: {fileID: 0}
 --- !u!114 &8149868342962994308
 MonoBehaviour:

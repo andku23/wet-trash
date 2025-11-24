@@ -4,7 +4,8 @@ using UnityEngine;
 public class InteractableSteeringWheel : MonoBehaviour, IInteractable
 {
     [SerializeField] private GameObject instructions;
-    [SerializeField] private NetworkedBoat networkBoat;
+
+    public Transform DriverPosition;
 
     private void Start()
     {
@@ -13,23 +14,23 @@ public class InteractableSteeringWheel : MonoBehaviour, IInteractable
     
     public void Interact(ulong networkPlayerId)
     {
-        if (networkBoat.HasDriver)
+        if (BoatManager.Instance.Boat.HasDriver)
         {
-            if (networkBoat.DriverID == networkPlayerId)
+            if (BoatManager.Instance.Boat.DriverID == networkPlayerId)
             {
-                networkBoat.RequestToDrive(false);
+                BoatManager.Instance.Boat.RequestToDrive(false);
             }
         }
         else
         {
-            networkBoat.RequestToDrive(true);
+            BoatManager.Instance.Boat.RequestToDrive(true);
             instructions.SetActive(false);
         }
     }
     
     public bool EnableInteractable(IHoldable heldObject)
     {
-        if (networkBoat.HasDriver)
+        if (BoatManager.Instance.Boat.HasDriver)
         {
             instructions.SetActive(false);
             return false;
@@ -51,7 +52,7 @@ public class InteractableSteeringWheel : MonoBehaviour, IInteractable
     
     public bool IsInteractionLocked
     {
-        get { return networkBoat.HasDriver; ;} 
+        get { return BoatManager.Instance.Boat.HasDriver; ;} 
         set {}
       
     }

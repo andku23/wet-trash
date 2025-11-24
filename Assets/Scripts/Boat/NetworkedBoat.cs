@@ -9,14 +9,15 @@ using UnityEngine.Serialization;
 
 public class NetworkedBoat : NetworkBehaviour
 {
-    [SerializeField] private GameObject _driverSeat;
+    [SerializeField] private InteractableSteeringWheel _steeringWheel;
     [SerializeField] private Rigidbody _rb;
     [SerializeField] private CinemachineVirtualCamera _boatVirtualCamera;
     [SerializeField] private float RotationSmoothTime = 0.12f;
     [SerializeField] public NetworkBoatState BoatState;
+    [SerializeField] private List<GameObject> initialBoatParts;
     
     public List<BoatAttachmentPoint> BoatAttachmentPoints = new List<BoatAttachmentPoint>();
-    
+    public Dictionary<ulong, BoatPart> BoatParts = new Dictionary<ulong, BoatPart>(); //ALl the realtime added boat parts 
     
     private float _targetRotation = 0.0f;
     private float _rotationVelocity;
@@ -39,6 +40,31 @@ public class NetworkedBoat : NetworkBehaviour
         BoatManager.Instance.Boat = this;
         
         //Initialize all the boat logic so it can be spawned in
+        if (IsServer)
+        {
+            foreach (GameObject boatPartPrefab in initialBoatParts)
+            {
+                GameObject go = Instantiate(boatPartPrefab);
+                NetworkObject no = go.GetComponent<NetworkObject>();
+                
+                no.Spawn();
+                no.transform.parent = transform;
+                no.transform.localPosition = Vector3.zero;
+                no.transform.localRotation = Quaternion.identity;
+                BoatPart boatPart = no.GetComponent<BoatPart>();
+                BoatParts.Add(no.NetworkObjectId, boatPart);
+
+                if (boatPart.SteeringWheel != null)
+                {
+                    _steeringWheel = boatPart.SteeringWheel;
+                }
+                
+                foreach (BoatAttachmentPoint attachmentPoint in boatPart.AttachmentPoints)
+                {
+                    BoatAttachmentPoints.Add(attachmentPoint);
+                }
+            }
+        }
         
     }
 
@@ -118,7 +144,7 @@ public class NetworkedBoat : NetworkBehaviour
         NetworkClient requestedDrivePlayer = NetworkManager.Singleton.ConnectedClients[playerNetworkObjectId];
         requestedDrivePlayer.PlayerObject.SynchronizeTransform = false;
         requestedDrivePlayer.PlayerObject.GetComponent<PlayerController>().ToggleDriving(true);
-        requestedDrivePlayer.PlayerObject.GetComponent<CopyTransform>().target = _driverSeat;
+        requestedDrivePlayer.PlayerObject.GetComponent<CopyTransform>().target = _steeringWheel.DriverPosition.gameObject;
     }
     
     [ClientRpc(RequireOwnership = false)]
@@ -135,3 +161,4 @@ public class NetworkedBoat : NetworkBehaviour
         requestedDrivePlayer.PlayerObject.GetComponent<CopyTransform>().target = null;
     }
 }
+

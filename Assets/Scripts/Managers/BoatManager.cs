@@ -46,6 +46,12 @@ public class BoatManager : NetworkBehaviour
         outwardDirection.Normalize();
         float attachPointDistance = Vector3.Distance(go.transform.position, boatPart.ConnectionPoints[attachedPartPoint].position);
         go.transform.position -= outwardDirection * attachPointDistance;
+        
+        Boat.BoatParts.Add(no.NetworkObjectId, boatPart);
+        foreach (BoatAttachmentPoint attachmentPoint in boatPart.AttachmentPoints)
+        {
+            Boat.BoatAttachmentPoints.Add(attachmentPoint);
+        }
     }
     
     public void PlaceAttachmentPoint(int shopItemIndex, BoatAttachmentPoint boatAttachmentPoint, float rotationPlaceOffset)

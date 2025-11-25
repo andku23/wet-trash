@@ -15,14 +15,14 @@ public class BoatManager : NetworkBehaviour
         Instance = this;
     }
     
-    //TODO collider ref on boat parts needs to hook itself up on clients
+    //private void Calculate
 
     public void SpawnBoatServer()
     {
         GameObject boat = Instantiate(_baseBoatPrefab);
         NetworkObject networkObject = boat.GetComponent<NetworkObject>();
         networkObject.Spawn();
-        boat.transform.position = new Vector3(0.98f, 0.5f, 5.92f);
+        boat.transform.position = new Vector3(0.98f, 1.0f, 5.92f);
     }
     
     public void RequestConnectBoatPart(ulong attachedToNetworkID, int attachedToPoint, BoatPartID attachedPart, int attachedPartPoint)
@@ -52,6 +52,8 @@ public class BoatManager : NetworkBehaviour
         {
             Boat.BoatAttachmentPoints.Add(attachmentPoint);
         }
+        
+        // TODO combine the duplicate logic here
     }
     
     public void PlaceAttachmentPoint(int shopItemIndex, BoatAttachmentPoint boatAttachmentPoint, float rotationPlaceOffset)

@@ -52,17 +52,13 @@ public class NetworkedBoat : NetworkBehaviour
                 no.transform.localPosition = Vector3.zero;
                 no.transform.localRotation = Quaternion.identity;
                 BoatPart boatPart = no.GetComponent<BoatPart>();
-                BoatParts.Add(no.NetworkObjectId, boatPart);
 
                 if (boatPart.SteeringWheel != null)
                 {
                     _steeringWheel = boatPart.SteeringWheel;
                 }
                 
-                foreach (BoatAttachmentPoint attachmentPoint in boatPart.AttachmentPoints)
-                {
-                    BoatAttachmentPoints.Add(attachmentPoint);
-                }
+                BoatManager.Instance.RegisterBoatPartServer(no, boatPart);
             }
         }
         

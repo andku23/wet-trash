@@ -3792,7 +3792,7 @@ MonoBehaviour:
   WaterCheckTop: {fileID: 461986369682977334}
   GroundLayers:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 2049
   WaterLayers:
     serializedVersion: 2
     m_Bits: 16
@@ -3836,6 +3836,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   buildingLayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
+  attachmentLayerMask:
     serializedVersion: 2
     m_Bits: 1024
   grabbedLootConnectPoint: {fileID: 7036386786036852469}

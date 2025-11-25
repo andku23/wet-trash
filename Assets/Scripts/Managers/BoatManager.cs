@@ -14,15 +14,22 @@ public class BoatManager : NetworkBehaviour
     {
         Instance = this;
     }
-    
-    //private void Calculate
+
+    public void RegisterBoatPartServer(NetworkObject boatPartNO, BoatPart boatPart)
+    {
+        Boat.BoatParts.Add(boatPartNO.NetworkObjectId, boatPart);
+        foreach (BoatAttachmentPoint attachmentPoint in boatPart.AttachmentPoints)
+        {
+            Boat.BoatAttachmentPoints.Add(attachmentPoint);
+        }
+    }
 
     public void SpawnBoatServer()
     {
         GameObject boat = Instantiate(_baseBoatPrefab);
         NetworkObject networkObject = boat.GetComponent<NetworkObject>();
         networkObject.Spawn();
-        boat.transform.position = new Vector3(0.98f, 1.0f, 5.92f);
+        boat.transform.position = new Vector3(0.98f, 0.0f, 5.92f);
     }
     
     public void RequestConnectBoatPart(ulong attachedToNetworkID, int attachedToPoint, BoatPartID attachedPart, int attachedPartPoint)
@@ -36,24 +43,17 @@ public class BoatManager : NetworkBehaviour
         Transform attachToPoint = Boat.BoatParts[attachedToNetworkID].ConnectionPoints[attachedToPoint];
         BoatPartData partData = BoatPartsList.boatParts.Find(partData => partData.id == attachedPart);
         GameObject go = Instantiate(partData.prefab);
-        BoatPart boatPart = go.GetComponent<BoatPart>();
         go.transform.position = attachToPoint.position;
         go.transform.rotation = attachToPoint.rotation;
         NetworkObject no = go.GetComponent<NetworkObject>();
+        BoatPart boatPart = go.GetComponent<BoatPart>();
         no.Spawn();
         no.transform.parent = Boat.transform;
         Vector3 outwardDirection = Boat.BoatParts[attachedToNetworkID].transform.position - attachToPoint.position;
         outwardDirection.Normalize();
         float attachPointDistance = Vector3.Distance(go.transform.position, boatPart.ConnectionPoints[attachedPartPoint].position);
         go.transform.position -= outwardDirection * attachPointDistance;
-        
-        Boat.BoatParts.Add(no.NetworkObjectId, boatPart);
-        foreach (BoatAttachmentPoint attachmentPoint in boatPart.AttachmentPoints)
-        {
-            Boat.BoatAttachmentPoints.Add(attachmentPoint);
-        }
-        
-        // TODO combine the duplicate logic here
+        RegisterBoatPartServer(no, boatPart);
     }
     
     public void PlaceAttachmentPoint(int shopItemIndex, BoatAttachmentPoint boatAttachmentPoint, float rotationPlaceOffset)

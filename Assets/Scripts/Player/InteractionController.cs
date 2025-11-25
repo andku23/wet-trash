@@ -13,6 +13,7 @@ public class InteractionController : NetworkBehaviour
     
     [SerializeField] private LayerMask interactableLayerMask;
     [SerializeField] private LayerMask buildingLayerMask;
+    [SerializeField] private LayerMask attachmentLayerMask;
     [SerializeField] private Transform grabbedLootConnectPoint;
     [SerializeField] private NetworkObject networkObject;
     [SerializeField] private PlayerController playerController;
@@ -32,7 +33,8 @@ public class InteractionController : NetworkBehaviour
         BoatBuilding = 1,
         PersistentInteractable = 2,
         HoldingInventoryObject = 3,
-        HoldingTemporaryObject = 4
+        HoldingTemporaryObject = 4,
+        BoatAttachment = 5,
     }
     
 #if ENABLE_INPUT_SYSTEM 
@@ -47,6 +49,7 @@ public class InteractionController : NetworkBehaviour
     private int _shopItemIndex;
     private TagHandle _interactableTag;
     private TagHandle _buildingTag;
+    private TagHandle _attachmentTag;
     private ClientStateMachine _stateMachine;
     private InteractableTypes _currentInteractableTypes;
     
@@ -59,12 +62,16 @@ public class InteractionController : NetworkBehaviour
         _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
         
         _interactableTag = TagHandle.GetExistingTag("Untagged");
-        _buildingTag = TagHandle.GetExistingTag("AttachmentPoint");
+        _buildingTag = TagHandle.GetExistingTag("Boat");
+        _attachmentTag = TagHandle.GetExistingTag("AttachmentPoint");
         
         _stateMachine = new ClientStateMachine();
         
         _stateMachine.AddState((int)InteractionStates.Standard, 
             new BaseState(null, OnStandardUpdate, null));
+        
+        _stateMachine.AddState((int)InteractionStates.BoatAttachment, 
+            new BaseState(null, OnBoatAttachmentUpdate, null));
         
         _stateMachine.AddState((int)InteractionStates.BoatBuilding, 
             new BaseState(null, OnBoatBuildingUpdate, null));
@@ -208,9 +215,9 @@ public class InteractionController : NetworkBehaviour
         }
     }
     
-    public void ChangeToBuildMode(int shopItemIndex)
+    public void ChangeToAttachmentMode(int shopItemIndex)
     {
-        _stateMachine.ChangeState((int)InteractionStates.BoatBuilding);
+        _stateMachine.ChangeState((int)InteractionStates.BoatAttachment);
         _shopItemIndex = shopItemIndex;
         placingBoatAttachment = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab).GetComponent<BoatAttachment>();
         placingBoatAttachment.gameObject.SetActive(false);
@@ -441,11 +448,66 @@ public class InteractionController : NetworkBehaviour
         }
     }
 
+    //TODO make boat building placement work
+    // Also fix bug where placing crane puts you in a broken state
+    // might be when you try to switch items with the crane active
     private void OnBoatBuildingUpdate()
     {
         if (!IsOwner) return;
-
         Collider closestCollider = GetClosestCollider(buildingLayerMask, _buildingTag);
+
+        if (closestCollider != null)
+        {
+            GameObject parentHitObject = closestCollider.gameObject;
+            ColliderReference colliderReference = closestCollider.GetComponent<ColliderReference>();
+            // Expects collider reference
+            if (colliderReference != null)
+            {
+                if(colliderReference.reference != null)
+                    parentHitObject = closestCollider.GetComponent<ColliderReference>().reference;
+            }
+            
+            BoatAttachmentPoint boatAttachmentPoint = parentHitObject.GetComponentInChildren<BoatAttachmentPoint>();
+            if (boatAttachmentPoint != null && boatAttachmentPoint.heldItem.Value == 0)
+            {
+                placingBoatAttachment.transform.position = boatAttachmentPoint.transform.position;
+                placingBoatAttachment.transform.rotation = boatAttachmentPoint.transform.rotation;
+                placingBoatAttachment.transform.Rotate(boatAttachmentPoint.transform.up, rotationPlaceOffset);
+                placingBoatAttachment.gameObject.SetActive(true);
+                
+                if (_input.interact)
+                {
+                    // TODO dont allow you to place if theres something already attached
+                    Destroy(placingBoatAttachment.gameObject);
+                    BoatManager.Instance.PlaceAttachmentPoint(_shopItemIndex, boatAttachmentPoint, rotationPlaceOffset);
+                    placingBoatAttachment = null;
+                    _stateMachine.ChangeState((int)InteractionStates.Standard);
+                    _input.interact = false;
+                }
+
+                if (_input.respawn)
+                {
+                    rotationPlaceOffset += 90;
+                    rotationPlaceOffset %= 360;
+                    _input.respawn = false;
+                }
+            }
+            else
+            {
+                placingBoatAttachment.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            placingBoatAttachment.gameObject.SetActive(false);
+        }
+    }
+
+    private void OnBoatAttachmentUpdate()
+    {
+        if (!IsOwner) return;
+
+        Collider closestCollider = GetClosestCollider(attachmentLayerMask, _attachmentTag);
 
         if (closestCollider != null)
         {

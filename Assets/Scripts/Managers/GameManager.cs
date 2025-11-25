@@ -112,7 +112,7 @@ public class GameManager : NetworkBehaviour
 
     public void ChangeToBuildMode(int shopItemIndex)
     {
-        InteractionController.Instance.ChangeToBuildMode(shopItemIndex);
+        InteractionController.Instance.ChangeToAttachmentMode(shopItemIndex);
     }
 
     #region Player Death

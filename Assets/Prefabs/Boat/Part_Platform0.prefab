@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 5713737646053804752}
   - component: {fileID: 1218906135095286583}
   - component: {fileID: 7998673638969344821}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Part_Platform0
   m_TagString: Boat
   m_Icon: {fileID: 0}
@@ -256,7 +256,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 141538245
+  GlobalObjectIdHash: 4128615511
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1

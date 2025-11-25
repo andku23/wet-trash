@@ -12,7 +12,7 @@ public class ShopManager : NetworkBehaviour
     
     public List<int> boughtItems = new List<int>();
 
-    public Dictionary<ShopItemType, string> ShopItemTypeLookup = new Dictionary<ShopItemType, string>();
+    public Dictionary<ShopItemType, ShopItemTypeData> ShopItemTypeLookup = new Dictionary<ShopItemType, ShopItemTypeData>();
     
     public override void OnNetworkSpawn()
     {
@@ -27,11 +27,11 @@ public class ShopManager : NetworkBehaviour
 
     private void InitializeLookupDictionaries()
     {
-        for (int i = 0; i < ShopManager.Instance.shopList.itemsTypesToNames.Length; i++)
+        for (int i = 0; i < shopList.itemsTypesToNames.Length; i++)
         {
-            ShopItemTypeToName pair = ShopManager.Instance.shopList.itemsTypesToNames[i];
+            ShopItemTypeData pair = shopList.itemsTypesToNames[i];
             //Debug.Log(pair.name+ " " + pair.type);
-            ShopItemTypeLookup.Add(pair.type, pair.name);
+            ShopItemTypeLookup.Add(pair.type, pair);
         }
     }
 

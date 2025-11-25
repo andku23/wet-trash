@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 public class ShopItems : ScriptableObject
 {
     public ShopItem[] items;
-    public ShopItemTypeToName[] itemsTypesToNames;
+    public ShopItemTypeData[] itemsTypesToNames;
 }
 
 [System.Serializable]
@@ -21,10 +21,11 @@ public class ShopItem
 }
 
 [System.Serializable]
-public class ShopItemTypeToName
+public class ShopItemTypeData
 {
     public ShopItemType type;
     public string name;
+    public Color color;
 }
 
 public enum ShopItemType

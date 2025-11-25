@@ -161,9 +161,11 @@ public class UI : NetworkBehaviour
             int shopItemIndex = boughtItems[i];
             UIShopItem uiShopItem = Instantiate(sharedInventoryPrefab, sharedInventoryContent).GetComponent<UIShopItem>();
             ShopItem shopItem = ShopManager.Instance.shopList.items[shopItemIndex];
-            uiShopItem.name.text = shopItem.name;
+            ShopItemTypeData shopItemData = ShopManager.Instance.ShopItemTypeLookup[shopItem.type];
+            uiShopItem.background.color = shopItemData.color;
+            uiShopItem.name.text = shopItemData.name;
             //Debug.Log(shopItem.type);
-            uiShopItem.price.text = ShopManager.Instance.ShopItemTypeLookup[shopItem.type];
+            uiShopItem.price.text = "$" + shopItem.price.ToString();
             uiShopItem.button.onClick.AddListener(() =>
             {
                 OnSharedInventoryButtonClick(shopItemIndex, boughtItemIndex);
@@ -200,9 +202,12 @@ public class UI : NetworkBehaviour
         for (int i = 0; i < randomizedShopList.Length; i++)
         {
             int index = randomizedShopList[i];
+            ShopItem shopItem = ShopManager.Instance.shopList.items[index];
+            ShopItemTypeData shopItemData = ShopManager.Instance.ShopItemTypeLookup[shopItem.type];
             UIShopItem uiShopItem = Instantiate(shopItemPrefab, shopContent).GetComponent<UIShopItem>();
-            uiShopItem.name.text = ShopManager.Instance.shopList.items[index].name;
-            uiShopItem.price.text = "$"+ShopManager.Instance.shopList.items[index].price.ToString();
+            uiShopItem.name.text = shopItem.name;
+            uiShopItem.background.color = shopItemData.color;
+            uiShopItem.price.text = "$"+shopItem.price.ToString();
             uiShopItem.button.onClick.AddListener(() =>
             {
                 OnShopButtonClick(index);

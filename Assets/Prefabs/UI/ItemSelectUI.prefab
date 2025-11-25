@@ -308,6 +308,7 @@ MonoBehaviour:
   name: {fileID: 8543602988598708687}
   price: {fileID: 3859633349902609554}
   button: {fileID: 3882765653280764196}
+  background: {fileID: 7423994312540002980}
 --- !u!114 &-5640854966632529026
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -31,6 +31,17 @@ public class BoatManager : NetworkBehaviour
         networkObject.Spawn();
         boat.transform.position = new Vector3(0.98f, 0.0f, 5.92f);
     }
+
+    public void PlaceAtConnectionPoint(GameObject boatPart, Transform boatPartPoint, 
+        GameObject addedPart, Transform addedPartPoint)
+    {
+        addedPart.transform.position = boatPartPoint.position;
+        addedPart.transform.rotation = boatPartPoint.rotation;
+        Vector3 outwardDirection = boatPart.transform.position - boatPartPoint.position;
+        outwardDirection.Normalize();
+        float attachPointDistance = Vector3.Distance(addedPart.transform.position, addedPartPoint.position);
+        addedPart.transform.position -= outwardDirection * attachPointDistance;
+    }
     
     public void RequestConnectBoatPart(ulong attachedToNetworkID, int attachedToPoint, BoatPartID attachedPart, int attachedPartPoint)
     {
@@ -43,16 +54,15 @@ public class BoatManager : NetworkBehaviour
         Transform attachToPoint = Boat.BoatParts[attachedToNetworkID].ConnectionPoints[attachedToPoint];
         BoatPartData partData = BoatPartsList.boatParts.Find(partData => partData.id == attachedPart);
         GameObject go = Instantiate(partData.prefab);
-        go.transform.position = attachToPoint.position;
-        go.transform.rotation = attachToPoint.rotation;
         NetworkObject no = go.GetComponent<NetworkObject>();
         BoatPart boatPart = go.GetComponent<BoatPart>();
         no.Spawn();
         no.transform.parent = Boat.transform;
-        Vector3 outwardDirection = Boat.BoatParts[attachedToNetworkID].transform.position - attachToPoint.position;
-        outwardDirection.Normalize();
-        float attachPointDistance = Vector3.Distance(go.transform.position, boatPart.ConnectionPoints[attachedPartPoint].position);
-        go.transform.position -= outwardDirection * attachPointDistance;
+        
+        PlaceAtConnectionPoint(Boat.BoatParts[attachedToNetworkID].gameObject, 
+            Boat.BoatParts[attachedToNetworkID].ConnectionPoints[attachedToPoint],
+            go, boatPart.ConnectionPoints[attachedPartPoint]);
+       
         RegisterBoatPartServer(no, boatPart);
     }
     

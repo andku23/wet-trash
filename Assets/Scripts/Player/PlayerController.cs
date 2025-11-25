@@ -302,8 +302,12 @@ public class PlayerController : NetworkBehaviour
         playerState.VehicleParented = (boatColliderInRange != null);
         if (playerState.VehicleParented)
         {
-            GameObject parent = boatColliderInRange.GetComponent<ColliderReference>().reference;
-            NetworkHandleParenting.RequestParentTo(NetworkManager.Singleton.LocalClientId, parent.GetComponent<NetworkTransform>().NetworkObjectId);
+            ColliderReference colliderReference = boatColliderInRange.GetComponent<ColliderReference>();
+            if (colliderReference != null && colliderReference.reference != null)
+            {
+                GameObject parent = colliderReference.reference;
+                NetworkHandleParenting.RequestParentTo(NetworkManager.Singleton.LocalClientId, parent.GetComponent<NetworkTransform>().NetworkObjectId);
+            }
         }
         else
         {

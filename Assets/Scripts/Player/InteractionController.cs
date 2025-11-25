@@ -231,6 +231,11 @@ public class InteractionController : NetworkBehaviour
         _shopItemIndex = shopItemIndex;
         placingBoatPart = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab).GetComponent<BoatPart>();
         placingBoatPart.gameObject.SetActive(false);
+        Collider[] allColliders = placingBoatPart.gameObject.GetComponentsInChildren<Collider>();
+        for (int i = 0; i < allColliders.Length; i++)
+        {
+            allColliders[i].enabled = false;
+        }
         rotationPlaceOffset = 0.0f;
     }
 
@@ -497,8 +502,9 @@ public class InteractionController : NetworkBehaviour
                     if (closestConnectionPoint >= 0)
                     {
                         placingBoatPart.gameObject.SetActive(true);
-                        placingBoatPart.transform.position = boatPart.ConnectionPoints[closestConnectionPoint].position;
-                        placingBoatPart.transform.rotation = boatPart.ConnectionPoints[closestConnectionPoint].rotation;
+                        BoatManager.Instance.PlaceAtConnectionPoint(boatPartNO.gameObject, 
+                            boatPart.ConnectionPoints[closestConnectionPoint],
+                            placingBoatPart.gameObject, placingBoatPart.ConnectionPoints[0]);
                         
                         if (_input.interact)
                         {

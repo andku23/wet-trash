@@ -32,5 +32,6 @@ public enum ShopItemType
     Default = 0,
     PlayerPowerUp = 1,
     InventoryItem = 2,
-    BoatPart = 3
+    BoatPart = 3,
+    BoatAttachment = 4,
 }

@@ -46,6 +46,7 @@ public class InteractionController : NetworkBehaviour
     private IInteractable persistentInteractable;
     private IHoldable heldObject;
     private BoatAttachment placingBoatAttachment;
+    private BoatPart placingBoatPart;
     private int _shopItemIndex;
     private TagHandle _interactableTag;
     private TagHandle _buildingTag;
@@ -224,6 +225,15 @@ public class InteractionController : NetworkBehaviour
         rotationPlaceOffset = 0.0f;
     }
 
+    public void ChangeToBuildMode(int shopItemIndex)
+    {
+        _stateMachine.ChangeState((int)InteractionStates.BoatBuilding);
+        _shopItemIndex = shopItemIndex;
+        placingBoatPart = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab).GetComponent<BoatPart>();
+        placingBoatPart.gameObject.SetActive(false);
+        rotationPlaceOffset = 0.0f;
+    }
+
     public void DestroyHeldObject()
     {
         Destroy(heldObject.gameObject);
@@ -317,9 +327,10 @@ public class InteractionController : NetworkBehaviour
         }
     }
 
-    private Collider GetClosestCollider(LayerMask layerMask, TagHandle tag)
+    private Collider GetClosestCollider(LayerMask layerMask, TagHandle tag, out Vector3 hitPosition)
     {
         Collider[] hitColliders = Array.Empty<Collider>();
+        hitPosition = Vector3.zero;
         if (playerController.ControlMode == PlayerController.ControlModeEnum.ThirdPerson)
         {
             hitColliders = Physics.OverlapSphere(transform.position, 2.0f, buildingLayerMask);
@@ -331,6 +342,7 @@ public class InteractionController : NetworkBehaviour
                 out RaycastHit raycastHit,
                 playerState.MAX_INTERACTION_DISTANCE,
                 layerMask);
+            hitPosition = raycastHit.point;
             
             if (raycastHit.collider != null)
             {
@@ -361,6 +373,11 @@ public class InteractionController : NetworkBehaviour
                 minDistance = distance;
                 closestCollider = collider;
             }
+        }
+
+        if (playerController.ControlMode == PlayerController.ControlModeEnum.ThirdPerson)
+        {
+            hitPosition = closestCollider.transform.position;
         }
         
         return closestCollider;
@@ -411,7 +428,7 @@ public class InteractionController : NetworkBehaviour
     #region Interaction States
     private void OnStandardUpdate()
     {
-        Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag);
+        Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag, out Vector3 hitPosition);
         UpdateCurrentInteractable(closestCollider);
         CheckItemScroll();
 
@@ -454,52 +471,52 @@ public class InteractionController : NetworkBehaviour
     private void OnBoatBuildingUpdate()
     {
         if (!IsOwner) return;
-        Collider closestCollider = GetClosestCollider(buildingLayerMask, _buildingTag);
-
+        Collider closestCollider = GetClosestCollider(buildingLayerMask, _buildingTag, out Vector3 hitPosition);
+        int closestConnectionPoint = -1;
+        
         if (closestCollider != null)
         {
-            GameObject parentHitObject = closestCollider.gameObject;
-            ColliderReference colliderReference = closestCollider.GetComponent<ColliderReference>();
-            // Expects collider reference
-            if (colliderReference != null)
-            {
-                if(colliderReference.reference != null)
-                    parentHitObject = closestCollider.GetComponent<ColliderReference>().reference;
-            }
+            GameObject hitObject = closestCollider.gameObject;
             
-            BoatAttachmentPoint boatAttachmentPoint = parentHitObject.GetComponentInChildren<BoatAttachmentPoint>();
-            if (boatAttachmentPoint != null && boatAttachmentPoint.heldItem.Value == 0)
+            NetworkObject boatPartNO = hitObject.GetComponent<NetworkObject>();
+            if (boatPartNO != null)
             {
-                placingBoatAttachment.transform.position = boatAttachmentPoint.transform.position;
-                placingBoatAttachment.transform.rotation = boatAttachmentPoint.transform.rotation;
-                placingBoatAttachment.transform.Rotate(boatAttachmentPoint.transform.up, rotationPlaceOffset);
-                placingBoatAttachment.gameObject.SetActive(true);
-                
-                if (_input.interact)
-                {
-                    // TODO dont allow you to place if theres something already attached
-                    Destroy(placingBoatAttachment.gameObject);
-                    BoatManager.Instance.PlaceAttachmentPoint(_shopItemIndex, boatAttachmentPoint, rotationPlaceOffset);
-                    placingBoatAttachment = null;
-                    _stateMachine.ChangeState((int)InteractionStates.Standard);
-                    _input.interact = false;
+                BoatPart boatPart = boatPartNO.GetComponent<BoatPart>();
+                if (boatPart != null)
+                { 
+                    float shortestDistance = float.MaxValue;
+                    for (int i = 0; i < boatPart.ConnectionPoints.Count; i++)
+                    {
+                        float distanceCheck = Vector3.Distance(hitPosition, boatPart.ConnectionPoints[i].position);
+                        if (distanceCheck < shortestDistance)
+                        {
+                            shortestDistance = distanceCheck;
+                            closestConnectionPoint = i;
+                        }
+                    }
+                    if (closestConnectionPoint >= 0)
+                    {
+                        placingBoatPart.gameObject.SetActive(true);
+                        placingBoatPart.transform.position = boatPart.ConnectionPoints[closestConnectionPoint].position;
+                        placingBoatPart.transform.rotation = boatPart.ConnectionPoints[closestConnectionPoint].rotation;
+                        
+                        if (_input.interact)
+                        {
+                            Destroy(placingBoatPart.gameObject);
+                            BoatManager.Instance.RequestConnectBoatPart(boatPartNO.NetworkObjectId, 
+                                closestConnectionPoint, BoatPartID.BasicPlatform, 0);
+                            placingBoatPart = null;
+                            _stateMachine.ChangeState((int)InteractionStates.Standard);
+                            _input.interact = false;
+                        }
+                    }
                 }
-
-                if (_input.respawn)
-                {
-                    rotationPlaceOffset += 90;
-                    rotationPlaceOffset %= 360;
-                    _input.respawn = false;
-                }
-            }
-            else
-            {
-                placingBoatAttachment.gameObject.SetActive(false);
             }
         }
-        else
+        
+        if (closestConnectionPoint < 0)
         {
-            placingBoatAttachment.gameObject.SetActive(false);
+            placingBoatPart.gameObject.SetActive(false);
         }
     }
 
@@ -507,7 +524,7 @@ public class InteractionController : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        Collider closestCollider = GetClosestCollider(attachmentLayerMask, _attachmentTag);
+        Collider closestCollider = GetClosestCollider(attachmentLayerMask, _attachmentTag, out Vector3 hitPosition);
 
         if (closestCollider != null)
         {
@@ -558,7 +575,7 @@ public class InteractionController : NetworkBehaviour
 
     private void OnHeldInventoryItemUpdate()
     {
-        Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag);
+        Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag, out Vector3 hitPosition);
         UpdateCurrentInteractable(closestCollider);
         CheckItemScroll();
 
@@ -596,7 +613,7 @@ public class InteractionController : NetworkBehaviour
     
     private void OnHeldTemporaryItemUpdate()
     {
-        Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag);
+        Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag, out Vector3 hitPosition);
         UpdateCurrentInteractable(closestCollider);
         QueryInteractableTypes(lastClosestInteractable);
 

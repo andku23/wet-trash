@@ -17,39 +17,39 @@ MonoBehaviour:
     type: 1
     name: Run Speed +1
     price: 50
-    itemListIndex: 0
+    itemListIndex: -1
     placePrefab: {fileID: 0}
   - id: breath-up
     type: 1
     name: Breath +1
     price: 200
-    itemListIndex: 0
+    itemListIndex: -1
     placePrefab: {fileID: 0}
   - id: swim-speed-up
     type: 1
     name: Swim Speed +1
     price: 400
-    itemListIndex: 0
+    itemListIndex: -1
     placePrefab: {fileID: 0}
   - id: motor-0
-    type: 3
+    type: 4
     name: Motor
     price: 200
-    itemListIndex: 0
+    itemListIndex: -1
     placePrefab: {fileID: 1051254977657525796, guid: 387254b3fd4a84c4ea845103eaee2736,
       type: 3}
   - id: item-crane-0
-    type: 3
+    type: 4
     name: Crane
     price: 150
-    itemListIndex: 0
+    itemListIndex: -1
     placePrefab: {fileID: 8200335070758408453, guid: f24abbea2b1812e4b920a7d2bbc895b8,
       type: 3}
   - id: item-deposit-0
-    type: 3
+    type: 4
     name: Deposit
     price: 150
-    itemListIndex: 0
+    itemListIndex: -1
     placePrefab: {fileID: 4931818492765702189, guid: aaf2773a9c6aa1d4dace314df2c65353,
       type: 3}
   - id: sound-item-0
@@ -64,8 +64,17 @@ MonoBehaviour:
     price: 50
     itemListIndex: 4
     placePrefab: {fileID: 0}
+  - id: boat-part-0
+    type: 3
+    name: Boat Platform 0
+    price: 100
+    itemListIndex: -1
+    placePrefab: {fileID: 3290717213816989408, guid: 0e1b0c1cb17506942891456fd1276594,
+      type: 3}
   itemsTypesToNames:
   - type: 2
     name: Inventory Item
   - type: 3
     name: Boat Part
+  - type: 4
+    name: Boat Attachment

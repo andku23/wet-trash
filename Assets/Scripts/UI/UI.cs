@@ -227,7 +227,13 @@ public class UI : NetworkBehaviour
         ShopManager.Instance.boughtItems.RemoveAt(boughtItemIndex);
         ClearSharedInventoryUI();
         PopulateSharedInventoryUI(ShopManager.Instance.boughtItems);
-        GameManager.Instance.ChangeToBuildMode(shopItemIndex);
+        if (shopItem.type == ShopItemType.BoatAttachment)
+        {
+            GameManager.Instance.ChangeToAttachmentMode(shopItemIndex);
+        } else if (shopItem.type == ShopItemType.BoatPart)
+        {
+            GameManager.Instance.ChangeToBuildMode(shopItemIndex);
+        }
         CloseAllPanels(false);
     }
     

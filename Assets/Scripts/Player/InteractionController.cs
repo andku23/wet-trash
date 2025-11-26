@@ -487,6 +487,7 @@ public class InteractionController : NetworkBehaviour
             GameObject hitObject = closestCollider.gameObject;
             
             NetworkObject boatPartNO = hitObject.GetComponent<NetworkObject>();
+            Debug.Log(boatPartNO.NetworkObjectId);
             if (boatPartNO != null)
             {
                 BoatPart boatPart = boatPartNO.GetComponent<BoatPart>();

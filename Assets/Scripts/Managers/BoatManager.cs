@@ -56,12 +56,14 @@ public class BoatManager : NetworkBehaviour
         GameObject go = Instantiate(partData.prefab);
         NetworkObject no = go.GetComponent<NetworkObject>();
         BoatPart boatPart = go.GetComponent<BoatPart>();
-        no.Spawn();
-        no.transform.parent = Boat.transform;
+        
         
         PlaceAtConnectionPoint(Boat.BoatParts[attachedToNetworkID].gameObject, 
             Boat.BoatParts[attachedToNetworkID].ConnectionPoints[attachedToPoint],
             go, boatPart.ConnectionPoints[attachedPartPoint]);
+        
+        no.Spawn();
+        no.transform.parent = Boat.transform;
        
         RegisterBoatPartServer(no, boatPart);
     }

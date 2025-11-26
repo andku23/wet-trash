@@ -140,7 +140,10 @@ public class NetworkedBoat : NetworkBehaviour
         NetworkClient requestedDrivePlayer = NetworkManager.Singleton.ConnectedClients[playerNetworkObjectId];
         requestedDrivePlayer.PlayerObject.SynchronizeTransform = false;
         requestedDrivePlayer.PlayerObject.GetComponent<PlayerController>().ToggleDriving(true);
-        requestedDrivePlayer.PlayerObject.GetComponent<CopyTransform>().target = _steeringWheel.DriverPosition.gameObject;
+        if (IsServer)
+        {
+            requestedDrivePlayer.PlayerObject.GetComponent<CopyTransform>().target = _steeringWheel.DriverPosition.gameObject;
+        }
     }
     
     [ClientRpc(RequireOwnership = false)]

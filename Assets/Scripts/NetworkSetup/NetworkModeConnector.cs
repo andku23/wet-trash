@@ -51,6 +51,7 @@ public class NetworkModeConnector : MonoBehaviour
         }
         else
         {
+            if (JoinCode.Length != 6) return;
             StartClientAsync();
         }
     }

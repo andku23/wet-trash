@@ -74,13 +74,13 @@ MonoBehaviour:
   itemsTypesToNames:
   - type: 2
     name: Inventory Item
-    color: {r: 0.35251126, g: 0.7075472, b: 0.32373622, a: 0}
+    color: {r: 0.35251126, g: 0.7075472, b: 0.32373622, a: 1}
   - type: 3
     name: Boat Part
-    color: {r: 0.8207547, g: 0.58616334, b: 0.31359026, a: 0}
+    color: {r: 0.8207547, g: 0.58616334, b: 0.31359026, a: 1}
   - type: 4
     name: Boat Attachment
-    color: {r: 0.44010326, g: 0.5342062, b: 0.8113208, a: 0}
+    color: {r: 0.44010326, g: 0.5342062, b: 0.8113208, a: 1}
   - type: 1
     name: Power Up
-    color: {r: 0.754717, g: 0.3765734, b: 0.2741189, a: 0}
+    color: {r: 0.754717, g: 0.3765734, b: 0.2741189, a: 1}

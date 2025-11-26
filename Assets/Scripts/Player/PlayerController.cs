@@ -332,10 +332,12 @@ public class PlayerController : NetworkBehaviour
             playerState.InWaterOnSurface = !Physics.CheckSphere(topSpherePosition, 0.01f, WaterLayers,
                 QueryTriggerInteraction.Collide);
             playerState.Grounded = false;
+            ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Swimming);
         }
         else
         {
             playerState.InWaterOnSurface = false;
+            ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Default);
         }
         
         // update animator if using character

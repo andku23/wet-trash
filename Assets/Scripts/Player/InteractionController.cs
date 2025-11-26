@@ -175,7 +175,7 @@ public class InteractionController : NetworkBehaviour
         
         if (lootIndex != -1)
         {
-            
+            ControlsUI.Instance.SetControlUIState(ControlUIGroupType.HoldingUsable);
             LoadAndAttachHeldObject(lootIndex, heldPlayerID);
             playerController.ToggleCarrying(true);
             if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
@@ -189,6 +189,7 @@ public class InteractionController : NetworkBehaviour
             if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
             {
                 _stateMachine.ChangeState((int)InteractionStates.Standard);
+                ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Default, true);
             }
             playerController.ToggleCarrying(false);
         }
@@ -218,6 +219,7 @@ public class InteractionController : NetworkBehaviour
     
     public void ChangeToAttachmentMode(int shopItemIndex)
     {
+        ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Building);
         _stateMachine.ChangeState((int)InteractionStates.BoatAttachment);
         _shopItemIndex = shopItemIndex;
         placingBoatAttachment = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab).GetComponent<BoatAttachment>();
@@ -228,6 +230,7 @@ public class InteractionController : NetworkBehaviour
     public void ChangeToBuildMode(int shopItemIndex)
     {
         _stateMachine.ChangeState((int)InteractionStates.BoatBuilding);
+        ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Building);
         _shopItemIndex = shopItemIndex;
         placingBoatPart = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab).GetComponent<BoatPart>();
         placingBoatPart.gameObject.SetActive(false);
@@ -513,6 +516,7 @@ public class InteractionController : NetworkBehaviour
                                 closestConnectionPoint, BoatPartID.BasicPlatform, 0);
                             placingBoatPart = null;
                             _stateMachine.ChangeState((int)InteractionStates.Standard);
+                            ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Default, true);
                             _input.interact = false;
                         }
                     }
@@ -558,6 +562,7 @@ public class InteractionController : NetworkBehaviour
                     BoatManager.Instance.PlaceAttachmentPoint(_shopItemIndex, boatAttachmentPoint, rotationPlaceOffset);
                     placingBoatAttachment = null;
                     _stateMachine.ChangeState((int)InteractionStates.Standard);
+                    ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Default, true);
                     _input.interact = false;
                 }
 
@@ -656,6 +661,7 @@ public class InteractionController : NetworkBehaviour
                 persistentInteractable.Interact(NetworkManager.Singleton.LocalClientId);
                 persistentInteractable = null;
                 _stateMachine.ChangeState((int)InteractionStates.Standard);
+                ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Default, true);
                 DisableCurrentInteractable();
             }
         }

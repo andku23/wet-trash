@@ -60,6 +60,9 @@ public class ShopManager : NetworkBehaviour
             case ShopItemType.BoatPart:
                 AddToStorage(shopItem, index);
                 break;
+            case ShopItemType.BoatAttachment:
+                AddToStorage(shopItem, index);
+                break;
         }
     }
 

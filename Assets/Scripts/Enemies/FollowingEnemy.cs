@@ -2,27 +2,19 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public class Enemy : NetworkBehaviour
+public class FollowingEnemy : BaseEnemy
 {
-    private Vector3 nextPosition;
-    private Vector3 lastPosition;
-    private Vector3 initialPosition;
-    private Quaternion nextRotation;
     private NetworkClient _closestPlayer;
     private PlayerState _closestPlayerState;
-
     private float startTime;
-    private float travelTime = 2.0f;
-    private float minimumFollowDistance = 10.0f;
-    private float minimumAttackDistance = 1.0f;
-    private float attackCooldownTime = 1.0f;
-    private float swimSpeed = 3.5f;
-    private ClientStateMachine _serverStateMachine;
-    private NetworkVariable<int> _networkState = new NetworkVariable<int>(0);
-    private Collider _currentWaterBody;
     
-    [SerializeField] private Animator _animator;
-    [SerializeField] private PlayerAudioSource _audioSource;
+    [SerializeField] private float travelTime = 2.0f;
+    [SerializeField] private float minimumFollowDistance = 10.0f;
+    [SerializeField] private float minimumAttackDistance = 1.0f;
+    [SerializeField] private float attackCooldownTime = 1.0f;
+    [SerializeField] private float swimSpeed = 3.5f;
+    
+    private Collider _currentWaterBody;
     
     enum ServerStates
     {
@@ -31,45 +23,34 @@ public class Enemy : NetworkBehaviour
         AttackingPlayer = 2
     };
 
-    public override void OnNetworkSpawn()
+    public override void InitializeServerValues()
     {
-        _serverStateMachine = new ClientStateMachine();
-        
-        BaseState idle = new BaseState(Idle_OnEnter, Idle_Update, null);
-        _serverStateMachine.AddState((int)ServerStates.Idle, idle);
-        
-        BaseState followingPlayer = new BaseState(FollowingPlayer_OnEnter, FollowingPlayer_Update, null);
-        _serverStateMachine.AddState((int)ServerStates.FollowingPlayer, followingPlayer);
-        
-        BaseState attackingPlayer = new BaseState(AttackingPlayer_OnEnter, AttackingPlayer_Update, null);
-        _serverStateMachine.AddState((int)ServerStates.AttackingPlayer, attackingPlayer);
-
-        ChangeState(ServerStates.Idle);
-
-        if (IsServer)
+        base.InitializeServerValues();
+        Collider[] colliders = Physics.OverlapSphere(transform.position, 0.5f);
+        for (int i = 0; i < colliders.Length; i++)
         {
-            initialPosition = transform.position;
-            Collider[] colliders = Physics.OverlapSphere(transform.position, 0.5f);
-            for (int i = 0; i < colliders.Length; i++)
+            if (colliders[i].CompareTag("Water"))
             {
-                if (colliders[i].CompareTag("Water"))
-                {
-                    _currentWaterBody = colliders[i];
-                }
+                _currentWaterBody = colliders[i];
             }
         }
     }
+
+    public override void InitializeStateMachine()
+    {
+        base.InitializeStateMachine();
+        
+        BaseState idle = new BaseState(Idle_OnEnter, Idle_Update, null);
+        _stateMachine.AddState((int)ServerStates.Idle, idle);
+        
+        BaseState followingPlayer = new BaseState(FollowingPlayer_OnEnter, FollowingPlayer_Update, null);
+        _stateMachine.AddState((int)ServerStates.FollowingPlayer, followingPlayer);
+        
+        BaseState attackingPlayer = new BaseState(AttackingPlayer_OnEnter, AttackingPlayer_Update, null);
+        _stateMachine.AddState((int)ServerStates.AttackingPlayer, attackingPlayer);
+    }
     
     #region States
-    
-    private void ChangeState(ServerStates newState)
-    {
-        _serverStateMachine.ChangeState((int)newState);
-        if (IsServer)
-        {
-            _networkState.Value = (int)newState;
-        }
-    }
 
     private void Idle_OnEnter()
     {
@@ -99,7 +80,7 @@ public class Enemy : NetworkBehaviour
             _closestPlayerState.Health.Value > 0 &&
             _currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
         {
-            ChangeState(ServerStates.FollowingPlayer);
+            ChangeState_ServerRpc((int)ServerStates.FollowingPlayer);
         }
         else if (Vector3.Distance(gameObject.transform.position, nextPosition) <= 0.1f)
         {
@@ -130,23 +111,23 @@ public class Enemy : NetworkBehaviour
 
         if (_closestPlayer == null)
         {
-            ChangeState(ServerStates.Idle);
+            ChangeState_ServerRpc((int)ServerStates.Idle);
         }
         else if (!_currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
         {
-            ChangeState(ServerStates.Idle);
+            ChangeState_ServerRpc((int)ServerStates.Idle);
         }
         else if (_closestPlayerState.Health.Value <= 0)
         {
-            ChangeState(ServerStates.Idle);
+            ChangeState_ServerRpc((int)ServerStates.Idle);
         }
         else if (distanceToPlayer < minimumAttackDistance)
         {
-            ChangeState(ServerStates.AttackingPlayer);
+            ChangeState_ServerRpc((int)ServerStates.AttackingPlayer);
         }
         else if (distanceToPlayer > minimumFollowDistance)
         {
-            ChangeState(ServerStates.Idle);
+            ChangeState_ServerRpc((int)ServerStates.Idle);
         }
         else
         {
@@ -171,15 +152,15 @@ public class Enemy : NetworkBehaviour
 
         if (_closestPlayer == null)
         {
-            ChangeState(ServerStates.Idle);
+            ChangeState_ServerRpc((int)ServerStates.Idle);
         }
         else if (_closestPlayerState.Health.Value <= 0)
         {
-            ChangeState(ServerStates.Idle);
+            ChangeState_ServerRpc((int)ServerStates.Idle);
         }
         else if (distanceToPlayer > minimumAttackDistance)
         {
-            ChangeState(ServerStates.FollowingPlayer);
+            ChangeState_ServerRpc((int)ServerStates.FollowingPlayer);
         }
         else if (Time.time - _lastAttackTime > attackCooldownTime)
         {
@@ -213,10 +194,4 @@ public class Enemy : NetworkBehaviour
     }
     
     #endregion
-    
-    private void Update()
-    {
-        if(_serverStateMachine != null)
-            _serverStateMachine.Update();
-    }
 }

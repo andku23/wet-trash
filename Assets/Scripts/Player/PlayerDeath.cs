@@ -38,6 +38,12 @@ public class PlayerDeath : NetworkBehaviour
         }
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    public void DoDamage_ServerRpc(float damage)
+    {
+        playerState.Health.Value -= damage;
+    }
+
     private void Update()
     {
         if (!IsOwner) return;

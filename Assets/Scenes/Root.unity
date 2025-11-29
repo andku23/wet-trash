@@ -2946,6 +2946,7 @@ MonoBehaviour:
   - {fileID: 6761049422850096718, guid: 282d08b761b871d4f8d2de506e6a8eab, type: 3}
   enemyPrefabs:
   - {fileID: 4819457247987509043, guid: 7500bbb7360b2b9429f36a861a60d432, type: 3}
+  - {fileID: 8443838413313330062, guid: 5c8e1d25e38efe24ca7805711a2daa23, type: 3}
   lootGroupPrefabs:
   - {fileID: 7466929072936789752, guid: 7d7d61c3e1cf8a049be03f92b7cb46f1, type: 3}
   NUM_OF_HOLES: 4

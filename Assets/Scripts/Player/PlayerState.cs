@@ -50,7 +50,6 @@ public class PlayerState : NetworkBehaviour
     public float MAX_INTERACTION_DISTANCE = 5.0f;
     
     
-    
     [Header("Dynamic Continuous Values")]
     
     [Header("Player Grounded")]

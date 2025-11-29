@@ -26,14 +26,7 @@ public class FollowingEnemy : BaseEnemy
     public override void InitializeServerValues()
     {
         base.InitializeServerValues();
-        Collider[] colliders = Physics.OverlapSphere(transform.position, 0.5f);
-        for (int i = 0; i < colliders.Length; i++)
-        {
-            if (colliders[i].CompareTag("Water"))
-            {
-                _currentWaterBody = colliders[i];
-            }
-        }
+        _currentWaterBody = base.GetCurrentWaterBody();
     }
 
     public override void InitializeStateMachine()
@@ -62,22 +55,12 @@ public class FollowingEnemy : BaseEnemy
     private void Idle_Update()
     {
         if (!IsServer) return;
-        var connectedClients = NetworkManager.Singleton.ConnectedClients;
-        _closestPlayer = null;
-        float closestDistance = float.MaxValue;
-        foreach (var client in connectedClients)
-        {
-            float currentDistance = Vector3.Distance(client.Value.PlayerObject.transform.position, transform.position);
-            if (currentDistance < closestDistance)
-            {
-                closestDistance = currentDistance;
-                _closestPlayer = client.Value;
-                _closestPlayerState = client.Value.PlayerObject.GetComponent<PlayerState>();
-            }
-        }
+        SetClosestPlayer(out var closestPlayer, out var closestDistance);
+        _closestPlayer = closestPlayer;
+        _closestPlayerState = _closestPlayer.PlayerObject.GetComponent<PlayerState>();
 
         if (_closestPlayer != null && closestDistance < minimumFollowDistance && 
-            _closestPlayerState.Health.Value > 0 &&
+            _closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&
             _currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
         {
             ChangeState_ServerRpc((int)ServerStates.FollowingPlayer);
@@ -113,7 +96,7 @@ public class FollowingEnemy : BaseEnemy
         {
             ChangeState_ServerRpc((int)ServerStates.Idle);
         }
-        else if (!_currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
+        else if (_currentWaterBody != null && !_currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
         {
             ChangeState_ServerRpc((int)ServerStates.Idle);
         }

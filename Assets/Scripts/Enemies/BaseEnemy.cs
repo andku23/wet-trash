@@ -55,4 +55,39 @@ public abstract class BaseEnemy : NetworkBehaviour
         if(_stateMachine != null)
             _stateMachine.Update();
     }
+    
+    #region Utility Functions
+
+    protected Collider GetCurrentWaterBody()
+    {
+        Collider[] colliders = Physics.OverlapSphere(transform.position, 0.1f);
+        Collider collider = null;
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            if (colliders[i].CompareTag("Water"))
+            {
+                collider = colliders[i];
+            }
+        }
+
+        return collider;
+    }
+
+    protected void SetClosestPlayer(out NetworkClient closestPlayer, out float closestDistance)
+    {
+        var connectedClients = NetworkManager.Singleton.ConnectedClients;
+        closestDistance = float.MaxValue;
+        closestPlayer = null;
+        foreach (var client in connectedClients)
+        {
+            float currentDistance = Vector3.Distance(client.Value.PlayerObject.transform.position, transform.position);
+            if (currentDistance < closestDistance)
+            {
+                closestDistance = currentDistance;
+                closestPlayer = client.Value;
+            }
+        }
+    }
+
+    #endregion
 }

@@ -3,7 +3,166 @@ using UnityEngine;
 
 public class ChargingEnemy : BaseEnemy
 {
+    [SerializeField] private Rigidbody _rigidbody;
+    
     private NetworkClient _closestPlayer;
     private PlayerState _closestPlayerState;
-       
+    private Collider _currentWaterBody;
+    private float startTime;
+    private bool isChargingUp = false;
+    private bool isDoingAttack = false;
+    private bool hasDoneDamage = false;
+
+    [SerializeField] private float AGRO_RANGE = 5f;
+    [SerializeField] private float IDLE_SPEED = 2.0f;
+    [SerializeField] private float ATTACK_COOLDOWN_TIME = 1.0f;
+    [SerializeField] private float SWIM_SPEED = 3.5f;
+    [SerializeField] private float CHARGE_TIME = 2.0f;
+    [SerializeField] private float CHARGE_FORCE = 1.0f;
+    [SerializeField] private float COLLISION_RADIUS = 0.5f;
+    [SerializeField] private float DAMAGE = 2f;
+    
+    enum ServerStates
+    {
+        Idle = 0,
+        AttackingPlayer = 1
+    };
+
+    public override void InitializeServerValues()
+    {
+        base.InitializeServerValues();
+        _currentWaterBody = base.GetCurrentWaterBody();
+    }
+
+    public override void InitializeStateMachine()
+    {
+        base.InitializeStateMachine();
+        
+        BaseState idle = new BaseState(Idle_OnEnter, Idle_Update, null);
+        _stateMachine.AddState((int)ServerStates.Idle, idle);
+        
+        BaseState attackingPlayer = new BaseState(AttackingPlayer_OnEnter, AttackingPlayer_Update, null);
+        _stateMachine.AddState((int)ServerStates.AttackingPlayer, attackingPlayer);
+    }
+
+    private void CheckDamage()
+    {
+        if (hasDoneDamage) return;
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, COLLISION_RADIUS);
+        foreach (var hitCollider in hitColliders)
+        {
+            if (hitCollider.gameObject == NetworkManager.Singleton.LocalClient.PlayerObject.gameObject)
+            {
+                PlayerDeath playerDeath = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerDeath>();
+                hasDoneDamage = true;
+                playerDeath.DoDamage_ServerRpc(DAMAGE);
+                _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyAttack);
+            }
+        }
+    }
+    
+    #region States
+
+    private void Idle_OnEnter()
+    {
+        if (!IsServer) return;
+        nextPosition = transform.position;
+        lastPosition = transform.position;
+        _animator.SetTrigger("DoSwim");
+    }
+    
+    private void Idle_Update()
+    {
+        if (!IsServer) return;
+        SetClosestPlayer(out var closestPlayer, out var closestDistance);
+        _closestPlayer = closestPlayer;
+        _closestPlayerState = _closestPlayer.PlayerObject.GetComponent<PlayerState>();
+
+        if (_closestPlayer != null && closestDistance < AGRO_RANGE && 
+            _closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&
+            _currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
+        {
+            ChangeState_ServerRpc((int)ServerStates.AttackingPlayer);
+            _animator.SetTrigger("DoCharge");
+        }
+        else if (Vector3.Distance(gameObject.transform.position, nextPosition) <= 0.1f)
+        {
+            lastPosition = nextPosition;
+            nextPosition = new Vector3(
+                Random.Range(-3, 3) + initialPosition.x,
+                Random.Range(-3, 3) + initialPosition.y,
+                Random.Range(-3, 3) + initialPosition.z
+            );
+            startTime = Time.time;
+        }
+        else
+        {
+            transform.position = Vector3.Lerp(lastPosition, nextPosition, (Time.time - startTime)/IDLE_SPEED);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(nextPosition - transform.position), 3.0f * Time.deltaTime);
+        }
+    }
+    
+    private void AttackingPlayer_OnEnter()
+    {
+        isChargingUp = true;
+        isDoingAttack = false;
+        startTime = Time.time;
+        hasDoneDamage = false;
+    }
+    
+    private void AttackingPlayer_Update()
+    {
+        if (IsServer)
+        {
+            if (_closestPlayerState.Health.Value <= 0)
+            {
+                ChangeState_ServerRpc((int)ServerStates.Idle);
+            }
+            else if (_currentWaterBody != null && !_currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
+            {
+                ChangeState_ServerRpc((int)ServerStates.Idle);
+            }
+            else if (isChargingUp)
+            {
+                if (Time.time - startTime >= CHARGE_TIME)
+                {
+                    isChargingUp = false;
+                    isDoingAttack = true;
+                    hasDoneDamage = false;
+                    nextPosition = _closestPlayer.PlayerObject.transform.position;
+                }
+                else
+                {
+                    Vector3 directionToTarget = _closestPlayer.PlayerObject.transform.position - transform.position;
+                    Quaternion lookRotation = Quaternion.LookRotation(directionToTarget);
+                    transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, 3.0f * Time.deltaTime);
+                }
+            }
+            else
+            {
+                if (isDoingAttack)
+                {
+                    _rigidbody.AddForce(transform.forward * CHARGE_FORCE, ForceMode.Impulse);
+                    _animator.SetTrigger("DoAttack");
+                    isDoingAttack = false;
+                    hasDoneDamage = false;
+                    startTime = Time.time;
+                }
+                else
+                {
+                    if (Time.time - startTime >= 0.3f &&
+                        _rigidbody.linearVelocity.magnitude < 0.3f)
+                    {
+                        _animator.SetTrigger("DoCharge");
+                        isChargingUp = true;
+                        startTime = Time.time;
+                    }
+                }
+                CheckDamage();
+            }
+        }
+
+    }
+    
+    #endregion
 }

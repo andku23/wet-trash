@@ -15,6 +15,10 @@ public class ScavengingScene : NetworkBehaviour
         }
         
         Cursor.lockState = CursorLockMode.Locked;
+        if (IsServer)
+        {
+            BoatManager.Instance.SpawnBoatServer();
+        }
     }
 
     private IEnumerator AfterOnNetworkSpawn()

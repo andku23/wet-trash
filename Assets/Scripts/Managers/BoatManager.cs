@@ -29,7 +29,7 @@ public class BoatManager : NetworkBehaviour
         GameObject boat = Instantiate(_baseBoatPrefab);
         NetworkObject networkObject = boat.GetComponent<NetworkObject>();
         networkObject.Spawn();
-        boat.transform.position = new Vector3(0.98f, 0.0f, 5.92f);
+        //boat.transform.position = new Vector3(0.98f, 0.0f, 5.92f);
     }
 
     public void PlaceAtConnectionPoint(GameObject boatPart, Transform boatPartPoint, 

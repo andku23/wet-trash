@@ -56,13 +56,6 @@ public class GameManager : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        
-        Cursor.lockState = CursorLockMode.Locked;
-
-        if (IsServer)
-        {
-            _boatManager.SpawnBoatServer();
-        }
     }
 
     public void RequestToNextGameState()

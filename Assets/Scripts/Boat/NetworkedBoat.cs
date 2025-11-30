@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
 using StarterAssets;
@@ -18,6 +19,8 @@ public class NetworkedBoat : NetworkBehaviour
     
     public List<BoatAttachmentPoint> BoatAttachmentPoints = new List<BoatAttachmentPoint>();
     public Dictionary<ulong, BoatPart> BoatParts = new Dictionary<ulong, BoatPart>(); //ALl the realtime added boat parts 
+    public Transform DriverSeat; // transform thats baked into the prefab that gets moved to wherever the steering wheel is when boat part is added
+    
     
     private float _targetRotation = 0.0f;
     private float _rotationVelocity;
@@ -42,26 +45,35 @@ public class NetworkedBoat : NetworkBehaviour
         //Initialize all the boat logic so it can be spawned in
         if (IsServer)
         {
-            foreach (GameObject boatPartPrefab in initialBoatParts)
-            {
-                GameObject go = Instantiate(boatPartPrefab);
-                NetworkObject no = go.GetComponent<NetworkObject>();
-                
-                no.Spawn();
-                no.transform.parent = transform;
-                no.transform.localPosition = Vector3.zero;
-                no.transform.localRotation = Quaternion.identity;
-                BoatPart boatPart = no.GetComponent<BoatPart>();
-
-                if (boatPart.SteeringWheel != null)
-                {
-                    _steeringWheel = boatPart.SteeringWheel;
-                }
-                
-                BoatManager.Instance.RegisterBoatPartServer(no, boatPart);
-            }
+            StartCoroutine(InitializeBoatParts());
         }
         
+    }
+
+    public IEnumerator InitializeBoatParts()
+    {
+        yield return null;
+        foreach (GameObject boatPartPrefab in initialBoatParts)
+        {
+            GameObject go = Instantiate(boatPartPrefab);
+            NetworkObject no = go.GetComponent<NetworkObject>();
+            no.transform.position = transform.position;
+            no.transform.rotation = transform.rotation;
+            
+            no.Spawn();
+            no.transform.parent = transform;
+            
+            BoatPart boatPart = no.GetComponent<BoatPart>();
+
+            if (boatPart.SteeringWheel != null)
+            {
+                _steeringWheel = boatPart.SteeringWheel;
+                MoveDriverSeat_ServerRpc(boatPart.SteeringWheel.transform.position,
+                    boatPart.SteeringWheel.transform.rotation);
+            }
+                
+            BoatManager.Instance.RegisterBoatPartServer(no, boatPart);
+        }
     }
 
     private void FixedUpdate()
@@ -89,6 +101,19 @@ public class NetworkedBoat : NetworkBehaviour
                 }
             }
         }
+    }
+
+    [ServerRpc]
+    private void MoveDriverSeat_ServerRpc(Vector3 position, Quaternion rotation)
+    {
+        MoveDriverSeat_ClientRpc(position, rotation);
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    private void MoveDriverSeat_ClientRpc(Vector3 position, Quaternion rotation)
+    {
+        DriverSeat.position = position;
+        DriverSeat.rotation = rotation;
     }
 
     public void RequestToDrive(bool isDriving)
@@ -140,10 +165,7 @@ public class NetworkedBoat : NetworkBehaviour
         NetworkClient requestedDrivePlayer = NetworkManager.Singleton.ConnectedClients[playerNetworkObjectId];
         requestedDrivePlayer.PlayerObject.SynchronizeTransform = false;
         requestedDrivePlayer.PlayerObject.GetComponent<PlayerController>().ToggleDriving(true);
-        if (IsServer)
-        {
-            requestedDrivePlayer.PlayerObject.GetComponent<CopyTransform>().target = _steeringWheel.DriverPosition.gameObject;
-        }
+        requestedDrivePlayer.PlayerObject.GetComponent<CopyTransform>().target = DriverSeat.gameObject;
     }
     
     [ClientRpc(RequireOwnership = false)]

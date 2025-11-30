@@ -32,6 +32,37 @@ Transform:
   - {fileID: 6502060144009447105}
   m_Father: {fileID: 6514638442736148714}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7887717276167036556
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1891413653960299317}
+  m_Layer: 0
+  m_Name: DriverSeat
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1891413653960299317
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7887717276167036556}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6514638442736148714}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8906400828373403108
 GameObject:
   m_ObjectHideFlags: 0
@@ -62,11 +93,12 @@ Transform:
   m_GameObject: {fileID: 8906400828373403108}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.11179, y: 0.5, z: 5.84}
+  m_LocalPosition: {x: 0.98, y: 0.5, z: 5.92}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8567701098193523542}
+  - {fileID: 1891413653960299317}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &9217688489280121579
@@ -180,6 +212,7 @@ MonoBehaviour:
   BoatAttachmentPoints:
   - {fileID: 0}
   - {fileID: 0}
+  DriverSeat: {fileID: 1891413653960299317}
 --- !u!114 &5018123549751685162
 MonoBehaviour:
   m_ObjectHideFlags: 0

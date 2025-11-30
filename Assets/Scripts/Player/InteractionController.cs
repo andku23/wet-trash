@@ -299,16 +299,17 @@ public class InteractionController : NetworkBehaviour
         ItemData itemData = LootManager.Instance.LootIndextoData(itemIndex);
         GameObject localLootPrefab = LootManager.Instance.ItemList.localLootPrefab;
         ControlModeData controlModeData = playerController.CameraControl.gameObject.GetComponent<ControlModeData>();
-        GameObject go = Instantiate(localLootPrefab, controlModeData.GetConnectionPoint(itemData.holdableHandType).transform);
+        Transform connectionPoint = controlModeData.GetConnectionPoint(itemData.holdableHandType).transform;
+        GameObject go = Instantiate(localLootPrefab, connectionPoint);
         
         heldObject = go.GetComponent<IHoldable>();
         heldObject.HeldPlayerID = heldPlayerID;
         ItemInstance itemInstance = heldObject.gameObject.GetComponent<ItemInstance>();
         itemInstance.LoadLocal(itemData, itemIndex);
         
-        go.transform.localPosition = heldObject.HoldAttachOffset();
+        go.transform.localScale = connectionPoint.localScale;
+        go.transform.localPosition = heldObject.HoldAttachOffset() * connectionPoint.localScale.x;
         go.transform.localRotation = Quaternion.identity;
-        go.transform.localScale = Vector3.one;
         return go;
     }
 

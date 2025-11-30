@@ -163,7 +163,7 @@ public class UI : NetworkBehaviour
             ShopItem shopItem = ShopManager.Instance.shopList.items[shopItemIndex];
             ShopItemTypeData shopItemData = ShopManager.Instance.ShopItemTypeLookup[shopItem.type];
             uiShopItem.background.color = shopItemData.color;
-            uiShopItem.name.text = shopItemData.name;
+            uiShopItem.name.text = shopItem.name;
             //Debug.Log(shopItem.type);
             uiShopItem.price.text = "$" + shopItem.price.ToString();
             uiShopItem.button.onClick.AddListener(() =>

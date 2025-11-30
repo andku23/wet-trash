@@ -380,7 +380,7 @@ public class PlayerController : NetworkBehaviour
 
     private void MoveWater()
     {
-        float targetSpeed = _input.sprint ? playerState.SprintSwimSpeed : playerState.MoveSpeed;
+        float targetSpeed = _input.sprint ? playerState.SprintSwimSpeed : playerState.SwimMoveSpeed;
         float currentSpeed = new Vector3(_controller.velocity.x, _controller.velocity.y, _controller.velocity.z).magnitude;
         Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
         
@@ -466,7 +466,7 @@ public class PlayerController : NetworkBehaviour
     private void MoveLand()
     {
         // set target speed based on move speed, sprint speed and if sprint is pressed
-        float targetSpeed = _input.sprint ? playerState.SprintSpeed : playerState.MoveSpeed;
+        float targetSpeed = _input.sprint ? playerState.SprintSpeed : playerState.LandMoveSpeed;
 
         // a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
@@ -480,7 +480,7 @@ public class PlayerController : NetworkBehaviour
         float speedOffset = 0.1f;
         float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
 
-        targetSpeed *= 1/(playerState.SprintWeightMultiplier * playerState.WeightCarried + 1);;
+        targetSpeed *= 1/(playerState.LandWeightMultiplier * playerState.WeightCarried + 1);;
 
         // accelerate or decelerate to target speed
         if (currentHorizontalSpeed < targetSpeed - speedOffset ||

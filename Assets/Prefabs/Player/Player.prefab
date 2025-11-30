@@ -5446,12 +5446,12 @@ MonoBehaviour:
   soundGroups:
   - soundType: 0
     clips:
-    - {fileID: 8300000, guid: 72f526a6a9890f643a88e85a61c86c8a, type: 3}
-    - {fileID: 8300000, guid: 85016e0f2b01da248b9663dd49a161b0, type: 3}
-    - {fileID: 8300000, guid: 186de84b3207156479abe98f4958fed0, type: 3}
-    - {fileID: 8300000, guid: 14e8a8d2158bec840b56c54f5266e692, type: 3}
-    - {fileID: 8300000, guid: 29841e7d5bbfb5b419c9ad16ca8bc4c1, type: 3}
-    volume: 0.5
+    - {fileID: 8300000, guid: 71be26a321d59494fb3dad6c68493b83, type: 3}
+    - {fileID: 8300000, guid: 1d752499bc3bb344aa2b75fda053aa75, type: 3}
+    - {fileID: 8300000, guid: d4ddef3315bea0349a06a91365da1767, type: 3}
+    - {fileID: 8300000, guid: d4e4109da0a890543b59cdfa7ca0dd43, type: 3}
+    - {fileID: 8300000, guid: 7a71dc64a1981274a99b97c06f9c9e67, type: 3}
+    volume: 0.3
     isInstantiatedAudio: 0
   - soundType: 1
     clips:

@@ -68,8 +68,8 @@ public class NetworkedBoat : NetworkBehaviour
             if (boatPart.SteeringWheel != null)
             {
                 _steeringWheel = boatPart.SteeringWheel;
-                MoveDriverSeat_ServerRpc(boatPart.SteeringWheel.transform.position,
-                    boatPart.SteeringWheel.transform.rotation);
+                MoveDriverSeat_ServerRpc(boatPart.SteeringWheel.DriverPosition.transform.position,
+                    boatPart.SteeringWheel.DriverPosition.transform.rotation);
             }
                 
             BoatManager.Instance.RegisterBoatPartServer(no, boatPart);

@@ -146,7 +146,7 @@ MonoBehaviour:
   - soundType: 5
     clips:
     - {fileID: 8300000, guid: 93e09e071fd5b534a9676f899c3280d0, type: 3}
-    volume: 1
+    volume: 0.5
     isInstantiatedAudio: 0
   audioSource: {fileID: 7739209792196233658}
   instantiatedAudioPrefab: {fileID: 2009001621130955767, guid: bd1dad8641735d644a22ba5210f94d32,
@@ -200,7 +200,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3403294348
+  GlobalObjectIdHash: 1982590849
   InScenePlacedSourceGlobalObjectIdHash: 1982590849
   DeferredDespawnTick: 0
   Ownership: 1
@@ -271,7 +271,7 @@ MonoBehaviour:
   SWIM_SPEED: 3.5
   CHARGE_TIME: 2
   CHARGE_FORCE: 40
-  COLLISION_RADIUS: 0.5
+  COLLISION_RADIUS: 0.7
   DAMAGE: 5
 --- !u!54 &6404482265344338283
 Rigidbody:
@@ -456,8 +456,8 @@ MonoBehaviour:
   - IsCrossFadeExit: 0
     Layer: 0
     OriginatingState: 1080829965
-    DestinationState: 1388814594
-    TransitionDuration: 0.69
+    DestinationState: 733719448
+    TransitionDuration: 0.25
     TriggerNameHash: 1443770323
     TransitionIndex: 0
   m_Animator: {fileID: 3111743482211800267}

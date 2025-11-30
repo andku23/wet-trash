@@ -99,7 +99,6 @@ public class TerrainManager : NetworkBehaviour
     
     public Vector3 GetRandomPointOnTerrain()
     {
-
         Vector3 terrainSize = _terrain.terrainData.size;
         Vector3 terrainPosition = _terrain.transform.position;
 
@@ -301,6 +300,21 @@ public class TerrainManager : NetworkBehaviour
                 if (IsServer)
                 {
                     LootManager.Instance.RegisterLootGroupServer(lootGroup);
+                }
+            }
+
+            if (IsServer)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    Vector3 randomPointOnTerrain = GetRandomPointOnTerrain();
+                    randomPointOnTerrain.y = Random.Range(0, randomPointOnTerrain.y);
+                    NetworkObject no = Instantiate(enemyPrefabs[1],
+                        randomPointOnTerrain,
+                        Quaternion.identity
+                    ).GetComponent<NetworkObject>();
+                    no.Spawn();
+                    SpawnedEnemies.Add(no);
                 }
             }
 

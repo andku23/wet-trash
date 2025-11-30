@@ -3719,7 +3719,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 94792807
+  GlobalObjectIdHash: 3994523073
   InScenePlacedSourceGlobalObjectIdHash: 3994523073
   DeferredDespawnTick: 0
   Ownership: 1
@@ -3887,26 +3887,51 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerState
   ShowTopMostFoldoutHeaderGroup: 1
-  MoveSpeed: 2
-  MaxSwimmingSpeed: 2
+  Health:
+    m_InternalValue: 10
+  LandMoveSpeed: 2
   SprintSpeed: 5.335
-  SprintWeightMultiplier: 0.05
-  SprintSpeed_UpgradeIncrement: 0.5
-  SprintSwimSpeed: 4.335
+  LandWeightMultiplier: 0.05
+  SwimMoveSpeed: 2
+  SprintSwimSpeed: 3.5
+  SprintLaunchSwimSpeed: 6
+  SprintLaunchSwimTime: 1
+  SprintLaunchSwimCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -0.0000835041
+      outSlope: -0.0000835041
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.09541359
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  WaterVerticalSwimSpeed: 2
   SwimWeightMultiplier: 0.05
-  SprintSwimSpeed_UpgradeIncrement: 0.5
   RotationSmoothTime: 0.12
   SpeedChangeRate: 10
+  SprintSpeed_UpgradeIncrement: 0.5
+  SprintSwimSpeed_UpgradeIncrement: 0.5
   JumpHeight: 1.2
-  WaterSurfaceJumpHeight: 10
-  WaterVerticalSwimSpeed: 4
-  WeightCarried: 0
+  WaterSurfaceJumpHeight: 8
   BreathFullAmount: 25
   BreathFullAmount_UpgradeIncrement: 5
   BreathDepleteRate: 1
   BreathReplenishRate: 3
-  Health:
-    m_InternalValue: 10
   MAX_HEALTH: 10
   MAX_INTERACTION_DISTANCE: 5
   Grounded: 1
@@ -3915,6 +3940,7 @@ MonoBehaviour:
   IsDriving: 0
   IsDead: 0
   InWaterOnSurface: 0
+  WeightCarried: 0
 --- !u!114 &9122417569400039749
 MonoBehaviour:
   m_ObjectHideFlags: 0

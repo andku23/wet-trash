@@ -285,6 +285,17 @@
                 },
                 {
                     "name": "",
+                    "id": "e1a9fbb9-2513-4d13-bd53-05e5508a4e38",
+                    "path": "<Keyboard>/#(Q)",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";KeyboardMouse",
+                    "action": "Descend",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "db0036bf-00c5-4d67-bb9e-6430b59e6101",
                     "path": "<Keyboard>/alt",
                     "interactions": "",

@@ -75,6 +75,8 @@ public class PlayerController : NetworkBehaviour
     private float _rotationVelocity;
     private float _verticalVelocity;
     private float _terminalVelocity = 53.0f;
+    private bool _wasSprintingLastFrame;
+    private float _sprintStartTime;
 
     // timeout deltatime
     private float _jumpTimeoutDelta;
@@ -223,7 +225,7 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner) return;
         _hasAnimator = _animator != null;
 
-        JumpAndGravity();
+        DoGravity();
         GroundedCheck();
         InWaterCheck();
         if (!playerState.IsDead && !_isCameraAndMovementLocked)
@@ -240,22 +242,22 @@ public class PlayerController : NetworkBehaviour
         if (_input.debug)
         {
             _input.debug = false;
-            ulong anyID = 0;
-            foreach (var pair in BoatManager.Instance.Boat.BoatParts)
-            {
-                anyID = pair.Key;
-            }
-            BoatManager.Instance.RequestConnectBoatPart(
-                anyID,2, 0, 0);
+            //ulong anyID = 0;
+            //foreach (var pair in BoatManager.Instance.Boat.BoatParts)
+            //{
+            //    anyID = pair.Key;
+            //}
+            //BoatManager.Instance.RequestConnectBoatPart(
+            //    anyID,2, 0, 0);
             
-            //if (_selectedControlMode == ControlModeFirstPerson)
-            //{
-            //    ChangeControlMode(ControlModeEnum.ThirdPerson);
-            //}
-            //else
-            //{
-            //    ChangeControlMode(ControlModeEnum.FirstPerson);
-            //}
+            if (_selectedControlMode == ControlModeFirstPerson)
+            {
+                ChangeControlMode(ControlModeEnum.ThirdPerson);
+            }
+            else
+            {
+                ChangeControlMode(ControlModeEnum.FirstPerson);
+            }
         }
     }
 
@@ -376,11 +378,54 @@ public class PlayerController : NetworkBehaviour
         {
             MoveLand();
         }
+        _wasSprintingLastFrame = _input.sprint;
     }
 
     private void MoveWater()
     {
-        float targetSpeed = _input.sprint ? playerState.SprintSwimSpeed : playerState.SwimMoveSpeed;
+        // Calculate input vertical movement
+        _verticalVelocity = 0f;
+        if (_input.jump)
+        {
+            _verticalVelocity += 1;
+        }
+        if (_input.descend)
+        {
+            _verticalVelocity -= 1;
+        }
+        //_verticalVelocity *= 1/(playerState.SwimWeightMultiplier*playerState.WeightCarried + 1);
+        
+        float targetSpeed = playerState.SwimMoveSpeed;
+        
+        // Change speed if sprinting
+        if (_input.sprint)
+        {
+            if (_wasSprintingLastFrame)
+            {
+                // Calculate speed falloff if within initial sprint
+                float elapsedTimeFromSprintStart = Time.time - _sprintStartTime;
+                if (elapsedTimeFromSprintStart <= playerState.SprintLaunchSwimTime)
+                {
+                    float curveSample = elapsedTimeFromSprintStart / playerState.SprintLaunchSwimTime;
+                    float maxSpeedIncrease = playerState.SprintLaunchSwimSpeed - playerState.SprintSwimSpeed;
+                    
+                    targetSpeed = playerState.SprintSwimSpeed;
+                    targetSpeed += playerState.SprintLaunchSwimCurve.Evaluate(curveSample) * maxSpeedIncrease;
+                }
+                // If not just normal sprint speed
+                else
+                {
+                    targetSpeed = playerState.SprintSwimSpeed;
+                }
+            }
+            // If first sprint frame
+            else
+            {
+                targetSpeed = playerState.SprintLaunchSwimSpeed;
+                _sprintStartTime = Time.time;
+            }
+        } 
+
         float currentSpeed = new Vector3(_controller.velocity.x, _controller.velocity.y, _controller.velocity.z).magnitude;
         Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
         
@@ -389,10 +434,13 @@ public class PlayerController : NetworkBehaviour
         
         targetSpeed *= 1/(playerState.SwimWeightMultiplier * playerState.WeightCarried + 1);
         
+        _speed = targetSpeed;
+        
+        // Lerp speed a bit  if incrementing too fast
         if (currentSpeed < targetSpeed - speedOffset ||
             currentSpeed > targetSpeed + speedOffset)
         {
-            
+        
             // creates curved result rather than a linear one giving a more organic speed change
             // note T in Lerp is clamped, so we don't need to clamp our speed
             _speed = Mathf.Lerp(currentSpeed, targetSpeed * inputMagnitude,
@@ -401,60 +449,63 @@ public class PlayerController : NetworkBehaviour
             // round speed to 3 decimal places
             _speed = Mathf.Round(_speed * 1000f) / 1000f;
         }
-        else
+        
+        if (ControlMode == ControlModeEnum.ThirdPerson)
         {
-            _speed = targetSpeed;
+            if (_input.move != Vector2.zero)
+            {
+                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                                  MainCamera.transform.eulerAngles.y;
+                float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
+                    playerState.RotationSmoothTime);
+                // rotate to face input direction relative to camera position
+                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+            }
+            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+   
+            // move the player
+            _controller.Move(targetDirection.normalized * (inputDirection.magnitude * (_speed * Time.deltaTime)) +
+                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
         }
+        else if (ControlMode == ControlModeEnum.FirstPerson)
+        {
+            float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
 
-        _speed = Mathf.Clamp(_speed, 0, playerState.SprintSwimSpeed);
+            firstPersonPitch += _input.look.y * deltaTimeMultiplier;
+            firstPersonYaw += _input.look.x * deltaTimeMultiplier;
         
+            firstPersonYaw = ThirdPersonCameraControl.ClampAngle(firstPersonYaw, float.MinValue, float.MaxValue);
+            firstPersonPitch = ThirdPersonCameraControl.ClampAngle(firstPersonPitch, -89, 89);
+            
+            transform.rotation = Quaternion.Euler(0.0f,
+                firstPersonYaw, 0.0f);
+            
+            if (_hasAnimator)
+            {
+                _animator.SetFloat(_animIDVerticalLookAmount, (firstPersonPitch + 89) / (89 + 89));
+                _cameraControl.CinemachineCameraTarget.transform.localEulerAngles = new Vector3(firstPersonPitch, 0, 0);
+            }
+
+            _targetRotation = transform.rotation.eulerAngles.y;
         
-            if (ControlMode == ControlModeEnum.ThirdPerson)
+            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+            Vector3 leftDirection = Quaternion.Euler(0, _targetRotation + 90, 0) * Vector3.forward;
+            Vector3 targetInputDirection = targetDirection.normalized * inputDirection.z;
+            Vector3 leftInputDirection = leftDirection.normalized * inputDirection.x;
+            Vector3 upInputDirection = _verticalVelocity * Vector3.up;
+
+            // move the player
+            Vector3 movementDirection = (targetInputDirection + leftInputDirection + upInputDirection).normalized *
+                                        (_speed * Time.deltaTime);
+
+            if (_input.jump && playerState.InWaterOnSurface)
             {
-                if (_input.move != Vector2.zero)
-                {
-                    _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                      MainCamera.transform.eulerAngles.y;
-                    float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
-                        playerState.RotationSmoothTime);
-                    // rotate to face input direction relative to camera position
-                    transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
-                }
-                Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
-       
-                // move the player
-                _controller.Move(targetDirection.normalized * (inputDirection.magnitude * (_speed * Time.deltaTime)) +
-                                 new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+                _verticalVelocity = playerState.WaterSurfaceJumpHeight;
+                movementDirection.y = _verticalVelocity * Time.deltaTime;
             }
-            else if (ControlMode == ControlModeEnum.FirstPerson)
-            {
-                float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
-
-                firstPersonPitch += _input.look.y * deltaTimeMultiplier;
-                firstPersonYaw += _input.look.x * deltaTimeMultiplier;
             
-                firstPersonYaw = ThirdPersonCameraControl.ClampAngle(firstPersonYaw, float.MinValue, float.MaxValue);
-                firstPersonPitch = ThirdPersonCameraControl.ClampAngle(firstPersonPitch, -89, 89);
-                
-                transform.rotation = Quaternion.Euler(0.0f,
-                    firstPersonYaw, 0.0f);
-                
-                if (_hasAnimator)
-                {
-                    _animator.SetFloat(_animIDVerticalLookAmount, (firstPersonPitch + 89) / (89 + 89));
-                    _cameraControl.CinemachineCameraTarget.transform.localEulerAngles = new Vector3(firstPersonPitch, 0, 0);
-                }
-
-                _targetRotation = transform.rotation.eulerAngles.y;
-            
-                Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
-                Vector3 leftDirection = Quaternion.Euler(0, _targetRotation + 90, 0) * Vector3.forward ;
-
-                // move the player
-                _controller.Move(targetDirection.normalized * (inputDirection.z * (_speed * Time.deltaTime)) +
-                                 new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime +
-                                 leftDirection.normalized * (inputDirection.x * (_speed * Time.deltaTime)));
-            }
+            _controller.Move(movementDirection);
+        }
             
         if (_hasAnimator)
         {
@@ -465,6 +516,7 @@ public class PlayerController : NetworkBehaviour
     }
     private void MoveLand()
     {
+        VerticalMovementLand();
         // set target speed based on move speed, sprint speed and if sprint is pressed
         float targetSpeed = _input.sprint ? playerState.SprintSpeed : playerState.LandMoveSpeed;
 
@@ -571,35 +623,11 @@ public class PlayerController : NetworkBehaviour
             
         }
     }
+    
 
-    private void JumpAndGravity()
+    private void VerticalMovementLand()
     {
-        if (playerState.InWater)
-        {
-            if (_input.jump)
-            {
-                if (playerState.InWaterOnSurface)
-                {
-                    _verticalVelocity = playerState.WaterSurfaceJumpHeight;
-                }
-                else
-                {
-                    _verticalVelocity = playerState.WaterVerticalSwimSpeed;
-                    
-                }
-            }
-            else if (_input.descend)
-            {
-                _verticalVelocity = -playerState.WaterVerticalSwimSpeed;
-            }
-            else
-            {
-                // the square root of H * -2 * G = how much velocity needed to reach desired height
-                _verticalVelocity = 0.0f;
-            }
-            _verticalVelocity *= 1/(playerState.SwimWeightMultiplier*playerState.WeightCarried + 1);
-        }
-        else if (playerState.Grounded)
+        if (playerState.Grounded)
         {
             // reset the fall timeout timer
             _fallTimeoutDelta = FallTimeout;
@@ -636,6 +664,7 @@ public class PlayerController : NetworkBehaviour
                 _jumpTimeoutDelta -= Time.deltaTime;
             }
         }
+        // if we are not playerState.Grounded, do not jump
         else
         {
             // reset the jump timeout timer
@@ -655,10 +684,12 @@ public class PlayerController : NetworkBehaviour
                 }
             }
 
-            // if we are not playerState.Grounded, do not jump
             _input.jump = false;
         }
+    }
 
+    private void DoGravity()
+    {
         // apply gravity over time if under terminal (multiply by delta time twice to linearly speed up over time)
         if (_verticalVelocity < _terminalVelocity && !playerState.InWater)
         {

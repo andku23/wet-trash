@@ -28,6 +28,12 @@ public class PlayerState : NetworkBehaviour
     [Tooltip("Initial speed when sprinting while swiming m/s")]
     public float SprintLaunchSwimSpeed = 6.335f;
     
+    [Tooltip("How long the initial spring lasts")]
+    public float SprintLaunchSwimTime = 2.0f;
+    
+    [Tooltip("Initial sprint speed curve, 1 is SprintLaunchSwimSpeed, 0 is SprintSwimSpeed")]
+    public AnimationCurve SprintLaunchSwimCurve;
+    
     [Tooltip("Vertical Swim speed")]
     public float WaterVerticalSwimSpeed = 4.0f;
     

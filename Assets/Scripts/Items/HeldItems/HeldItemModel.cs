@@ -6,7 +6,7 @@ public abstract class HeldItemModel : MonoBehaviour
 
     public GameObject HoldAttachPoint;
 
-    public virtual void UseItem(PlayerController player)
+    public virtual void UseItem(InteractionController interactionController)
     {
         
     }

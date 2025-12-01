@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -12,6 +14,7 @@ public abstract class BaseEnemy : NetworkBehaviour
     protected Quaternion nextRotation;
     
     protected NetworkVariable<int> _networkState = new NetworkVariable<int>(0);
+    public NetworkVariable<int> Health = new NetworkVariable<int>(0);
     protected ClientStateMachine _stateMachine;
     
     public override void OnNetworkSpawn()
@@ -24,9 +27,23 @@ public abstract class BaseEnemy : NetworkBehaviour
         }
 
         _networkState.OnValueChanged += OnNetworkStateUpdated;
+        Health.OnValueChanged += OnHealthUpdated;
         
         //Sync network state to whatever server is on
         OnNetworkStateUpdated(0, _networkState.Value);
+    }
+
+    protected virtual void OnHealthUpdated(int prev, int next)
+    {
+        if (Health.Value <= 0)
+        {
+            StartCoroutine(DoDeath());
+        }
+    }
+
+    protected virtual IEnumerator DoDeath()
+    {
+        yield return null;
     }
 
     public virtual void OnNetworkStateUpdated(int prev, int next)
@@ -34,6 +51,12 @@ public abstract class BaseEnemy : NetworkBehaviour
         _stateMachine.ChangeState(next);
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    public virtual void ReceiveDamage_ServerRpc(int damage)
+    {
+        Health.Value -= damage;
+    }
+    
     public virtual void InitializeStateMachine()
     {
         _stateMachine = new ClientStateMachine();

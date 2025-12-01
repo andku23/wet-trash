@@ -9,8 +9,8 @@ public interface IHoldable
     public Vector3 HoldAttachOffset();
     public ulong HeldPlayerID { get; set; }
     // Only gets called if held object type is UsableItem
-    public void UseItem(PlayerController player){}
-   
+    public void UseItem(InteractionController interactionController){}
+    
 }
 
 public enum HeldObjectType

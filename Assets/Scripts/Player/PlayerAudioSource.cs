@@ -15,8 +15,10 @@ public class PlayerAudioSource : MonoBehaviour
         WaterSplash,
         Swim,
         Thump,
-        EnemyAttack,
-        Trumpet
+        EnemyDoDamage,
+        Trumpet,
+        EnemyTakeDamage,
+        EnemyDie,
     }
 
     public void PlaySound(int index)

@@ -3841,6 +3841,9 @@ MonoBehaviour:
   attachmentLayerMask:
     serializedVersion: 2
     m_Bits: 1024
+  attackingLayerMask:
+    serializedVersion: 2
+    m_Bits: 3831
   grabbedLootConnectPoint: {fileID: 7036386786036852469}
   networkObject: {fileID: 3884127068506848302}
   playerController: {fileID: 1091257655826559655}
@@ -3934,6 +3937,7 @@ MonoBehaviour:
   BreathReplenishRate: 3
   MAX_HEALTH: 10
   MAX_INTERACTION_DISTANCE: 5
+  MAX_ATTACK_DISTANCE: 2
   Grounded: 1
   VehicleParented: 0
   InWater: 0
@@ -3941,6 +3945,7 @@ MonoBehaviour:
   IsDead: 0
   InWaterOnSurface: 0
   WeightCarried: 0
+  DisplayingHeldObject: 0
 --- !u!114 &9122417569400039749
 MonoBehaviour:
   m_ObjectHideFlags: 0

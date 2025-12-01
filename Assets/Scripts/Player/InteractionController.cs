@@ -14,6 +14,7 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private LayerMask interactableLayerMask;
     [SerializeField] private LayerMask buildingLayerMask;
     [SerializeField] private LayerMask attachmentLayerMask;
+    [SerializeField] private LayerMask attackingLayerMask;
     [SerializeField] private Transform grabbedLootConnectPoint;
     [SerializeField] private NetworkObject networkObject;
     [SerializeField] private PlayerController playerController;
@@ -97,6 +98,25 @@ public class InteractionController : NetworkBehaviour
     // functions that are called from other players or the server
     // or sometimes just other functions
     #region External Calls
+
+    public void DoAttack()
+    {
+        playerController.DoAttack();
+        if (Physics.Raycast(playerController.MainCamera.transform.position, 
+                playerController.MainCamera.transform.forward,
+                out RaycastHit raycastHit, playerState.MAX_ATTACK_DISTANCE, attackingLayerMask))
+        {
+            ColliderReference colliderRef = raycastHit.collider.gameObject.GetComponent<ColliderReference>();
+            if (colliderRef != null)
+            {
+                BaseEnemy enemy = colliderRef.reference.GetComponent<BaseEnemy>();
+                if (enemy != null)
+                {
+                    enemy.ReceiveDamage_ServerRpc(5);
+                }
+            }
+        }
+    }
     
     public GameObject PickupTemporaryItemNetwork(GameObject item, ulong heldPlayerID)
     {
@@ -134,7 +154,7 @@ public class InteractionController : NetworkBehaviour
             if (inventorableItem != null)
             {
                 _inventory[_currentInventoryIndex] = lootIndex;
-                playerState.WeightCarried += inventorableItem.GetWeight();
+                playerState.LandWeightMultiplier += inventorableItem.GetWeight();
                 UI.Instance.AddHotbarItem(_currentInventoryIndex, lootIndex);
             }
         }
@@ -622,7 +642,7 @@ public class InteractionController : NetworkBehaviour
         if (_input.useItem)
         {
             _input.useItem = false;
-            heldObject.UseItem(playerController);
+            heldObject.UseItem(this);
         }
     }
     

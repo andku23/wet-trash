@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class WeaponItemModel : HeldItemModel
 {
-    public override void UseItem(PlayerController player)
+    public override void UseItem(InteractionController interactionController)
     {
-        player.DoAttack();
+        interactionController.DoAttack();
     }
 }

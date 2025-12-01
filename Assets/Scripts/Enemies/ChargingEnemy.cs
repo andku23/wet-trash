@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -25,15 +26,34 @@ public class ChargingEnemy : BaseEnemy
     enum ServerStates
     {
         Idle = 0,
-        AttackingPlayer = 1
-    };
+        AttackingPlayer = 1,
+        Dead = 2
+    }
 
     public override void InitializeServerValues()
     {
         base.InitializeServerValues();
         _currentWaterBody = base.GetCurrentWaterBody();
     }
-
+    
+    protected override IEnumerator DoDeath()
+    {
+        _animator.SetBool("IsDead", true);
+        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+        if (IsServer)
+        {
+            ChangeState_ServerRpc((int)ServerStates.Dead);
+            yield return new WaitForSeconds(1.5f);
+            GetComponent<NetworkObject>().Despawn(true);
+        }
+    }
+    
+    protected override void OnHealthUpdated(int prev, int next)
+    {
+        base.OnHealthUpdated(prev, next);
+        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+    }
+    
     public override void InitializeStateMachine()
     {
         base.InitializeStateMachine();
@@ -43,6 +63,9 @@ public class ChargingEnemy : BaseEnemy
         
         BaseState attackingPlayer = new BaseState(AttackingPlayer_OnEnter, AttackingPlayer_Update, null);
         _stateMachine.AddState((int)ServerStates.AttackingPlayer, attackingPlayer);
+        
+        BaseState dead = new BaseState(Dead_OnEnter, null, null);
+        _stateMachine.AddState((int)ServerStates.Dead, dead);
     }
 
     private void CheckDamage()
@@ -56,7 +79,7 @@ public class ChargingEnemy : BaseEnemy
                 PlayerDeath playerDeath = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerDeath>();
                 hasDoneDamage = true;
                 playerDeath.DoDamage_ServerRpc(DAMAGE);
-                _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyAttack);
+                _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
             }
         }
     }
@@ -77,11 +100,10 @@ public class ChargingEnemy : BaseEnemy
         SetClosestHoldingPlayer(out var closestPlayer, out var closestDistance);
         _targetPlayer = closestPlayer;
 
-        if (_targetPlayer != null)
+        if (_targetPlayer != null && closestDistance < AGRO_RANGE)
         {
             _closestPlayerState = _targetPlayer.PlayerObject.GetComponent<PlayerState>();
-            if (closestDistance < AGRO_RANGE && 
-                _closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&
+            if (_closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&
                 _currentWaterBody.bounds.Contains(_targetPlayer.PlayerObject.transform.position))
             {
                 ChangeState_ServerRpc((int)ServerStates.AttackingPlayer);
@@ -168,7 +190,11 @@ public class ChargingEnemy : BaseEnemy
                 CheckDamage();
             }
         }
-
+    }
+    
+    private void Dead_OnEnter()
+    {
+        
     }
     
     #endregion

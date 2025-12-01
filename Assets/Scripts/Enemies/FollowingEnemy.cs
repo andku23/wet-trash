@@ -162,7 +162,7 @@ public class FollowingEnemy : BaseEnemy
     private void DoAttack_ClientRpc(ulong networkPlayerID)
     {
         _animator.SetTrigger("Attack");
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyAttack);
+        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
         if (NetworkManager.Singleton.LocalClientId == networkPlayerID)
         {
             StartCoroutine(InflictDamage(2));

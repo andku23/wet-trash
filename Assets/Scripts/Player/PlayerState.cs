@@ -79,5 +79,6 @@ public class PlayerState : NetworkBehaviour
     public bool IsDead = false;
     public bool InWaterOnSurface = false;
     public float WeightCarried = 0f;
-    
+    public bool DisplayingHeldObject = false;
+
 }

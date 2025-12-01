@@ -178,6 +178,7 @@ public class InteractionController : NetworkBehaviour
             ControlsUI.Instance.SetControlUIState(ControlUIGroupType.HoldingUsable);
             LoadAndAttachHeldObject(lootIndex, heldPlayerID);
             playerController.ToggleCarrying(true);
+            playerState.DisplayingHeldObject = true;
             if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
             {
                 DisableCurrentInteractable();
@@ -186,6 +187,7 @@ public class InteractionController : NetworkBehaviour
         }
         else
         {
+            playerState.DisplayingHeldObject = false;
             if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
             {
                 _stateMachine.ChangeState((int)InteractionStates.Standard);

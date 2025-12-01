@@ -52,11 +52,6 @@ public class GameManager : NetworkBehaviour
             Instance = this;
         }
     }
-    
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
-    }
 
     public void RequestToNextGameState()
     {

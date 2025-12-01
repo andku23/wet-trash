@@ -5,7 +5,7 @@ public class ChargingEnemy : BaseEnemy
 {
     [SerializeField] private Rigidbody _rigidbody;
     
-    private NetworkClient _closestPlayer;
+    private NetworkClient _targetPlayer;
     private PlayerState _closestPlayerState;
     private Collider _currentWaterBody;
     private float startTime;
@@ -74,16 +74,19 @@ public class ChargingEnemy : BaseEnemy
     private void Idle_Update()
     {
         if (!IsServer) return;
-        SetClosestPlayer(out var closestPlayer, out var closestDistance);
-        _closestPlayer = closestPlayer;
-        _closestPlayerState = _closestPlayer.PlayerObject.GetComponent<PlayerState>();
+        SetClosestHoldingPlayer(out var closestPlayer, out var closestDistance);
+        _targetPlayer = closestPlayer;
 
-        if (_closestPlayer != null && closestDistance < AGRO_RANGE && 
-            _closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&
-            _currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
+        if (_targetPlayer != null)
         {
-            ChangeState_ServerRpc((int)ServerStates.AttackingPlayer);
-            _animator.SetTrigger("DoCharge");
+            _closestPlayerState = _targetPlayer.PlayerObject.GetComponent<PlayerState>();
+            if (closestDistance < AGRO_RANGE && 
+                _closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&
+                _currentWaterBody.bounds.Contains(_targetPlayer.PlayerObject.transform.position))
+            {
+                ChangeState_ServerRpc((int)ServerStates.AttackingPlayer);
+                _animator.SetTrigger("DoCharge");
+            }
         }
         else if (Vector3.Distance(gameObject.transform.position, nextPosition) <= 0.1f)
         {
@@ -118,7 +121,11 @@ public class ChargingEnemy : BaseEnemy
             {
                 ChangeState_ServerRpc((int)ServerStates.Idle);
             }
-            else if (_currentWaterBody != null && !_currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
+            else if (_currentWaterBody != null && !_currentWaterBody.bounds.Contains(_targetPlayer.PlayerObject.transform.position))
+            {
+                ChangeState_ServerRpc((int)ServerStates.Idle);
+            }
+            else if (_closestPlayerState.DisplayingHeldObject == false)
             {
                 ChangeState_ServerRpc((int)ServerStates.Idle);
             }
@@ -129,11 +136,11 @@ public class ChargingEnemy : BaseEnemy
                     isChargingUp = false;
                     isDoingAttack = true;
                     hasDoneDamage = false;
-                    nextPosition = _closestPlayer.PlayerObject.transform.position;
+                    nextPosition = _targetPlayer.PlayerObject.transform.position;
                 }
                 else
                 {
-                    Vector3 directionToTarget = _closestPlayer.PlayerObject.transform.position - transform.position;
+                    Vector3 directionToTarget = _targetPlayer.PlayerObject.transform.position - transform.position;
                     Quaternion lookRotation = Quaternion.LookRotation(directionToTarget);
                     transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, 3.0f * Time.deltaTime);
                 }

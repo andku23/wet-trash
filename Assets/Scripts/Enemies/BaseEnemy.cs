@@ -89,5 +89,24 @@ public abstract class BaseEnemy : NetworkBehaviour
         }
     }
 
+    protected void SetClosestHoldingPlayer(out NetworkClient closestPlayer, out float closestDistance)
+    {
+        var connectedClients = NetworkManager.Singleton.ConnectedClients;
+        closestDistance = float.MaxValue;
+        closestPlayer = null;
+        foreach (var client in connectedClients)
+        {
+            var player = client.Value.PlayerObject;
+            var playerState = player.GetComponent<PlayerState>();
+            if (playerState == null || !playerState.DisplayingHeldObject) continue;
+            float currentDistance = Vector3.Distance(client.Value.PlayerObject.transform.position, transform.position);
+            if (currentDistance < closestDistance)
+            {
+                closestDistance = currentDistance;
+                closestPlayer = client.Value;
+            }
+        }
+    }
+
     #endregion
 }

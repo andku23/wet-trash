@@ -20,8 +20,9 @@ public class FollowingEnemy : BaseEnemy
     {
         Idle = 0,
         FollowingPlayer = 1,
-        AttackingPlayer = 2
-    };
+        AttackingPlayer = 2,
+        Death = 3
+    }
 
     public override void InitializeServerValues()
     {
@@ -41,6 +42,27 @@ public class FollowingEnemy : BaseEnemy
         
         BaseState attackingPlayer = new BaseState(AttackingPlayer_OnEnter, AttackingPlayer_Update, null);
         _stateMachine.AddState((int)ServerStates.AttackingPlayer, attackingPlayer);
+        
+        BaseState death = new BaseState(Death_OnEnter, null, null);
+        _stateMachine.AddState((int)ServerStates.Death, death);
+    }
+    
+    protected override IEnumerator DoDeath()
+    {
+        _animator.SetBool("IsDead", true);
+        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+        if (IsServer)
+        {
+            ChangeState_ServerRpc((int)ServerStates.Death);
+            yield return new WaitForSeconds(1.5f);
+            GetComponent<NetworkObject>().Despawn(true);
+        }
+    }
+    
+    protected override void OnHealthUpdated(int prev, int next)
+    {
+        base.OnHealthUpdated(prev, next);
+        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
     }
     
     #region States
@@ -151,6 +173,13 @@ public class FollowingEnemy : BaseEnemy
             DoAttack_ServerRpc(_closestPlayer.ClientId);
         }
     }
+    
+    private void Death_OnEnter()
+    {
+        
+    }
+    
+    #endregion
 
     [ServerRpc(RequireOwnership = false)]
     private void DoAttack_ServerRpc(ulong networkPlayerID)
@@ -176,5 +205,5 @@ public class FollowingEnemy : BaseEnemy
         GameManager.Instance.ChangeHealth(NetworkManager.Singleton.LocalClientId, playerState.Health.Value - damage);
     }
     
-    #endregion
+    
 }

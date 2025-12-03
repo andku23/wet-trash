@@ -77,6 +77,7 @@ public class PlayerController : NetworkBehaviour
     private float _terminalVelocity = 53.0f;
     private bool _wasSprintingLastFrame;
     private float _sprintStartTime;
+    private Vector3 _lastPosition;
 
     // timeout deltatime
     private float _jumpTimeoutDelta;
@@ -222,16 +223,22 @@ public class PlayerController : NetworkBehaviour
 
     private void Update()
     {
-        if (!IsOwner) return;
-        _hasAnimator = _animator != null;
-
-        DoGravity();
-        GroundedCheck();
-        InWaterCheck();
-        if (!playerState.IsDead && !_isCameraAndMovementLocked)
+        if (IsOwner)
         {
-            Move();
+            _hasAnimator = _animator != null;
+            
+            DoGravity();
+            GroundedCheck();
+            InWaterCheck();
+            if (!playerState.IsDead && !_isCameraAndMovementLocked)
+            {
+                Move();
+            }
         }
+        
+        // Calculates locally on each client
+        playerState.Velocity = Vector3.Distance(_lastPosition, transform.position)/Time.deltaTime;
+        _lastPosition = transform.position;
     }
 
     private void LateUpdate()

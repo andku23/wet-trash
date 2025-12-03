@@ -81,5 +81,5 @@ public class PlayerState : NetworkBehaviour
     public bool InWaterOnSurface = false;
     public float WeightCarried = 0f;
     public bool DisplayingHeldObject = false;
-
+    public float Velocity = 0f;
 }

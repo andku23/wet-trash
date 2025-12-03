@@ -233,7 +233,20 @@ public class TerrainManager : NetworkBehaviour
         _terrain.terrainData.SetHoles(0, 0, clearHoles);
         LootManager.Instance.ResetLootHolesServer();
     }
-    
+
+    private void SpawnRandomEnemy()
+    {
+        Vector3 randomPointOnTerrain = GetRandomPointOnTerrain();
+        randomPointOnTerrain.y = Random.Range(0, randomPointOnTerrain.y);
+        var randomEnemy = enemyPrefabs[Random.Range(1, enemyPrefabs.Length)];
+        NetworkObject no = Instantiate(randomEnemy,
+            randomPointOnTerrain,
+            Quaternion.identity
+        ).GetComponent<NetworkObject>();
+        no.Spawn();
+        SpawnedEnemies.Add(no);
+    }
+
     private void Update()
     {
         if (!terrainGenerationRequested) return;
@@ -243,38 +256,38 @@ public class TerrainManager : NetworkBehaviour
             holesJobHandle.Complete();
             terrainGenerationRequested = false;
 
-          float[,] heights = new float[
+            float[,] heights = new float[
                 _terrain.terrainData.heightmapResolution,
                 _terrain.terrainData.heightmapResolution];
-          
-          ClearAllHoles();
+
+            ClearAllHoles();
 
             for (int i = 0; i < _terrain.terrainData.heightmapResolution; i++)
             {
                 for (int j = 0; j < _terrain.terrainData.heightmapResolution; j++)
                 {
-                    float xRatio = i/(float)_terrain.terrainData.heightmapResolution;
-                    float zRatio = (j/(float)_terrain.terrainData.heightmapResolution);
+                    float xRatio = i / (float)_terrain.terrainData.heightmapResolution;
+                    float zRatio = (j / (float)_terrain.terrainData.heightmapResolution);
                     float xInitialPosition = 1f - 2f * Mathf.Abs(xRatio - 0.5f);
                     float zInitialPosition = 1f - 2f * Mathf.Abs(zRatio - 0.5f);
-                    float height = 0.6f*(xInitialPosition + zInitialPosition)/2f + 0.25f
-                                   + 0.55f * holesMap[i * _terrain.terrainData.heightmapResolution + j]
-                                   + 0.05f*noiseMap[i*_terrain.terrainData.heightmapResolution + j];
+                    float height = 0.6f * (xInitialPosition + zInitialPosition) / 2f + 0.25f
+                        + 0.55f * holesMap[i * _terrain.terrainData.heightmapResolution + j]
+                        + 0.05f * noiseMap[i * _terrain.terrainData.heightmapResolution + j];
                     heights[i, j] = height;
                 }
             }
-        
+
             _terrain.terrainData.SetHeights(0, 0, heights);
-            
+
             SpawnedHoles = new List<GameObject>();
             SpawnedEnemies = new List<NetworkObject>();
             SpawnedLootGroups = new List<GameObject>();
             for (int i = 0; i < currentHolePositions.Length; i++)
             {
-                LootGroup hole = CreateHole((int)currentHolePositions[i].x, 
+                LootGroup hole = CreateHole((int)currentHolePositions[i].x,
                     (int)currentHolePositions[i].y,
                     32, 32);
-                
+
                 SpawnedHoles.Add(hole.gameObject);
 
                 if (IsServer)
@@ -288,13 +301,13 @@ public class TerrainManager : NetworkBehaviour
                     LootManager.Instance.RegisterLootGroupServer(hole);
                 }
             }
-            
+
             for (int i = 0; i < currentLootGroupPositions.Length; i++)
             {
                 LootGroup lootGroup = CreateLootGroup(
-                    (int)currentLootGroupPositions[i].x, 
+                    (int)currentLootGroupPositions[i].x,
                     (int)currentLootGroupPositions[i].y);
-                
+
                 SpawnedLootGroups.Add(lootGroup.gameObject);
 
                 if (IsServer)
@@ -307,14 +320,7 @@ public class TerrainManager : NetworkBehaviour
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    Vector3 randomPointOnTerrain = GetRandomPointOnTerrain();
-                    randomPointOnTerrain.y = Random.Range(0, randomPointOnTerrain.y);
-                    NetworkObject no = Instantiate(enemyPrefabs[1],
-                        randomPointOnTerrain,
-                        Quaternion.identity
-                    ).GetComponent<NetworkObject>();
-                    no.Spawn();
-                    SpawnedEnemies.Add(no);
+                    SpawnRandomEnemy();
                 }
             }
 
@@ -324,7 +330,6 @@ public class TerrainManager : NetworkBehaviour
             holesMap.Dispose();
         }
     }
-   
 }
 //For noise functions
 

@@ -12,32 +12,44 @@ public class UI : NetworkBehaviour
 {
     public static UI Instance;
     
+    [Space(10)]
+    [Header("HUD")]
     [SerializeField] private TextMeshProUGUI cashText;
     [SerializeField] private TextMeshProUGUI timeText;
     [SerializeField] private TextMeshProUGUI dayText;
     [SerializeField] private TextMeshProUGUI quotaText;
     [SerializeField] private RectTransform breathParent;
     [SerializeField] private Image breathFill;
+    [SerializeField] private HotbarItem[] hotbarItems;
     
+    [Space(10)]
+    [Header("Shop")]
     [SerializeField] private Panel shopPanel;
     [SerializeField] private RectTransform shopContent;
     [SerializeField] private GameObject shopItemPrefab;
     
+    [Space(10)]
+    [Header("Inventory")]
     [SerializeField] private Panel sharedInventoryPanel;
     [SerializeField] private RectTransform sharedInventoryContent;
     [SerializeField] private GameObject sharedInventoryPrefab;
     
+    [Space(10)]
+    [Header("End Screen")]
     [SerializeField] private Panel endScreenPanel;
     [SerializeField] private TextMeshProUGUI endScreenQuotaText;
     [SerializeField] private TextMeshProUGUI endScreenCurrentCashText;
     
+    [Space(10)]
+    [Header("Start Day Screen")]
     [SerializeField] private Panel startDayPanel;
     [SerializeField] private TextMeshProUGUI startDayText;
     [SerializeField] private TextMeshProUGUI startQuotaText;
     
+    [Space(10)]
+    [Header("Start Day Screen")]
     [SerializeField] private Panel deadPanel;
 
-    [SerializeField] private HotbarItem[] hotbarItems;
 
     private List<UIShopItem> uiShopItems = new List<UIShopItem>();
     
@@ -261,9 +273,14 @@ public class UI : NetworkBehaviour
         cashText.text = "$" + amount.ToString();
     }
     
-    public void UpdateCountdownText(int timeLeft)
+    public void UpdateCountdownText(int timeLeft, int timeTotal)
     {
-        timeText.text = Mathf.FloorToInt(timeLeft/60f).ToString("00") + ":" + Mathf.FloorToInt(timeLeft%60).ToString("00");
+        float percentageElapsed = 1f - ((float)timeLeft / timeTotal);
+        int totalScaledMinutes = (GameManager.Instance.gameData.DAY_END_HOUR - GameManager.Instance.gameData.DAY_START_HOUR) * 60;
+        int currentScaledMinutes = Mathf.FloorToInt(totalScaledMinutes * percentageElapsed);
+        int hoursElapsed = (currentScaledMinutes / 60) + GameManager.Instance.gameData.DAY_START_HOUR;
+        int minutesElapsed = (currentScaledMinutes % 60);
+        timeText.text = hoursElapsed.ToString("00") + ":" + minutesElapsed.ToString("00");
     }
     
     public void UpdateDayText(int day)

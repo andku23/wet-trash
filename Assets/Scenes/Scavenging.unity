@@ -5282,12 +5282,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI
   ShowTopMostFoldoutHeaderGroup: 1
+  _dayStartTime: 6
+  _dayEndTime: 24
   cashText: {fileID: 1420962018}
   timeText: {fileID: 1077349029}
   dayText: {fileID: 432130333}
   quotaText: {fileID: 647400948}
   breathParent: {fileID: 443616730}
   breathFill: {fileID: 242119474}
+  hotbarItems:
+  - {fileID: 6938487910987288255}
+  - {fileID: 367374518}
+  - {fileID: 50104957}
+  - {fileID: 1813638592}
   shopPanel: {fileID: 150988543}
   shopContent: {fileID: 1170467472}
   shopItemPrefab: {fileID: 3634254978499184189, guid: a5c0b80aa40253e4e9eef2c272e660d7,
@@ -5303,11 +5310,6 @@ MonoBehaviour:
   startDayText: {fileID: 101049400}
   startQuotaText: {fileID: 1708800607}
   deadPanel: {fileID: 1617620818}
-  hotbarItems:
-  - {fileID: 6938487910987288255}
-  - {fileID: 367374518}
-  - {fileID: 50104957}
-  - {fileID: 1813638592}
 --- !u!114 &1493138547
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,14 +10,15 @@ using UnityEngine.Serialization;
 
 public class GameManager : NetworkBehaviour
 {
+    public GameData gameData;
+    
     [SerializeField] private LootManager _lootManager;
     [SerializeField] private BoatManager _boatManager;
     [SerializeField] private UI _ui;
-    [SerializeField] private float _timeFullDaySeconds;
-    [SerializeField] public UnityEvent<int> TimeUpdatedEvent;
-    [SerializeField] public UnityEvent TimeFinishedEvent;
-    [SerializeField] public UnityEvent<int> OnDayUpdatedEvent;
-    [SerializeField] public UnityEvent<float> OnBreathUpdated;
+    public UnityEvent<int, int> TimeUpdatedEvent;
+    public UnityEvent TimeFinishedEvent;
+    public UnityEvent<int> OnDayUpdatedEvent;
+    public UnityEvent<float> OnBreathUpdated;
 
     public Action OnUIOpened;
     public Action OnUIClosed;
@@ -28,8 +29,7 @@ public class GameManager : NetworkBehaviour
     private Coroutine _co_TimerCountdown;
     private int _day = 0;
     private int _quota = 0;
-
-    public int INCREMENT_QUOTA;
+    
     private int _currentAdditiveScene = -1;
     private bool _isLoadingScene;
     
@@ -66,7 +66,6 @@ public class GameManager : NetworkBehaviour
         {
             playerWaitConfirm.Add(client.Key, false);
         }
-
         
         Debug.Log("start wait corout");
         StartCoroutine(Co_WaitForPlayerResponse(onComplete));
@@ -174,7 +173,7 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.LoadingNextDay:
                 _day++;
-                _quota += INCREMENT_QUOTA;
+                _quota += gameData.INCREMENT_QUOTA;
                 MoneyManager.Instance.ResetCurrentCollected();
                 WaitForPlayerResponse(ToNextGameState_ServerRpc);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
@@ -301,16 +300,16 @@ public class GameManager : NetworkBehaviour
     
     private void StopCountdown()
     {
-        TimeUpdatedEvent?.Invoke(0);
+        TimeUpdatedEvent?.Invoke(0, gameData.DAY_LENGTH_SECONDS);
         if(_co_TimerCountdown != null) StopCoroutine(_co_TimerCountdown);
     }
     
     private IEnumerator Co_TimerCountdown()
     {
-        int secondsRemaining = Mathf.FloorToInt(_timeFullDaySeconds);
+        int secondsRemaining = Mathf.FloorToInt(gameData.DAY_LENGTH_SECONDS);
         while (secondsRemaining > 0)
         {
-            TimeUpdatedEvent?.Invoke(secondsRemaining);
+            TimeUpdatedEvent?.Invoke(secondsRemaining, gameData.DAY_LENGTH_SECONDS);
             yield return new WaitForSeconds(1);
             secondsRemaining--;
         }

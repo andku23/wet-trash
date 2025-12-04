@@ -1067,6 +1067,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameController
   ShowTopMostFoldoutHeaderGroup: 1
+  gameData: {fileID: 11400000, guid: 8f9660622800fe54da47b8930d800793, type: 2}
   _lootManager: {fileID: 1193161554}
   _boatManager: {fileID: 423871127}
   _ui: {fileID: 0}

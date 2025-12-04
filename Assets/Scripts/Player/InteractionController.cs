@@ -154,7 +154,7 @@ public class InteractionController : NetworkBehaviour
             if (inventorableItem != null)
             {
                 _inventory[_currentInventoryIndex] = lootIndex;
-                playerState.LandWeightMultiplier += inventorableItem.GetWeight();
+                playerState.WeightCarried += inventorableItem.GetWeight();
                 UI.Instance.AddHotbarItem(_currentInventoryIndex, lootIndex);
             }
         }
@@ -178,6 +178,7 @@ public class InteractionController : NetworkBehaviour
             if (inventorableItem != null)
             {
                 playerState.WeightCarried -= inventorableItem.GetWeight();
+                playerState.WeightCarried = Mathf.Clamp(playerState.WeightCarried, 0f, float.MaxValue);
             }
         }
         

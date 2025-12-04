@@ -8,6 +8,8 @@ public class Panel : MonoBehaviour
     private CanvasGroup _canvasGroup;
     private const float fadeTime = 0.25f;
     private Tweener _fadeTween;
+    
+    public bool IsVisible {get{return _canvasGroup.alpha == 1f;}}
     private void Awake()
     {
         _canvasGroup = GetComponent<CanvasGroup>();

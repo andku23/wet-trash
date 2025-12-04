@@ -114,12 +114,16 @@ public class GameUI : NetworkBehaviour
             Cursor.lockState = CursorLockMode.Locked;
     }
     
-    public async Awaitable ShowDayStartPanel()
+    public async Awaitable ShowDayStartPanel(StartDayPanel.Mode mode)
     {
-        startDayPanel.FadeIn(false, 1.0f);
+        startDayPanel.SetMode(mode);
         Cursor.lockState = CursorLockMode.None;
         GameManager.Instance.OnUIOpened?.Invoke();
-        await Awaitable.WaitForSecondsAsync(1f); 
+        if (!startDayPanel.IsVisible)
+        {
+            startDayPanel.FadeIn(false, 1.0f);
+            await Awaitable.WaitForSecondsAsync(1f); 
+        }
     }
     
     public async Awaitable HideDayStartPanel()

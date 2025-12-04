@@ -221,8 +221,7 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.DayActive:
                 GameUI.Instance.UpdateDayInfoText(quota, day);
-                StartCountdown();
-                GameUI.Instance.HideDayStartPanel();
+                DayActive_Client();
                 break;
             case TimeState.ShowDayResult:
                 TimeFinishedEvent?.Invoke();
@@ -284,10 +283,17 @@ public class GameManager : NetworkBehaviour
 
     private async Awaitable LoadNextDay_Client()
     {
-        await GameUI.Instance.ShowDayStartPanel();
+        await GameUI.Instance.ShowDayStartPanel(StartDayPanel.Mode.Loading);
         await TerrainManager.Instance.GenerateTerrain();
         PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
-        
+    }
+    
+    private async Awaitable DayActive_Client()
+    {
+        await GameUI.Instance.ShowDayStartPanel(StartDayPanel.Mode.StartDay);
+        await Awaitable.WaitForSecondsAsync(1f);
+        StartCountdown();
+        await GameUI.Instance.HideDayStartPanel();
     }
     
     private void SpawnLoot()

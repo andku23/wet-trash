@@ -14,7 +14,7 @@ public class GameManager : NetworkBehaviour
     
     [SerializeField] private LootManager _lootManager;
     [SerializeField] private BoatManager _boatManager;
-    [SerializeField] private UI _ui;
+    [FormerlySerializedAs("_ui")] [SerializeField] private GameUI gameUI;
     public UnityEvent<int, int> TimeUpdatedEvent;
     public UnityEvent TimeFinishedEvent;
     public UnityEvent<int> OnDayUpdatedEvent;
@@ -168,7 +168,7 @@ public class GameManager : NetworkBehaviour
         {
             case TimeState.BetweenDays:
                 RespawnAllPlayers_ServerRpc();
-                UI.Instance.PopulateShopContent_ServerRpc();
+                GameUI.Instance.PopulateShopContent_ServerRpc();
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.LoadingNextDay:
@@ -176,8 +176,9 @@ public class GameManager : NetworkBehaviour
                 _quota += gameData.INCREMENT_QUOTA;
                 MoneyManager.Instance.ResetCurrentCollected();
                 WaitForPlayerResponse(ToNextGameState_ServerRpc);
+                var clientTerrainGenData = TerrainManager.Instance.GenerateClientTerrainData();
+                TerrainManager.Instance.AssignGenerationData_ClientRpc(clientTerrainGenData);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
-                TerrainManager.Instance.GenerateTerrain_ServerRpc();
                 break;
             case TimeState.DayActive:
                 SpawnLoot();
@@ -213,19 +214,20 @@ public class GameManager : NetworkBehaviour
         switch (_timeState)
         {
             case TimeState.BetweenDays:
-                UI.Instance.CloseAllPanels(false);
+                GameUI.Instance?.CloseAllPanels(false);
                 break;
             case TimeState.LoadingNextDay:
+                LoadNextDay_Client();
                 break;
             case TimeState.DayActive:
-                UI.Instance.UpdateDayInfoText(quota, day);
-                UI.Instance.ShowDayStartPanel();
+                GameUI.Instance.UpdateDayInfoText(quota, day);
                 StartCountdown();
+                GameUI.Instance.HideDayStartPanel();
                 break;
             case TimeState.ShowDayResult:
                 TimeFinishedEvent?.Invoke();
-                UI.Instance.UpdateEndScreen(quota, currentDayCash);
-                UI.Instance.ShowEndScreen(true);
+                GameUI.Instance.UpdateEndScreen(quota, currentDayCash);
+                GameUI.Instance.ShowEndScreen(true);
                 StopCountdown();
                 break;
             case TimeState.QuotaFailed:
@@ -279,6 +281,14 @@ public class GameManager : NetworkBehaviour
     }
     
     #endregion
+
+    private async Awaitable LoadNextDay_Client()
+    {
+        await GameUI.Instance.ShowDayStartPanel();
+        await TerrainManager.Instance.GenerateTerrain();
+        PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
+        
+    }
     
     private void SpawnLoot()
     {

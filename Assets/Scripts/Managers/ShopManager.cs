@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class ShopManager : NetworkBehaviour
 {
-    [SerializeField] private UI ui;
+    [FormerlySerializedAs("ui")] [SerializeField] private GameUI gameUI;
     
     public static ShopManager Instance;
     
@@ -37,14 +38,14 @@ public class ShopManager : NetworkBehaviour
 
     public void ViewBoughtInventory()
     {
-        UI.Instance.ClearSharedInventoryUI();
-        UI.Instance.PopulateSharedInventoryUI(boughtItems);
-        UI.Instance.ShowSharedInventoryPanel(true);
+        GameUI.Instance.ClearSharedInventoryUI();
+        GameUI.Instance.PopulateSharedInventoryUI(boughtItems);
+        GameUI.Instance.ShowSharedInventoryPanel(true);
     }
     
     public void ViewShop()
     {
-        UI.Instance.ShowShopPanel(true);
+        GameUI.Instance.ShowShopPanel(true);
     }
 
     public void PurchaseItem(ShopItem shopItem, int index)

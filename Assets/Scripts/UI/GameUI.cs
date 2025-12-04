@@ -8,9 +8,9 @@ using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-public class UI : NetworkBehaviour
+public class GameUI : NetworkBehaviour
 {
-    public static UI Instance;
+    public static GameUI Instance;
     
     [Space(10)]
     [Header("HUD")]
@@ -42,7 +42,7 @@ public class UI : NetworkBehaviour
     
     [Space(10)]
     [Header("Start Day Screen")]
-    [SerializeField] private Panel startDayPanel;
+    [SerializeField] private StartDayPanel startDayPanel;
     [SerializeField] private TextMeshProUGUI startDayText;
     [SerializeField] private TextMeshProUGUI startQuotaText;
     
@@ -57,7 +57,6 @@ public class UI : NetworkBehaviour
     {
         if(Instance == null) Instance = this;
         CloseAllPanels(true, false);
-        
     }
 
     public override void OnNetworkSpawn()
@@ -66,6 +65,8 @@ public class UI : NetworkBehaviour
         GameManager.Instance.OnDayUpdatedEvent.AddListener(UpdateDayText);
         GameManager.Instance.OnBreathUpdated.AddListener(UpdateBreathBar);
         MoneyManager.Instance.OnCashChanged.AddListener(UpdateCashText);
+        
+        UpdateCashText(MoneyManager.Instance.Cash);
     }
 
     private void OnDestroy()
@@ -113,20 +114,20 @@ public class UI : NetworkBehaviour
             Cursor.lockState = CursorLockMode.Locked;
     }
     
-    public void ShowDayStartPanel()
-    {
-        StartCoroutine(Co_ShowDayStartPanel());
-    }
-
-    private IEnumerator Co_ShowDayStartPanel()
+    public async Awaitable ShowDayStartPanel()
     {
         startDayPanel.FadeIn(false, 1.0f);
         Cursor.lockState = CursorLockMode.None;
         GameManager.Instance.OnUIOpened?.Invoke();
-        yield return new WaitForSeconds(1f);
+        await Awaitable.WaitForSecondsAsync(1f); 
+    }
+    
+    public async Awaitable HideDayStartPanel()
+    {
         startDayPanel.FadeOut(false, 1.0f);
-        Cursor.lockState = CursorLockMode.Locked;
         GameManager.Instance.OnUIClosed?.Invoke();
+        await Awaitable.WaitForSecondsAsync(1f);
+        Cursor.lockState = CursorLockMode.None;
     }
     
     public void ShowShopPanel(bool isVisible)

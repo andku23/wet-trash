@@ -20,7 +20,7 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private PlayerState playerState;
     
-    private UI _ui;
+    private GameUI _gameUI;
 
     private const int INVENTORY_SIZE = 4;
     private int[] _inventory = new int[INVENTORY_SIZE];
@@ -155,7 +155,7 @@ public class InteractionController : NetworkBehaviour
             {
                 _inventory[_currentInventoryIndex] = lootIndex;
                 playerState.WeightCarried += inventorableItem.GetWeight();
-                UI.Instance.AddHotbarItem(_currentInventoryIndex, lootIndex);
+                GameUI.Instance.AddHotbarItem(_currentInventoryIndex, lootIndex);
             }
         }
         
@@ -173,7 +173,7 @@ public class InteractionController : NetworkBehaviour
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
         {
             _inventory[_currentInventoryIndex] = -1;
-            UI.Instance.RemoveHotbarItem(_currentInventoryIndex);
+            GameUI.Instance.RemoveHotbarItem(_currentInventoryIndex);
             IInventorable inventorableItem = heldObject.gameObject.GetComponent<IInventorable>();
             if (inventorableItem != null)
             {
@@ -216,7 +216,7 @@ public class InteractionController : NetworkBehaviour
             }
             playerController.ToggleCarrying(false);
         }
-        UI.Instance.SetActiveHotbarItem(_currentInventoryIndex);
+        GameUI.Instance.SetActiveHotbarItem(_currentInventoryIndex);
         
     }
     

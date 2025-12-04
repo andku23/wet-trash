@@ -7,4 +7,6 @@ public class GameData : ScriptableObject
     public int DAY_START_HOUR = 6;
     public int DAY_END_HOUR = 24;
     public int INCREMENT_QUOTA;
+    public int INITIAL_QUOTA;
+    public int INITIAL_CASH = 400;
 }

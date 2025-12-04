@@ -107,7 +107,7 @@ public class PlayerController : NetworkBehaviour
     private StarterAssetsInputs _input;
     public GameObject MainCamera;
     private GameObject _selectedControlMode;
-    private UI _ui;
+    private GameUI _gameUI;
 
     private bool _hasAnimator;
     public ICameraControl CameraControl {get{return _cameraControl;}}

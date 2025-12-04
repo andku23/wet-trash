@@ -26,7 +26,7 @@ public class MoneyManager : NetworkBehaviour
 
         if (IsServer)
         {
-            _cash.Value = 400;
+            _cash.Value = GameManager.Instance.gameData.INITIAL_CASH;
         }
         
         OnCashChanged.Invoke(_cash.Value);

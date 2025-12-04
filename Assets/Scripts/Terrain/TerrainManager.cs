@@ -22,6 +22,8 @@ public class TerrainManager : NetworkBehaviour
 
     private Vector2[] currentHolePositions;
     private Vector2[] currentLootGroupPositions;
+
+    private ClientTerrainGenerationData currentGenerationData;
     
     private void Start()
     {
@@ -38,9 +40,9 @@ public class TerrainManager : NetworkBehaviour
     private JobHandle noiseJobHandle;
     private JobHandle holesJobHandle;
     private bool terrainGenerationRequested = false;
+    private bool terrainGenerationCompleted = false;
     
-    [ServerRpc]
-    public void GenerateTerrain_ServerRpc()
+    public ClientTerrainGenerationData GenerateClientTerrainData()
     {
         int seed = Random.Range(0, 999999);
         Vector2[] holePosition = new Vector2[NUM_OF_HOLES];
@@ -60,12 +62,27 @@ public class TerrainManager : NetworkBehaviour
                 Random.Range(32, _terrain.terrainData.heightmapResolution - 32));
         }
         
-        GenerateTerrain_ClientRpc(seed,holePosition, lootGroupPosition);
+        ClientTerrainGenerationData data = new ClientTerrainGenerationData();
+        data.seed = seed;
+        data.holePositions = holePosition;
+        data.lootGroupPositions = lootGroupPosition;
+
+        return data;
+    }
+
+    [ClientRpc]
+    public void AssignGenerationData_ClientRpc(ClientTerrainGenerationData generationData)
+    {
+        currentGenerationData = generationData;
     }
     
-    [ClientRpc]
-    private void GenerateTerrain_ClientRpc(int seed, Vector2[] holePositions, Vector2[] lootGroupPositions)
+    public async Awaitable GenerateTerrain()
     {
+        if (currentGenerationData == null) return;
+        int seed = currentGenerationData.seed;
+        Vector2[] holePositions = currentGenerationData.holePositions; 
+        Vector2[] lootGroupPositions = currentGenerationData.lootGroupPositions;
+        
         int resolution = _terrain.terrainData.heightmapResolution; 
         float scale = 5f;
 
@@ -94,7 +111,12 @@ public class TerrainManager : NetworkBehaviour
         noiseJobHandle = noiseJob.Schedule(noiseMap.Length, 64);
         holesJobHandle = holesJob.Schedule(holesMap.Length, 64);
         terrainGenerationRequested = true;
+        terrainGenerationCompleted = false;
         
+        while (!terrainGenerationCompleted)
+        {
+            await Awaitable.NextFrameAsync();
+        }
     }
     
     public Vector3 GetRandomPointOnTerrain()
@@ -324,15 +346,31 @@ public class TerrainManager : NetworkBehaviour
                 }
             }
 
-            GameManager.Instance.PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
+            terrainGenerationCompleted = true;
 
             noiseMap.Dispose();
             holesMap.Dispose();
         }
     }
 }
-//For noise functions
 
+
+public class ClientTerrainGenerationData: INetworkSerializable
+{
+    public int seed;
+    public Vector2[] holePositions;
+    public Vector2[] lootGroupPositions;
+    
+    // INetworkSerializable
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref seed);
+        serializer.SerializeValue(ref holePositions);
+        serializer.SerializeValue(ref lootGroupPositions);
+    }
+}
+
+//For noise functions
 public struct GenerateNoiseJob : IJobParallelFor
 {
     public NativeArray<float> NoiseMap; // Output array for noise values

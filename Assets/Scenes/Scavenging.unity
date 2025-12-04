@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 21255420}
   - component: {fileID: 21255419}
   - component: {fileID: 21255418}
-  - component: {fileID: 21255417}
+  - component: {fileID: 21255421}
   m_Layer: 5
   m_Name: StartDayScreen
   m_TagString: Untagged
@@ -160,18 +160,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &21255417
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 21255415}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dcda6d280d51ae643b52bfacf3640f15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Panel
 --- !u!225 &21255418
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -222,6 +210,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 21255415}
   m_CullTransparentMesh: 1
+--- !u!114 &21255421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 21255415}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 114af1bde74181d4eb93d717ca0356ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StartDayPanel
 --- !u!1001 &50104955
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5282,8 +5282,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI
   ShowTopMostFoldoutHeaderGroup: 1
-  _dayStartTime: 6
-  _dayEndTime: 24
   cashText: {fileID: 1420962018}
   timeText: {fileID: 1077349029}
   dayText: {fileID: 432130333}
@@ -5306,7 +5304,7 @@ MonoBehaviour:
   endScreenPanel: {fileID: 1506391123}
   endScreenQuotaText: {fileID: 542867724}
   endScreenCurrentCashText: {fileID: 1931652683}
-  startDayPanel: {fileID: 21255417}
+  startDayPanel: {fileID: 21255421}
   startDayText: {fileID: 101049400}
   startQuotaText: {fileID: 1708800607}
   deadPanel: {fileID: 1617620818}

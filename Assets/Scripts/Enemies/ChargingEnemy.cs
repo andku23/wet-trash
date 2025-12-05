@@ -10,6 +10,7 @@ public class ChargingEnemy : BaseEnemy
     private PlayerState _closestPlayerState;
     private Collider _currentWaterBody;
     private float startTime;
+    private float idleDistance;
     private bool isChargingUp = false;
     private bool isDoingAttack = false;
     private bool hasDoneDamage = false;
@@ -113,16 +114,13 @@ public class ChargingEnemy : BaseEnemy
         else if (Vector3.Distance(gameObject.transform.position, nextPosition) <= 0.1f)
         {
             lastPosition = nextPosition;
-            nextPosition = new Vector3(
-                Random.Range(-3, 3) + initialPosition.x,
-                Random.Range(-3, 3) + initialPosition.y,
-                Random.Range(-3, 3) + initialPosition.z
-            );
+            nextPosition = WorldManager.Instance.GetRandomPointInOcean();
             startTime = Time.time;
+            idleDistance = Vector3.Distance(lastPosition, nextPosition);
         }
         else
         {
-            transform.position = Vector3.Lerp(lastPosition, nextPosition, (Time.time - startTime)/IDLE_SPEED);
+            transform.position = Vector3.Lerp(lastPosition, nextPosition, ((Time.time - startTime)*IDLE_SPEED)/idleDistance);
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(nextPosition - transform.position), 3.0f * Time.deltaTime);
         }
     }

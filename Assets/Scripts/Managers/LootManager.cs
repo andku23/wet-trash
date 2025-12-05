@@ -44,8 +44,10 @@ public class LootManager : NetworkBehaviour
         moneyText.text = $"${next}";
     }
 
-    public void SpawnLoot()
+    // Returns total loot cost
+    public int SpawnLoot()
     {
+        int totalCost = 0;
         // Create spawn probability tables for different depths
         List<int> spawnProbabilityShallow = new List<int>();
         List<int> spawnProbabilityDeep = new List<int>();
@@ -66,48 +68,54 @@ public class LootManager : NetworkBehaviour
             }
         }
         
+        int totalLootCost = 0;
         // Spawn loot based on created loot tables
         Vector3 spawnPosition = Vector3.zero;
         for (int i = 0; i < _numLoot; i++)
         {
-            spawnPosition = TerrainManager.Instance.GetRandomPointOnTerrain();
+            spawnPosition = WorldManager.Instance.GetRandomPointOnTerrain();
             if (spawnPosition.y < spawnCutoff.transform.position.y)
             {
-                SpawnAndLoadLoot(spawnPosition, spawnProbabilityDeep);
+                var itemData = SpawnAndLoadLoot(spawnPosition, spawnProbabilityDeep);
+                totalLootCost += itemData.price;
             }
             else
             {
-                SpawnAndLoadLoot(spawnPosition, spawnProbabilityShallow);
+                var itemData = SpawnAndLoadLoot(spawnPosition, spawnProbabilityShallow);
+                totalLootCost += itemData.price;
             }
         }
         
         //One on the surface just to debug
-        SpawnAndLoadLoot(new Vector3(0,0,0), spawnProbabilityShallow);
+        totalLootCost += SpawnAndLoadLoot(new Vector3(0,0,0), spawnProbabilityShallow).price;
         
         for (int i = 0; i < _lootGroups.Count; i++)
         {
             for (int j = 0; j < _lootGroups[i].lootSpawnLocations.Length; j++)
             {
-                SpawnAndLoadLoot(_lootGroups[i].lootSpawnLocations[j].position, spawnProbabilityDeep);
+                totalLootCost += SpawnAndLoadLoot(_lootGroups[i].lootSpawnLocations[j].position, spawnProbabilityDeep).price;
             }
         }
+        
+        return totalLootCost;
     }
-
-    private void SpawnAndLoadLoot(Vector3 spawnPosition, List<int> spawnProbabilityTable)
+    
+    private ItemData SpawnAndLoadLoot(Vector3 spawnPosition, List<int> spawnProbabilityTable)
     {
         GameObject go = Instantiate(itemList.networkLootPrefab,
             spawnPosition,
             Quaternion.identity);
         //LootBaseData lootBaseData = go.GetComponent<LootBaseData>();
-        int selectedPrefabIndex = spawnProbabilityTable[Random.Range(0, spawnProbabilityTable.Count)];
+        int selectedLootIndex = spawnProbabilityTable[Random.Range(0, spawnProbabilityTable.Count)];
         //LootData randomlySelectedData = lootList.pairs[selectedPrefabIndex];
             
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
         NetworkLoot networkLoot = go.GetComponent<NetworkLoot>();
             
-        networkLoot.lootIndex.Value = selectedPrefabIndex;
+        networkLoot.lootIndex.Value = selectedLootIndex;
         networkObject.Spawn();
         _loots.Add(networkObject);
+        return itemList.pairs[selectedLootIndex];
     }
     
     private void DestroyLootInHand(ulong targetPlayerNetworkObjectId)

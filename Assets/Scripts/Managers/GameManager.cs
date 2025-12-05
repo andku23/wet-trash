@@ -23,7 +23,8 @@ public class GameManager : NetworkBehaviour
     public Action OnUIOpened;
     public Action OnUIClosed;
 
-    private Dictionary<ulong, bool> playerWaitConfirm;
+    private Dictionary<ulong, bool> playerWaitConfirm_s;
+    private LevelData currentLevelData_s;
     
     private TimeState _timeState;
     private Coroutine _co_TimerCountdown;
@@ -32,6 +33,8 @@ public class GameManager : NetworkBehaviour
     
     private int _currentAdditiveScene = -1;
     private bool _isLoadingScene;
+    
+    public int GetDayLengthHours { get {return gameData.DAY_END_HOUR - gameData.DAY_START_HOUR;}}
     
     public enum TimeState
     {
@@ -60,11 +63,11 @@ public class GameManager : NetworkBehaviour
 
     private void WaitForPlayerResponse(Action onComplete)
     {
-        playerWaitConfirm = new Dictionary<ulong, bool>();
+        playerWaitConfirm_s = new Dictionary<ulong, bool>();
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
         foreach (var client in connectedClients)
         {
-            playerWaitConfirm.Add(client.Key, false);
+            playerWaitConfirm_s.Add(client.Key, false);
         }
         
         Debug.Log("start wait corout");
@@ -74,7 +77,7 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void PlayerWaitResponse_ServerRpc(ulong targetPlayerNetworkObjectId)
     {
-        playerWaitConfirm[targetPlayerNetworkObjectId] = true;
+        playerWaitConfirm_s[targetPlayerNetworkObjectId] = true;
     }
 
     private IEnumerator Co_WaitForPlayerResponse(Action onComplete)
@@ -84,7 +87,7 @@ public class GameManager : NetworkBehaviour
         {
             yield return new WaitForSeconds(0.5f);
             allPlayersResponded = true;
-            foreach (var player in playerWaitConfirm)
+            foreach (var player in playerWaitConfirm_s)
             {
                 if (!player.Value)
                 {
@@ -173,24 +176,25 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.LoadingNextDay:
                 _day++;
-                _quota += gameData.INCREMENT_QUOTA;
+                currentLevelData_s = new LevelData(30, 4);
                 MoneyManager.Instance.ResetCurrentCollected();
                 WaitForPlayerResponse(ToNextGameState_ServerRpc);
-                var clientTerrainGenData = TerrainManager.Instance.GenerateClientTerrainData();
-                TerrainManager.Instance.AssignGenerationData_ClientRpc(clientTerrainGenData);
+                var clientTerrainGenData = WorldManager.Instance.GenerateClientTerrainData();
+                WorldManager.Instance.AssignGenerationData_ClientRpc(clientTerrainGenData);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.DayActive:
-                SpawnLoot();
+                _lootManager.DeleteAllLoot();
+                _quota = Mathf.FloorToInt(_lootManager.SpawnLoot() * gameData.QUOTA_PERCENTAGE);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.ShowDayResult:
-                DeleteLoot();
+                _lootManager.DeleteAllLoot();
                 StartCoroutine(CountdownTimer(3, () => { ToNextGameState_ServerRpc(); }));
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.QuotaFailed:
-                DeleteLoot();
+                _lootManager.DeleteAllLoot();
                 RespawnAllPlayers_ServerRpc();
                 _day = 0;
                 _quota = 0;
@@ -276,7 +280,6 @@ public class GameManager : NetworkBehaviour
             player.transform.position = position;
             player.transform.rotation = rotation;
         }
-        
     }
     
     #endregion
@@ -284,7 +287,7 @@ public class GameManager : NetworkBehaviour
     private async Awaitable LoadNextDay_Client()
     {
         await GameUI.Instance.ShowDayStartPanel(StartDayPanel.Mode.Loading);
-        await TerrainManager.Instance.GenerateTerrain();
+        await WorldManager.Instance.GenerateTerrain();
         PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
     }
     
@@ -296,36 +299,26 @@ public class GameManager : NetworkBehaviour
         await GameUI.Instance.HideDayStartPanel();
     }
     
-    private void SpawnLoot()
-    {
-        DeleteLoot();
-        _lootManager.SpawnLoot();
-    }
     
-    private void DeleteLoot()
-    {
-        _lootManager.DeleteAllLoot();
-    }
-    
+    #region Day Cycle Logic
     private void StartCountdown()
     {
         StopCountdown();
         OnDayUpdatedEvent.Invoke(_day);
-        _co_TimerCountdown = StartCoroutine(Co_TimerCountdown());
+        _co_TimerCountdown = StartCoroutine(Co_DayTimer());
     }
     
-    private void StopCountdown()
-    {
-        TimeUpdatedEvent?.Invoke(0, gameData.DAY_LENGTH_SECONDS);
-        if(_co_TimerCountdown != null) StopCoroutine(_co_TimerCountdown);
-    }
-    
-    private IEnumerator Co_TimerCountdown()
+    private IEnumerator Co_DayTimer()
     {
         int secondsRemaining = Mathf.FloorToInt(gameData.DAY_LENGTH_SECONDS);
         while (secondsRemaining > 0)
         {
+            int secondsElapsed = gameData.DAY_LENGTH_SECONDS - secondsRemaining;
             TimeUpdatedEvent?.Invoke(secondsRemaining, gameData.DAY_LENGTH_SECONDS);
+            if (IsServer)
+            {
+                CheckMonsterSpawn_S(secondsElapsed, gameData.DAY_LENGTH_SECONDS);
+            }
             yield return new WaitForSeconds(1);
             secondsRemaining--;
         }
@@ -335,6 +328,29 @@ public class GameManager : NetworkBehaviour
             ToNextGameState_ServerRpc();
         }
     }
+    
+    private void StopCountdown()
+    {
+        TimeUpdatedEvent?.Invoke(0, gameData.DAY_LENGTH_SECONDS);
+        if(_co_TimerCountdown != null) StopCoroutine(_co_TimerCountdown);
+    }
+
+    private void CheckMonsterSpawn_S(int realSecondsPassed, int realTotalSeconds)
+    {
+        int currentSpawnedMonsters = WorldManager.Instance.NumSpawnedMonsters;
+        if (currentSpawnedMonsters < currentLevelData_s.MAX_MONSTERS_SPAWNED)
+        {
+            float pctElapsed = (float)realSecondsPassed / realTotalSeconds;
+            float hoursElapsed = (pctElapsed) * GetDayLengthHours;
+            int expectedMonstersSpawned = Mathf.FloorToInt(hoursElapsed * currentLevelData_s.MONSTER_SPAWN_PER_HOUR);
+            if (currentSpawnedMonsters < expectedMonstersSpawned)
+            {
+                WorldManager.Instance.SpawnRandomEnemy_S();
+            }
+        }
+    }
+    
+    #endregion
     
     private IEnumerator CountdownTimer(float seconds, Action callback)
     {

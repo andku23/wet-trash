@@ -1070,8 +1070,7 @@ MonoBehaviour:
   gameData: {fileID: 11400000, guid: 8f9660622800fe54da47b8930d800793, type: 2}
   _lootManager: {fileID: 1193161554}
   _boatManager: {fileID: 423871127}
-  _ui: {fileID: 0}
-  _timeFullDaySeconds: 300
+  gameUI: {fileID: 0}
   TimeUpdatedEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -1084,7 +1083,6 @@ MonoBehaviour:
   OnBreathUpdated:
     m_PersistentCalls:
       m_Calls: []
-  INCREMENT_QUOTA: 500
 --- !u!1 &225720092
 GameObject:
   m_ObjectHideFlags: 0
@@ -3094,6 +3092,7 @@ MonoBehaviour:
   NUM_OF_LOOT_GROUPS: 3
   SpawnedHoles: []
   SpawnedLootGroups: []
+  InitialEnemies: []
   SpawnedEnemies: []
   _terrain: {fileID: 0}
 --- !u!1 &802126870
@@ -6603,7 +6602,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopManager
   ShowTopMostFoldoutHeaderGroup: 1
-  ui: {fileID: 0}
+  gameUI: {fileID: 0}
   shopList: {fileID: 11400000, guid: 9dc59e6a45a756943b16d5aa59af29e4, type: 2}
   boughtItems: 
 --- !u!1 &2105892914

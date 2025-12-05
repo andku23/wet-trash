@@ -16,6 +16,7 @@ public class GameUI : NetworkBehaviour
     [Header("HUD")]
     [SerializeField] private TextMeshProUGUI cashText;
     [SerializeField] private TextMeshProUGUI timeText;
+    [SerializeField] private TextMeshProUGUI merideumText;
     [SerializeField] private TextMeshProUGUI dayText;
     [SerializeField] private TextMeshProUGUI quotaText;
     [SerializeField] private RectTransform breathParent;
@@ -131,7 +132,7 @@ public class GameUI : NetworkBehaviour
         startDayPanel.FadeOut(false, 1.0f);
         GameManager.Instance.OnUIClosed?.Invoke();
         await Awaitable.WaitForSecondsAsync(1f);
-        Cursor.lockState = CursorLockMode.None;
+        Cursor.lockState = CursorLockMode.Locked;
     }
     
     public void ShowShopPanel(bool isVisible)
@@ -281,11 +282,14 @@ public class GameUI : NetworkBehaviour
     public void UpdateCountdownText(int timeLeft, int timeTotal)
     {
         float percentageElapsed = 1f - ((float)timeLeft / timeTotal);
-        int totalScaledMinutes = (GameManager.Instance.gameData.DAY_END_HOUR - GameManager.Instance.gameData.DAY_START_HOUR) * 60;
+        int totalScaledMinutes = (GameManager.Instance.GetDayLengthHours) * 60;
         int currentScaledMinutes = Mathf.FloorToInt(totalScaledMinutes * percentageElapsed);
         int hoursElapsed = (currentScaledMinutes / 60) + GameManager.Instance.gameData.DAY_START_HOUR;
         int minutesElapsed = (currentScaledMinutes % 60);
-        timeText.text = hoursElapsed.ToString("00") + ":" + minutesElapsed.ToString("00");
+        int hoursElapsed12 = hoursElapsed % 12;
+        string meridiem = (hoursElapsed > 12) ? "PM" : "AM";
+        timeText.text = hoursElapsed12.ToString("00") + ":" + minutesElapsed.ToString("00");
+        merideumText.text = meridiem;
     }
     
     public void UpdateDayText(int day)

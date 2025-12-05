@@ -210,7 +210,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3403294348
+  GlobalObjectIdHash: 1982590849
   InScenePlacedSourceGlobalObjectIdHash: 1982590849
   DeferredDespawnTick: 0
   Ownership: 1
@@ -278,7 +278,7 @@ MonoBehaviour:
     m_InternalValue: 10
   _rigidbody: {fileID: 6404482265344338283}
   AGRO_RANGE: 10
-  IDLE_SPEED: 2
+  IDLE_SPEED: 5
   ATTACK_COOLDOWN_TIME: 1
   SWIM_SPEED: 3.5
   CHARGE_TIME: 2

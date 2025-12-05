@@ -7,9 +7,9 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Random = UnityEngine.Random;
 
-public class TerrainManager : NetworkBehaviour
+public class WorldManager : NetworkBehaviour
 {
-    public static TerrainManager Instance;
+    public static WorldManager Instance;
     [SerializeField] private GameObject[] caveRoomEnds;
     [SerializeField] private GameObject[] enemyPrefabs;
     [SerializeField] private GameObject[] lootGroupPrefabs;
@@ -18,13 +18,17 @@ public class TerrainManager : NetworkBehaviour
 
     public List<GameObject> SpawnedHoles;
     public List<GameObject> SpawnedLootGroups;
-    public List<NetworkObject> SpawnedEnemies;
+    
+    public List<NetworkObject> InitialEnemies; // Enemies spawned at start
+    public List<NetworkObject> SpawnedEnemies; // Enemis that spawn as the day goes on
 
     private Vector2[] currentHolePositions;
     private Vector2[] currentLootGroupPositions;
 
     private ClientTerrainGenerationData currentGenerationData;
     
+    public int NumSpawnedMonsters => SpawnedEnemies.Count;
+
     private void Start()
     {
         if (Instance == null)
@@ -128,6 +132,14 @@ public class TerrainManager : NetworkBehaviour
         float randomZ = Random.Range(terrainPosition.z, terrainPosition.z + terrainSize.z);
 
         return GetPointOnTerrain(randomX, randomZ);
+    }
+    
+    public Vector3 GetRandomPointInOcean()
+    {
+        Vector3 randomPointOnTerrain = GetRandomPointOnTerrain();
+        randomPointOnTerrain.y = Random.Range(0, randomPointOnTerrain.y);
+
+        return randomPointOnTerrain;
     }
     
     public Vector3 GetPointOnTerrain(float x, float z)
@@ -244,6 +256,12 @@ public class TerrainManager : NetworkBehaviour
             SpawnedEnemies[enemyIndex].Despawn(true);
         }
         SpawnedEnemies.Clear();
+        
+        for (int enemyIndex = 0; enemyIndex < InitialEnemies.Count; enemyIndex++)
+        {
+            InitialEnemies[enemyIndex].Despawn(true);
+        }
+        InitialEnemies.Clear();
 
         for (int i = 0; i < _terrain.terrainData.heightmapResolution - 1; i++)
         {
@@ -256,13 +274,12 @@ public class TerrainManager : NetworkBehaviour
         LootManager.Instance.ResetLootHolesServer();
     }
 
-    private void SpawnRandomEnemy()
+    public void SpawnRandomEnemy_S()
     {
-        Vector3 randomPointOnTerrain = GetRandomPointOnTerrain();
-        randomPointOnTerrain.y = Random.Range(0, randomPointOnTerrain.y);
+        Vector3 randomPointInOcean = GetRandomPointInOcean();
         var randomEnemy = enemyPrefabs[Random.Range(1, enemyPrefabs.Length)];
         NetworkObject no = Instantiate(randomEnemy,
-            randomPointOnTerrain,
+            randomPointInOcean,
             Quaternion.identity
         ).GetComponent<NetworkObject>();
         no.Spawn();
@@ -303,6 +320,7 @@ public class TerrainManager : NetworkBehaviour
 
             SpawnedHoles = new List<GameObject>();
             SpawnedEnemies = new List<NetworkObject>();
+            InitialEnemies = new List<NetworkObject>();
             SpawnedLootGroups = new List<GameObject>();
             for (int i = 0; i < currentHolePositions.Length; i++)
             {
@@ -319,7 +337,7 @@ public class TerrainManager : NetworkBehaviour
                         Quaternion.identity
                     ).GetComponent<NetworkObject>();
                     no.Spawn();
-                    SpawnedEnemies.Add(no);
+                    InitialEnemies.Add(no);
                     LootManager.Instance.RegisterLootGroupServer(hole);
                 }
             }
@@ -335,14 +353,6 @@ public class TerrainManager : NetworkBehaviour
                 if (IsServer)
                 {
                     LootManager.Instance.RegisterLootGroupServer(lootGroup);
-                }
-            }
-
-            if (IsServer)
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    SpawnRandomEnemy();
                 }
             }
 

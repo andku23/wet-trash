@@ -10,11 +10,12 @@ using UnityEngine.Serialization;
 
 public class GameManager : NetworkBehaviour
 {
-    public GameData gameData;
+    [SerializeField] private GameData sourceGameData;
+    [HideInInspector] public GameData gameData;
     
     [SerializeField] private LootManager _lootManager;
     [SerializeField] private BoatManager _boatManager;
-    [FormerlySerializedAs("_ui")] [SerializeField] private GameUI gameUI;
+    private GameUI gameUI;
     public UnityEvent<int, int> TimeUpdatedEvent;
     public UnityEvent TimeFinishedEvent;
     public UnityEvent<int> OnDayUpdatedEvent;
@@ -54,6 +55,8 @@ public class GameManager : NetworkBehaviour
         {
             Instance = this;
         }
+        
+        gameData = Instantiate(sourceGameData);
     }
 
     public void RequestToNextGameState()
@@ -186,11 +189,20 @@ public class GameManager : NetworkBehaviour
             case TimeState.DayActive:
                 _lootManager.DeleteAllLoot();
                 _quota = Mathf.FloorToInt(_lootManager.SpawnLoot() * gameData.QUOTA_PERCENTAGE);
+                // GameObject go = Instantiate(RogueEffectManager.Instance.rogueCardPrefab);
+                // RogueCard rogueCard = go.GetComponent<RogueCard>();
+                // rogueCard.GenerateCard_S(1,1);
+                // rogueCard.ApplyCard_S();
+                // GameUI.Instance.ShowRogueCard(rogueCard);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.ShowDayResult:
                 _lootManager.DeleteAllLoot();
-                StartCoroutine(CountdownTimer(3, () => { ToNextGameState_ServerRpc(); }));
+                
+                RogueCardPacketData[] datas = RogueEffectManager.Instance.GenerateCards_S(1, 1, 2);
+                RogueEffectManager.Instance.WaitForCardVote_S(datas, ToNextGameState_ServerRpc);
+                RogueEffectManager.Instance.ShowCards_ClientRpc(datas);
+                //StartCoroutine(CountdownTimer(3, () => { ToNextGameState_ServerRpc(); }));
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.QuotaFailed:

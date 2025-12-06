@@ -40,6 +40,7 @@ public class GameUI : NetworkBehaviour
     [SerializeField] private Panel endScreenPanel;
     [SerializeField] private TextMeshProUGUI endScreenQuotaText;
     [SerializeField] private TextMeshProUGUI endScreenCurrentCashText;
+    [SerializeField] private RectTransform rogueCardArea;
     
     [Space(10)]
     [Header("Start Day Screen")]
@@ -48,11 +49,11 @@ public class GameUI : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI startQuotaText;
     
     [Space(10)]
-    [Header("Start Day Screen")]
+    [Header("Dead Screen")]
     [SerializeField] private Panel deadPanel;
 
-
     private List<UIShopItem> uiShopItems = new List<UIShopItem>();
+    private List<RogueCard> _rogueCards = new List<RogueCard>();
     
     private void Start()
     {
@@ -133,6 +134,20 @@ public class GameUI : NetworkBehaviour
         GameManager.Instance.OnUIClosed?.Invoke();
         await Awaitable.WaitForSecondsAsync(1f);
         Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    public void ShowRogueCards(List<RogueCard> rogueCards)
+    {
+        foreach (var rogueCard in _rogueCards)
+        {
+            Destroy(rogueCard.gameObject);
+        }
+        _rogueCards.Clear();
+        _rogueCards = rogueCards;
+        for (int i = 0; i < _rogueCards.Count; i++)
+        {
+            _rogueCards[i].transform.parent = rogueCardArea;
+        }
     }
     
     public void ShowShopPanel(bool isVisible)

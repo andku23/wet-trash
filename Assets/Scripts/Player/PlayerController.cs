@@ -438,8 +438,9 @@ public class PlayerController : NetworkBehaviour
         
         float speedOffset = 0.1f;
         float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
+        float globalWeightMultiplier = GameManager.Instance.gameData.WEIGHT_MULTIPLIER;
         
-        targetSpeed *= 1/(playerState.SwimWeightMultiplier * playerState.WeightCarried + 1);
+        targetSpeed *= globalWeightMultiplier/(playerState.SwimWeightMultiplier * playerState.WeightCarried + 1);
         
         _speed = targetSpeed;
         
@@ -538,8 +539,9 @@ public class PlayerController : NetworkBehaviour
 
         float speedOffset = 0.1f;
         float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
+        float globalWeightMultiplier = GameManager.Instance.gameData.WEIGHT_MULTIPLIER;
 
-        targetSpeed *= 1/(playerState.LandWeightMultiplier * playerState.WeightCarried + 1);;
+        targetSpeed *= globalWeightMultiplier/(playerState.LandWeightMultiplier * playerState.WeightCarried + 1);
 
         // accelerate or decelerate to target speed
         if (currentHorizontalSpeed < targetSpeed - speedOffset ||

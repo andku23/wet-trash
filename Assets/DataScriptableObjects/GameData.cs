@@ -10,4 +10,6 @@ public class GameData : ScriptableObject
     public int INITIAL_CASH = 400;
     public float WEIGHT_MULTIPLIER = 1;
     public int NUM_ROGUE_CARDS = 2;
+    public int MAX_MONSTERS_PER_DAY = 30;
+    public int MONSTER_SPAWN_PER_HOUR = 4;
 }

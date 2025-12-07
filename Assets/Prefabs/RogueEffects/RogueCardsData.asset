@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdfe71c45ae99e24ab124f5f50177f42, type: 3}
+  m_Name: RogueCardsData
+  m_EditorClassIdentifier: Assembly-CSharp::RogueCardsData
+  PositiveEffects:
+  - id: 1
+    title: 
+    description: Quotas are decreased by 50%
+    prefab: {fileID: 2412944391066898134, guid: 24d832a6126e4c049a7f85332092c78f,
+      type: 3}
+  - id: 3
+    title: 
+    description: Weight encumberment decreased by 50%
+    prefab: {fileID: 7434131957716360859, guid: 8c25f131b6c7f6b4ab46069aad5f476a,
+      type: 3}
+  - id: 5
+    title: 
+    description: Monsters spawn 50% less often
+    prefab: {fileID: 5729215137877612717, guid: dfb9569ad501f8b40b76922541cc2224,
+      type: 3}
+  NegativeEffects:
+  - id: 0
+    title: 
+    description: Quotas are increased by 50%
+    prefab: {fileID: 2412944391066898134, guid: 220cbdfcd1e99ed478b1fd0e637103b1,
+      type: 3}
+  - id: 2
+    title: 
+    description: Weight encumberment increased by 50%
+    prefab: {fileID: 7434131957716360859, guid: 5268c31c5d6864f41bf8eff177e786cc,
+      type: 3}
+  - id: 4
+    title: 
+    description: Monsters spawn 50% more often
+    prefab: {fileID: 5729215137877612717, guid: 3edda5bcb5cdebc479e897d04a080f92,
+      type: 3}

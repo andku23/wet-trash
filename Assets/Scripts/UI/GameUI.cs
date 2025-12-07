@@ -53,7 +53,6 @@ public class GameUI : NetworkBehaviour
     [SerializeField] private Panel deadPanel;
 
     private List<UIShopItem> uiShopItems = new List<UIShopItem>();
-    private List<RogueCard> _rogueCards = new List<RogueCard>();
     
     private void Start()
     {
@@ -138,15 +137,9 @@ public class GameUI : NetworkBehaviour
 
     public void ShowRogueCards(List<RogueCard> rogueCards)
     {
-        foreach (var rogueCard in _rogueCards)
+        for (int i = 0; i < rogueCards.Count; i++)
         {
-            Destroy(rogueCard.gameObject);
-        }
-        _rogueCards.Clear();
-        _rogueCards = rogueCards;
-        for (int i = 0; i < _rogueCards.Count; i++)
-        {
-            _rogueCards[i].transform.parent = rogueCardArea;
+            rogueCards[i].transform.parent = rogueCardArea;
         }
     }
     
@@ -283,8 +276,17 @@ public class GameUI : NetworkBehaviour
         UpdateQuotaText(quota);
     }
     
-    public void UpdateEndScreen(int quota, int currentRunCash)
+    public void UpdateEndScreen(int quota, int currentRunCash, bool showCards = false)
     {
+        if (showCards)
+        {
+            rogueCardArea.gameObject.SetActive(true);
+        }
+        else
+        {
+            rogueCardArea.gameObject.SetActive(false);
+        }
+        
         endScreenQuotaText.text = quota.ToString();
         endScreenCurrentCashText.text = currentRunCash.ToString();
     }

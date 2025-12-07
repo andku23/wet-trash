@@ -1071,7 +1071,6 @@ MonoBehaviour:
   gameData: {fileID: 11400000, guid: 8f9660622800fe54da47b8930d800793, type: 2}
   _lootManager: {fileID: 1193161554}
   _boatManager: {fileID: 423871127}
-  gameUI: {fileID: 0}
   TimeUpdatedEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -3932,6 +3931,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RogueEffectManager
   ShowTopMostFoldoutHeaderGroup: 1
   rogueCardPrefab: {fileID: 3685989463551964006, guid: 1842c68d677dbfb4ba575104e9c6c9b1,
+    type: 3}
+  voteMarkPrefab: {fileID: 582436071830428125, guid: 9351830ab8aad4645bf93049dadee666,
     type: 3}
   RogueCardsEffects: {fileID: 11400000, guid: f40431e15522a2c44a285e3cc160d815, type: 2}
 --- !u!1 &1075484453

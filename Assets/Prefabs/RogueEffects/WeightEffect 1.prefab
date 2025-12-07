@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 136044956597906120}
   - component: {fileID: 8226865749872250583}
   m_Layer: 0
-  m_Name: WeightEffect
+  m_Name: WeightEffect 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44,4 +44,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79b288ab475853445a48d1608aa79419, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChangeWeightMultiplier
-  weightMultiplier: 0.5
+  weightMultiplier: 1.5

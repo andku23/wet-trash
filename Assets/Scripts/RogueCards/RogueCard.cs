@@ -13,6 +13,7 @@ public class RogueCard : MonoBehaviour
     [SerializeField] private TextMeshProUGUI description;
     
     public Button Button;
+    public Transform VoteMarkArea;
 
     public void LoadCard(RogueCardPacketData loadData)
     {
@@ -28,26 +29,17 @@ public class RogueCard : MonoBehaviour
             description.text += effectData.description + "\n";
         }
     }
-
-    // Should probably move this out of here to manager at some point
-    public void ApplyCard_S()
-    {
-        foreach (RogueCardEffectData effectData in EffectDatas)
-        {
-            BaseRogueEffect effect = Instantiate(effectData.prefab).GetComponent<BaseRogueEffect>();
-            effect.ApplyEffect();
-            Destroy(effect.gameObject);
-        }
-    }
 }
 
 
 public class RogueCardPacketData: INetworkSerializable
 {
     public RogueCardEffectID[] EffectIDs;
+    public string description; //Need this since the descriptions might be generated on server
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref EffectIDs);
+        serializer.SerializeValue(ref description);
     }
 }

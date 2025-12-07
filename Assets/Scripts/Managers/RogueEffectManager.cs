@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -9,12 +10,15 @@ public class RogueEffectManager : NetworkBehaviour
     public static RogueEffectManager Instance;
 
     public GameObject rogueCardPrefab;
+    public GameObject voteMarkPrefab;
     public RogueCardsEffects RogueCardsEffects;
     
     private Dictionary<RogueCardEffectID, RogueCardEffectData> _rogueCardsEffectsLookup;
     public Dictionary<RogueCardEffectID, RogueCardEffectData> RogueCardsEffectsLookup {get => _rogueCardsEffectsLookup;}
 
-    private Dictionary<ulong, int> playerCardVote;
+    private Dictionary<ulong, int> playerCardVote_s;
+    private List<GameObject> voteMarks_c = new List<GameObject>();
+    private List<RogueCard> rogueCards_c = new List<RogueCard>();
     private void Start()
     {
         Instance = this;
@@ -48,11 +52,11 @@ public class RogueEffectManager : NetworkBehaviour
     public async Awaitable WaitForCardVote_S(RogueCardPacketData[] cardDatas, Action onComplete)
     {
         float checkInterval = 0.1f;
-        playerCardVote = new Dictionary<ulong, int>();
+        playerCardVote_s = new Dictionary<ulong, int>();
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
         foreach (var client in connectedClients)
         {
-            playerCardVote.Add(client.Key, -1);
+            playerCardVote_s.Add(client.Key, -1);
         }
         
         bool allPlayersResponded = false;
@@ -60,7 +64,7 @@ public class RogueEffectManager : NetworkBehaviour
         {
             await Awaitable.WaitForSecondsAsync(checkInterval);
             allPlayersResponded = true;
-            foreach (var player in playerCardVote)
+            foreach (var player in playerCardVote_s)
             {
                 if (player.Value == -1)
                 {
@@ -70,7 +74,7 @@ public class RogueEffectManager : NetworkBehaviour
             }
 
             string debugWaitMessage = "Vote Status: [";
-            foreach (var player in playerCardVote)
+            foreach (var player in playerCardVote_s)
             {
                 debugWaitMessage += $"{player.Key}: {player.Value}, ";
             }
@@ -79,9 +83,9 @@ public class RogueEffectManager : NetworkBehaviour
             Debug.Log(debugWaitMessage);
         }
         
-        int[] tally = new int[playerCardVote.Count];
+        int[] tally = new int[playerCardVote_s.Count];
         // Calculate vote
-        foreach (var player in playerCardVote)
+        foreach (var player in playerCardVote_s)
         {
             tally[player.Value]++;
         }
@@ -127,6 +131,7 @@ public class RogueEffectManager : NetworkBehaviour
     {
         RogueCardPacketData loadData = new RogueCardPacketData();
         loadData.EffectIDs = new RogueCardEffectID[numPositiveEffects + numNegativeEffects];
+        loadData.description = ""; //TODO populate this
         int counter = 0;
         
         for (int i = 0; i < numPositiveEffects; i++)
@@ -146,23 +151,52 @@ public class RogueEffectManager : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     public void ShowCards_ClientRpc(RogueCardPacketData[] loadDatas)
     {
-        List<RogueCard> rogueCards = new List<RogueCard>();
+        foreach (RogueCard pastRogueCard in rogueCards_c)
+        {
+            Destroy(pastRogueCard.gameObject);
+        }
+        rogueCards_c.Clear();
         for (int i = 0; i < loadDatas.Length; i++)
         {
             RogueCard rogueCard = Instantiate(rogueCardPrefab).GetComponent<RogueCard>();
             rogueCard.LoadCard(loadDatas[i]);
             int cardIndex = i;
             rogueCard.Button.onClick.AddListener(() => {CardVote_ServerRpc(NetworkManager.LocalClientId, cardIndex);});
-            rogueCards.Add(rogueCard);
+            rogueCards_c.Add(rogueCard);
         }
-        GameUI.Instance.ShowRogueCards(rogueCards);
+        GameUI.Instance.ShowRogueCards(rogueCards_c);
     }
 
     [ServerRpc(RequireOwnership = false)]
     public void CardVote_ServerRpc(ulong playerID,int cardIndex)
     {
-        playerCardVote[playerID] = cardIndex;
+        playerCardVote_s[playerID] = cardIndex;
+        
+        ulong[] players = playerCardVote_s.Keys.ToArray();
+        int[] votes = playerCardVote_s.Values.ToArray();
+        
+        UpdateVotingState_ClientRpc(players, votes);
     }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void UpdateVotingState_ClientRpc(ulong[] players, int[] votes)
+    {
+        foreach (GameObject go in voteMarks_c)
+        {
+            Destroy(go);
+        }
+        voteMarks_c.Clear();
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (votes[i] > -1)
+            {
+                GameObject voterMark = Instantiate(voteMarkPrefab, rogueCards_c[votes[i]].VoteMarkArea, true);
+                voteMarks_c.Add(voterMark);
+            }
+        }
+    }
+    
+    #region Rogue Effects
     
     [ServerRpc(RequireOwnership = false)]
     public void ChangeQuota_ServerRpc(float newQuota)
@@ -187,4 +221,18 @@ public class RogueEffectManager : NetworkBehaviour
     {
         GameManager.Instance.gameData.WEIGHT_MULTIPLIER = target;
     }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void ChangeMonsterSpawnRate_ServerRpc(int target)
+    {
+        ChangeMonsterSpawnRate_ClientRpc(target);
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void ChangeMonsterSpawnRate_ClientRpc(int target)
+    {
+        GameManager.Instance.gameData.MONSTER_SPAWN_PER_HOUR = target;
+    }
+    
+    #endregion
 }

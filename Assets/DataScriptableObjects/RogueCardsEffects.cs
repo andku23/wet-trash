@@ -20,6 +20,12 @@ public class RogueCardEffectData
 
 public enum RogueCardEffectID
 {
-    QuotaPercentChange,
-    LootWeightChange
+    QuotaPercentUp,
+    QuotaPercentDown,
+    LootWeightUp,
+    LootWeightDown,
+    MonsterRateUp,
+    MonsterRateDown,
+    BreathUp,
+    BreathDown
 }

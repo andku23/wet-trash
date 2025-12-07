@@ -3675,7 +3675,7 @@ CharacterController:
   serializedVersion: 3
   m_Height: 1.8
   m_Radius: 0.33
-  m_SlopeLimit: 70
+  m_SlopeLimit: 45
   m_StepOffset: 0.25
   m_SkinWidth: 0.02
   m_MinMoveDistance: 0
@@ -3946,6 +3946,7 @@ MonoBehaviour:
   InWaterOnSurface: 0
   WeightCarried: 0
   DisplayingHeldObject: 0
+  Velocity: 0
 --- !u!114 &9122417569400039749
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -40,7 +40,7 @@ public class WorldManager : NetworkBehaviour
     [SerializeField] private Terrain _terrain;
     
     private NativeArray<float> noiseMap;
-    private NativeArray<float> holesMap;
+    private NativeArray<float> voronoiMap;
     private JobHandle noiseJobHandle;
     private JobHandle holesJobHandle;
     private bool terrainGenerationRequested = false;
@@ -94,7 +94,7 @@ public class WorldManager : NetworkBehaviour
         currentLootGroupPositions = lootGroupPositions;
         
         noiseMap = new NativeArray<float>(resolution * resolution, Allocator.Persistent);
-        holesMap = new NativeArray<float>(resolution * resolution, Allocator.Persistent);
+        voronoiMap = new NativeArray<float>(resolution * resolution, Allocator.Persistent);
         
         GenerateNoiseJob noiseJob = new GenerateNoiseJob
         {
@@ -106,14 +106,14 @@ public class WorldManager : NetworkBehaviour
         
         GenerateHolesJob holesJob = new GenerateHolesJob
         {
-            NoiseMap = holesMap,
+            NoiseMap = voronoiMap,
             Resolution = resolution,
             Scale = 50f,
             Seed = seed
         };
         
         noiseJobHandle = noiseJob.Schedule(noiseMap.Length, 64);
-        holesJobHandle = holesJob.Schedule(holesMap.Length, 64);
+        holesJobHandle = holesJob.Schedule(voronoiMap.Length, 64);
         terrainGenerationRequested = true;
         terrainGenerationCompleted = false;
         
@@ -300,7 +300,8 @@ public class WorldManager : NetworkBehaviour
                 _terrain.terrainData.heightmapResolution];
 
             ClearAllHoles();
-
+            
+            // Calculate terrain heights
             for (int i = 0; i < _terrain.terrainData.heightmapResolution; i++)
             {
                 for (int j = 0; j < _terrain.terrainData.heightmapResolution; j++)
@@ -310,14 +311,51 @@ public class WorldManager : NetworkBehaviour
                     float xInitialPosition = 1f - 2f * Mathf.Abs(xRatio - 0.5f);
                     float zInitialPosition = 1f - 2f * Mathf.Abs(zRatio - 0.5f);
                     float height = 0.6f * (xInitialPosition + zInitialPosition) / 2f + 0.25f
-                        + 0.55f * holesMap[i * _terrain.terrainData.heightmapResolution + j]
-                        + 0.05f * noiseMap[i * _terrain.terrainData.heightmapResolution + j];
+                        + 0.45f * voronoiMap[i * _terrain.terrainData.heightmapResolution + j]
+                        + 0.1f * noiseMap[i * _terrain.terrainData.heightmapResolution + j];
+                    //height = Math.Clamp(height, 0f, 0.5f);
                     heights[i, j] = height;
                 }
             }
-
             _terrain.terrainData.SetHeights(0, 0, heights);
-
+            
+            // Paint Terrain
+            float[,,] splatmapData = _terrain.terrainData.GetAlphamaps(0, 0, _terrain.terrainData.alphamapWidth, _terrain.terrainData.alphamapHeight);
+            float xLength = splatmapData.GetLength(0);
+            float zLength = splatmapData.GetLength(1);
+            for (int i = 0; i < splatmapData.GetLength(0); i++)
+            {
+                for (int j = 0; j < splatmapData.GetLength(1); j++)
+                {
+                    Vector3 interpolatedNormal = _terrain.terrainData.GetInterpolatedNormal(j/zLength, i/xLength);
+                    float facingUpAmount = Vector3.Dot(interpolatedNormal, Vector3.up);
+                    facingUpAmount = Math.Clamp(facingUpAmount, 0, 1);
+                    if (heights[i, j] > 0.3f)
+                    {
+                        if (facingUpAmount >= 0.65f)
+                        {
+                            splatmapData[i, j, 0] = 1;
+                            splatmapData[i, j, 1] = 0;
+                            splatmapData[i, j, 2] = 0;
+                        }
+                        else
+                        {
+                            splatmapData[i, j, 0] = 0;
+                            splatmapData[i, j, 1] = 0;
+                            splatmapData[i, j, 2] = 1;
+                        }
+                        
+                    }
+                    else
+                    {
+                        splatmapData[i, j, 0] = 0;
+                        splatmapData[i, j, 1] = facingUpAmount;
+                        splatmapData[i, j, 2] = 1f - facingUpAmount;
+                    }
+                }
+            }
+            _terrain.terrainData.SetAlphamaps(0, 0, splatmapData);
+            
             SpawnedHoles = new List<GameObject>();
             SpawnedEnemies = new List<NetworkObject>();
             InitialEnemies = new List<NetworkObject>();
@@ -359,7 +397,7 @@ public class WorldManager : NetworkBehaviour
             terrainGenerationCompleted = true;
 
             noiseMap.Dispose();
-            holesMap.Dispose();
+            voronoiMap.Dispose();
         }
     }
 }
@@ -405,7 +443,7 @@ public struct GenerateNoiseJob : IJobParallelFor
         float noiseValue2 = noise.snoise(new float2(sampleX2, sampleY2));
 
         // Map the noise value to a desired range (e.g., 0-1)
-        NoiseMap[index] = (0.5f*(noiseValue + noiseValue2) + 1f) / 2f; 
+        NoiseMap[index] = ((0.1f*noiseValue + 0.9f*noiseValue2) + 1f) / 2f; 
     }
 }
 

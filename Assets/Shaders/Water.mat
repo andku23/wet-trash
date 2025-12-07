@@ -118,7 +118,7 @@ Material:
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
-    - _Depth_Fade_Distance: 92.8
+    - _Depth_Fade_Distance: 27.93
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _Direction: 0
@@ -131,7 +131,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _Horizon_Distance: 20
+    - _Horizon_Distance: 10
     - _Intersection_Foam_Cutoff: 1.14
     - _Intersection_Foam_Depth: 3.2
     - _Intersection_Foam_Direction: 36.8
@@ -174,9 +174,9 @@ Material:
     m_Colors:
     - _BaseColor: {r: 0.35978103, g: 0.5692379, b: 0.990566, a: 0.5254902}
     - _Color: {r: 0.35978103, g: 0.5692379, b: 0.990566, a: 0.5254902}
-    - _Deep_Color: {r: 0.27171594, g: 0.3935981, b: 0.8113208, a: 1}
+    - _Deep_Color: {r: 0.13683695, g: 0.26504, b: 0.7075472, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _Foam_Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Foam_Color: {r: 0, g: 0, b: 0, a: 1}
     - _Horizon_Color: {r: 0.4198113, g: 0.72465986, b: 1, a: 1}
     - _Intersection_Foam_Color: {r: 1, g: 1, b: 1, a: 1}
     - _Offset: {r: 0, g: 0, b: 0, a: 0}

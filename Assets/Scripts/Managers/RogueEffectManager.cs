@@ -83,12 +83,15 @@ public class RogueEffectManager : NetworkBehaviour
             Debug.Log(debugWaitMessage);
         }
         
+        Debug.Log("a");
         int[] tally = new int[playerCardVote_s.Count];
         // Calculate vote
         foreach (var player in playerCardVote_s)
         {
             tally[player.Value]++;
         }
+        
+        Debug.Log("b");
 
         int winner = 0;
         for (int i = 0; i < tally.Length; i++)

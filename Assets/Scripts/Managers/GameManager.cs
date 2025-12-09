@@ -182,7 +182,7 @@ public class GameManager : NetworkBehaviour
                 currentLevelData_s = new LevelData(gameData.MAX_MONSTERS_PER_DAY, gameData.MONSTER_SPAWN_PER_HOUR);
                 MoneyManager.Instance.ResetCurrentCollected();
                 WaitForPlayerResponse(ToNextGameState_ServerRpc);
-                var clientTerrainGenData = WorldManager.Instance.GenerateClientTerrainData();
+                var clientTerrainGenData = WorldManager.Instance.GenerateClientTerrainData_S();
                 WorldManager.Instance.AssignGenerationData_ClientRpc(clientTerrainGenData);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;

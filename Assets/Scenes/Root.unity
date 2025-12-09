@@ -3091,6 +3091,7 @@ MonoBehaviour:
   - {fileID: 7466929072936789752, guid: 7d7d61c3e1cf8a049be03f92b7cb46f1, type: 3}
   NUM_OF_HOLES: 4
   NUM_OF_LOOT_GROUPS: 3
+  NUM_BIOMES: 4
   SpawnedHoles: []
   SpawnedLootGroups: []
   InitialEnemies: []

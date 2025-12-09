@@ -43,9 +43,10 @@ public class WorldManager : NetworkBehaviour
 
     public enum NoiseMapType
     {
+        TerrainHeightMap,
         SandyBottom,
         Cliffs,
-        Caves
+        Peaks
     }
 
     private void Start()
@@ -53,7 +54,12 @@ public class WorldManager : NetworkBehaviour
         Instance = this;
     }
     
-    public ClientTerrainGenerationData GenerateClientTerrainData()
+    public void AssignTerrain(Terrain terrain)
+    {
+        _terrain = terrain;
+    }
+    
+    public ClientTerrainGenerationData GenerateClientTerrainData_S()
     {
         int seed = Random.Range(0, 999999);
         Vector2[] holePosition = new Vector2[NUM_OF_HOLES];
@@ -87,77 +93,7 @@ public class WorldManager : NetworkBehaviour
         currentGenerationData = generationData;
     }
     
-    public async Awaitable GenerateTerrain()
-    {
-        if (currentGenerationData == null) return;
-        int seed = currentGenerationData.seed;
-        Vector2[] holePositions = currentGenerationData.holePositions; 
-        Vector2[] lootGroupPositions = currentGenerationData.lootGroupPositions;
-        
-        int resolution = _terrain.terrainData.heightmapResolution; 
-        float scale = 5f;
-
-        currentHolePositions = holePositions;
-        currentLootGroupPositions = lootGroupPositions;
-
-        noiseMaps.Clear();
-
-        int mapSize = resolution * resolution;
-        noiseMaps.Add(NoiseMapType.SandyBottom, new NativeArray<float>(mapSize, Allocator.Persistent));
-        noiseMaps.Add(NoiseMapType.Cliffs, new NativeArray<float>(mapSize, Allocator.Persistent));
-        noiseMaps.Add(NoiseMapType.Caves, new NativeArray<float>(mapSize, Allocator.Persistent));
-
-        biomeMap = new NativeArray<float>(mapSize*NUM_BIOMES, Allocator.Persistent);
-        
-        GenerateNoiseJob noiseJob = new GenerateNoiseJob
-        {
-            NoiseMap = noiseMaps[NoiseMapType.Cliffs],
-            Resolution = resolution,
-            Scale = scale,
-            Seed = seed
-        };
-        
-        GenerateVoronoiJob voronoiJob = new GenerateVoronoiJob
-        {
-            NoiseMap = noiseMaps[NoiseMapType.Caves],
-            Resolution = resolution,
-            Scale = 50f,
-            Seed = seed
-        };
-        
-        LayeredPerlin2 sandBottomJob = new LayeredPerlin2
-        {
-            NoiseMap = noiseMaps[NoiseMapType.SandyBottom],
-            Resolution = resolution,
-            Scale1 = 80f,
-            Scale2 = 60f,
-            Noise1Strength = 0.5f,
-            Noise2Strength = 0.5f,
-            Seed = seed
-        };
-        
-        GenerateBiomes biomeJob = new GenerateBiomes
-        {
-            NoiseMap = biomeMap,
-            Resolution = resolution,
-            Scale = 80f,
-            Seed = seed,
-            NumBiomes = NUM_BIOMES
-        };
-        
-        concurrentJobs.Clear();
-        concurrentJobs.Add(noiseJob.Schedule(noiseMaps[NoiseMapType.Cliffs].Length, 64));
-        concurrentJobs.Add(voronoiJob.Schedule(noiseMaps[NoiseMapType.Caves].Length, 64));
-        concurrentJobs.Add(sandBottomJob.Schedule(noiseMaps[NoiseMapType.SandyBottom].Length, 64));
-        concurrentJobs.Add(biomeJob.Schedule(biomeMap.Length/NUM_BIOMES, 64));
-        terrainGenerationRequested = true;
-        terrainGenerationCompleted = false;
-        
-        while (!terrainGenerationCompleted)
-        {
-            await Awaitable.NextFrameAsync();
-        }
-    }
+    
     
     #region Get Terrain Info
     public Vector3 GetRandomPointOnTerrain()
@@ -191,6 +127,7 @@ public class WorldManager : NetworkBehaviour
     
     #endregion
 
+    #region Create Terrain Entities
     private LootGroup CreateLootGroup(int xPos, int zPos)
     {
         float[,] heights = _terrain.terrainData.GetHeights(xPos, zPos,  1, 1);
@@ -209,11 +146,6 @@ public class WorldManager : NetworkBehaviour
         return lootGroup.GetComponent<LootGroup>();
     }
 
-    public void AssignTerrain(Terrain terrain)
-    {
-        _terrain = terrain;
-    }
-
     private LootGroup CreateHole(int xPos, int zPos, int holeWidth, int holeHeight)
     {
         bool[,] holeMap = new bool[holeWidth, holeHeight];
@@ -225,7 +157,7 @@ public class WorldManager : NetworkBehaviour
         float[,] heights = _terrain.terrainData.GetHeights(xbase, zbase,  holeWidth, holeHeight);
         
         Vector3 lowestHolePosition = new Vector3(xPos, 0, zPos);
-        lowestHolePosition.y = heights[holeWidth/2, holeHeight/2] - 0.2f;
+        lowestHolePosition.y = heights[holeWidth/2, holeHeight/2] - 0.05f;
         float lowestHoleHeight = lowestHolePosition.y;
         float fullSize = holeWidth / 2;
         float holeSize = holeWidth / 4;
@@ -321,6 +253,8 @@ public class WorldManager : NetworkBehaviour
         no.Spawn();
         SpawnedEnemies.Add(no);
     }
+    
+    #endregion
 
     private void Update()
     {
@@ -346,36 +280,125 @@ public class WorldManager : NetworkBehaviour
             CreateTerrain();
         }
     }
+    
+    public async Awaitable GenerateTerrain()
+    {
+        if (currentGenerationData == null) return;
+        int seed = currentGenerationData.seed;
+        Vector2[] holePositions = currentGenerationData.holePositions; 
+        Vector2[] lootGroupPositions = currentGenerationData.lootGroupPositions;
+        
+        int resolution = _terrain.terrainData.heightmapResolution; 
+        currentHolePositions = holePositions;
+        currentLootGroupPositions = lootGroupPositions;
+
+        noiseMaps.Clear();
+
+        int mapSize = resolution * resolution;
+        noiseMaps.Add(NoiseMapType.TerrainHeightMap, new NativeArray<float>(mapSize, Allocator.Persistent));
+        noiseMaps.Add(NoiseMapType.SandyBottom, new NativeArray<float>(mapSize, Allocator.Persistent));
+        noiseMaps.Add(NoiseMapType.Cliffs, new NativeArray<float>(mapSize, Allocator.Persistent));
+        noiseMaps.Add(NoiseMapType.Peaks, new NativeArray<float>(mapSize, Allocator.Persistent));
+
+        biomeMap = new NativeArray<float>(mapSize*NUM_BIOMES, Allocator.Persistent);
+        
+        LayeredPerlin2 terrainHeightJob = new LayeredPerlin2
+        {
+            NoiseMap = noiseMaps[NoiseMapType.TerrainHeightMap],
+            Resolution = resolution,
+            Scale1 = 500f,
+            Scale2 = 200f,
+            Noise1Strength = 0.7f,
+            Noise2Strength = 0.3f,
+            Seed = seed
+        };
+        
+        LayeredPerlin2 noiseJob = new LayeredPerlin2
+        {
+            NoiseMap = noiseMaps[NoiseMapType.Cliffs],
+            Resolution = resolution,
+            Scale1 = 25f,
+            Scale2 = 12f,
+            Noise1Strength = 0.7f,
+            Noise2Strength = 0.3f,
+            Seed = seed
+        };
+        
+        GenerateVoronoiJob voronoiJob = new GenerateVoronoiJob
+        {
+            NoiseMap = noiseMaps[NoiseMapType.Peaks],
+            Resolution = resolution,
+            Scale = 40f,
+            Seed = seed
+        };
+        
+        LayeredPerlin2 sandBottomJob = new LayeredPerlin2
+        {
+            NoiseMap = noiseMaps[NoiseMapType.SandyBottom],
+            Resolution = resolution,
+            Scale1 = 80f,
+            Scale2 = 60f,
+            Noise1Strength = 0.5f,
+            Noise2Strength = 0.5f,
+            Seed = seed
+        };
+        
+        GenerateBiomes biomeJob = new GenerateBiomes
+        {
+            NoiseMap = biomeMap,
+            Resolution = resolution,
+            Scale = 80f,
+            Seed = seed,
+            NumBiomes = NUM_BIOMES
+        };
+        
+        concurrentJobs.Clear();
+        concurrentJobs.Add(terrainHeightJob.Schedule(noiseMaps[NoiseMapType.TerrainHeightMap].Length, 64));
+        concurrentJobs.Add(noiseJob.Schedule(noiseMaps[NoiseMapType.Cliffs].Length, 64));
+        concurrentJobs.Add(voronoiJob.Schedule(noiseMaps[NoiseMapType.Peaks].Length, 64));
+        concurrentJobs.Add(sandBottomJob.Schedule(noiseMaps[NoiseMapType.SandyBottom].Length, 64));
+        concurrentJobs.Add(biomeJob.Schedule(biomeMap.Length/NUM_BIOMES, 64));
+        terrainGenerationRequested = true;
+        terrainGenerationCompleted = false;
+        
+        while (!terrainGenerationCompleted)
+        {
+            await Awaitable.NextFrameAsync();
+        }
+    }
+    
+    // Sandy Bottom
+    private float CreateInitialHeight(int x, int z, int nativeArrayIndex)
+    {
+        float height = noiseMaps[NoiseMapType.TerrainHeightMap][nativeArrayIndex];
+        return height;
+    }
 
     // Sandy Bottom
-    private float CreateTerrainType0(int x, int z)
+    private float CreateTerrainType0(int x, int z, int nativeArrayIndex)
     {
-        float height = 0.9f;
-        height += 0.1f * noiseMaps[NoiseMapType.SandyBottom][x * _terrain.terrainData.heightmapResolution + z];
+        float height = 0.1f * noiseMaps[NoiseMapType.SandyBottom][nativeArrayIndex];
         return height;
     }
     
     // Cliffs
-    private float CreateTerrainType1(int x, int z)
+    private float CreateTerrainType1(int x, int z, int nativeArrayIndex)
     {
-        float height = 0.5f;
-        height += 0.15f * noiseMaps[NoiseMapType.Cliffs][x * _terrain.terrainData.heightmapResolution + z];
+        float height = 0.1f * noiseMaps[NoiseMapType.Cliffs][nativeArrayIndex];
         return height;
     }
     
-    // Caves
-    private float CreateTerrainType2(int x, int z)
+    // Peaks
+    private float CreateTerrainType2(int x, int z, int nativeArrayIndex)
     {
-        float height = 0.3f;
-        height += 0.15f * noiseMaps[NoiseMapType.Caves][x * _terrain.terrainData.heightmapResolution + z];
+        float height = 0.4f * noiseMaps[NoiseMapType.Peaks][nativeArrayIndex];
         return height;
     }
     
     // High Sand
-    private float CreateTerrainType3(int x, int z)
+    private float CreateTerrainType3(int x, int z, int nativeArrayIndex)
     {
-        float height = 0.45f;
-        height += 0.15f * noiseMaps[NoiseMapType.SandyBottom][x * _terrain.terrainData.heightmapResolution + z];
+        float height =  0.15f * noiseMaps[NoiseMapType.SandyBottom][nativeArrayIndex];
         return height;
     }
 
@@ -408,27 +431,27 @@ public class WorldManager : NetworkBehaviour
                         biomeValues[biomeIndex] = biomeMap[nativeArrayIndex + biomeAccessOffset * biomeIndex];
                     }
                     
-                    float th0 = biomeValues[0] * CreateTerrainType0(i,j);
-                    float th1 = biomeValues[1] * CreateTerrainType1(i,j);
-                    float th2 = biomeValues[2] * CreateTerrainType2(i,j);
-                    float th3 = biomeValues[3] * CreateTerrainType3(i,j);
+                    float th0 = CreateTerrainType0(i,j, nativeArrayIndex);
+                    float th1 = CreateTerrainType1(i,j, nativeArrayIndex);
+                    float th2 = CreateTerrainType2(i,j, nativeArrayIndex);
+                    float th3 = CreateTerrainType3(i,j, nativeArrayIndex);
 
-                    height = th0 + th1 + th2 + th3;
+                    height = CreateInitialHeight(i, j, nativeArrayIndex);
+                    if (height >= 0.8f)
+                    {
+                        height += CreateTerrainType0(i, j, nativeArrayIndex);
+                    } else if (height <= 0.2f)
+                    {
+                        height += CreateTerrainType2(i, j, nativeArrayIndex);
+                    }
+                    else
+                    {
+                        height += biomeValues[0] * th0;
+                        height += biomeValues[1] * th1;
+                        height += biomeValues[2] * th2;
+                    }
                     
-                    //float terrainAverage = (th0 + th1 + th2 + th3)/4;
-                    //height += (th0 - terrainAverage)*biomeValues[0];
-                    //height += (th1 - terrainAverage)*biomeValues[1];
-                    //height += (th2 - terrainAverage)*biomeValues[2];
-                    //height += (th3 - terrainAverage)*biomeValues[3];
-
-                    //height += biomeValues[0] * CreateTerrainType0(i,j);
-                    //height += biomeValues[1] * CreateTerrainType1(i,j);
-                    //height += biomeValues[2] * CreateTerrainType2(i,j);
-                    //height += biomeValues[3] * CreateTerrainType3(i,j);
-                    
-                    //float height = 0.6f * (xInitialPosition + zInitialPosition) / 2f + 0.25f
-                    //    + 0.45f * voronoiMap[i * _terrain.terrainData.heightmapResolution + j]
-                    //    + 0.1f * noiseMap[i * _terrain.terrainData.heightmapResolution + j];
+                    //heights[i, j] = height;
                     heights[i, j] = height;
                 }
             }
@@ -601,9 +624,10 @@ public struct GenerateVoronoiJob : IJobParallelFor
 
         // Generate noise using Unity.Mathematics functions (e.g., Perlin noise)
         float noiseValue = noise.cellular(new float2(sampleX, sampleY)).x;
+        noiseValue = math.unlerp(-1, 1, noiseValue);
 
         // Map the noise value to a desired range (e.g., 0-1)
-        NoiseMap[index] = (noiseValue - 1f); 
+        NoiseMap[index] = 1f- noiseValue;
     }
 }
 
@@ -631,6 +655,9 @@ public struct LayeredPerlin2 : IJobParallelFor
         // Generate noise using Unity.Mathematics functions (e.g., Perlin noise)
         float noiseValue = noise.snoise(new float2(sampleX, sampleY));
         float noiseValue2 = noise.snoise(new float2(sampleX2, sampleY2));
+        
+        noiseValue = math.unlerp(-1, 1, noiseValue);
+        noiseValue2 = math.unlerp(-1, 1, noiseValue2);
 
         // Map the noise value to a desired range (e.g., 0-1)
         NoiseMap[index] = Noise1Strength * noiseValue + Noise2Strength * noiseValue2; 
@@ -671,9 +698,6 @@ public struct GenerateBiomes : IJobParallelFor
             normalizationSum += noiseValue1;
         }
 
-        // normalizationSum += biomeResults[3] * 0.15f;
-        // biomeResults[3] += 0.15f;
-
         int greatestIndex = 0;
         for (int i = 0; i < biomeResults.Length; i++)
         {
@@ -683,8 +707,8 @@ public struct GenerateBiomes : IJobParallelFor
             }
         }
 
-        normalizationSum += 6f;
-        biomeResults[greatestIndex] += 6f;
+        normalizationSum += 0.2f;
+        biomeResults[greatestIndex] += 0.2f;
         
         for (int i = 0; i < biomeResults.Length; i++)
         {

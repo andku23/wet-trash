@@ -380,10 +380,12 @@ public class PlayerController : NetworkBehaviour
         if (playerState.IsDriving) return;
         if (playerState.InWater)
         {
+            _controller.slopeLimit = 0f;
             MoveWater();
         }
         else
         {
+            _controller.slopeLimit = 90f;
             MoveLand();
         }
         _wasSprintingLastFrame = _input.sprint;

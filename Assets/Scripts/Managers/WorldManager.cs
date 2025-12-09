@@ -404,28 +404,31 @@ public class WorldManager : NetworkBehaviour
 
     private void CreateTerrain()
     {
+        int resolution = _terrain.terrainData.heightmapResolution;
         float[,] heights = new float[
-                _terrain.terrainData.heightmapResolution,
-                _terrain.terrainData.heightmapResolution];
+                resolution,
+                resolution];
 
             ClearAllHoles();
             
+            int biomeAccessOffset = resolution * resolution;
+            List<TreeInstance> treeInstances = new List<TreeInstance>();
+            
             // Calculate terrain heights
-            for (int i = 0; i < _terrain.terrainData.heightmapResolution; i++)
+            for (int i = 0; i < resolution; i++)
             {
-                for (int j = 0; j < _terrain.terrainData.heightmapResolution; j++)
+                for (int j = 0; j < resolution; j++)
                 {
-                    float xRatio = i / (float)_terrain.terrainData.heightmapResolution;
-                    float zRatio = j / (float)_terrain.terrainData.heightmapResolution;
+                    float xRatio = i / (float) resolution;
+                    float zRatio = j / (float) resolution;
                     float xInitialPosition = 1f - 2f * Mathf.Abs(xRatio - 0.5f);
                     float zInitialPosition = 1f - 2f * Mathf.Abs(zRatio - 0.5f);
                     
                     float height = 0f;
-                    int nativeArrayIndex = i * _terrain.terrainData.heightmapResolution + j;
-                    int biomeAccessOffset = _terrain.terrainData.heightmapResolution *
-                                            _terrain.terrainData.heightmapResolution;
+                    int nativeArrayIndex = i * resolution + j;
+                    
+                    
                     float[] biomeValues = new float[NUM_BIOMES];
-
                     for (int biomeIndex = 0; biomeIndex < biomeValues.Length; biomeIndex++)
                     {
                         biomeValues[biomeIndex] = biomeMap[nativeArrayIndex + biomeAccessOffset * biomeIndex];
@@ -449,6 +452,20 @@ public class WorldManager : NetworkBehaviour
                         height += biomeValues[0] * th0;
                         height += biomeValues[1] * th1;
                         height += biomeValues[2] * th2;
+                        float noise = noiseMaps[NoiseMapType.Peaks][nativeArrayIndex];
+                        if (height < 0.7f && i % 4 == 0 && j % 4 == 0 && noise > 0.15)
+                        {
+                            TreeInstance newTreeInstance = new TreeInstance();
+                            newTreeInstance.position = new Vector3((j + Random.Range(-3f, 3f))/resolution, height, (i+Random.Range(-3f, 3f))/resolution); // Normalized coordinates (0-1)
+                            //newTreeInstance.position = new Vector3((float)j/resolution, height, (float)i/resolution); 
+                            newTreeInstance.rotation = 0f; // Random rotation
+                            newTreeInstance.widthScale = (noise - 0.15f) * 4f;
+                            newTreeInstance.heightScale = (noise - 0.15f) * 4f;
+                            //newTreeInstance.widthScale = 1;
+                            //newTreeInstance.heightScale = 1;
+                            newTreeInstance.prototypeIndex = 0;
+                            treeInstances.Add(newTreeInstance);
+                        }
                     }
                     
                     //heights[i, j] = height;
@@ -456,57 +473,73 @@ public class WorldManager : NetworkBehaviour
                 }
             }
             _terrain.terrainData.SetHeights(0, 0, heights);
+            //_terrain.terrainData.treeInstances = treeInstances.ToArray();
+            _terrain.terrainData.SetTreeInstances(treeInstances.ToArray(), true);
             
             // Paint Terrain
             float[,,] splatmapData = _terrain.terrainData.GetAlphamaps(0, 0, _terrain.terrainData.alphamapWidth, _terrain.terrainData.alphamapHeight);
             float xLength = splatmapData.GetLength(0);
             float zLength = splatmapData.GetLength(1);
+            
             for (int i = 0; i < splatmapData.GetLength(0); i++)
             {
                 for (int j = 0; j < splatmapData.GetLength(1); j++)
                 {
                     Vector3 interpolatedNormal = _terrain.terrainData.GetInterpolatedNormal(j/zLength, i/xLength);
+                    float height = heights[i, j];
+                    
                     float facingUpAmount = Vector3.Dot(interpolatedNormal, Vector3.up);
                     facingUpAmount = Math.Clamp(facingUpAmount, 0, 1);
                     int nativeArrayIndex = i * _terrain.terrainData.heightmapResolution + j;
+                    
+                    float[] biomeValues = new float[NUM_BIOMES];
+                    for (int biomeIndex = 0; biomeIndex < biomeValues.Length; biomeIndex++)
+                    {
+                        biomeValues[biomeIndex] = biomeMap[nativeArrayIndex + biomeAccessOffset * biomeIndex];
+                    }
                     
                     splatmapData[i, j, 0] = 0;
                     splatmapData[i, j, 1] = 0;
                     splatmapData[i, j, 2] = 0;
                     splatmapData[i, j, 3] = 0;
-
-                    if (facingUpAmount >= 0.65)
+                    splatmapData[i, j, 4] = 0;
+                    splatmapData[i, j, 5] = 0;
+                    
+                    if (height > 0.7f)
+                    {
+                        float blendAmount = Mathf.Min((height - 0.7f)/0.1f, 1f);
+                        float multiplier = Mathf.Pow(10f, 2);
+                        blendAmount = Mathf.Floor(blendAmount * multiplier) / multiplier;
+                        
+                        if (facingUpAmount > 0.75f)
+                            splatmapData[i, j, 0] = blendAmount;
+                        else
+                            splatmapData[i, j, 5] = blendAmount;
+                        
+                        float inverseBlend = 1.0f - blendAmount;
+                        
+                        splatmapData[i, j, 1] = inverseBlend * biomeValues[0];
+                        splatmapData[i, j, 2] = inverseBlend * biomeValues[1];
+                        splatmapData[i, j, 3] = inverseBlend * biomeValues[2];
+                        splatmapData[i, j, 4] = inverseBlend * biomeValues[3];
+                        
+                    } 
+                    else if (height <= 0.2f)
                     {
                         splatmapData[i, j, 0] = 1;
                     }
                     else
                     {
-                        splatmapData[i, j, 2] = 1;
+                       if (facingUpAmount <= 0.5f)
+                            splatmapData[i, j, 2] = 1;
+                       else
+                       {
+                           splatmapData[i, j, 1] = biomeValues[0];
+                           splatmapData[i, j, 2] = biomeValues[1];
+                           splatmapData[i, j, 3] = biomeValues[2];
+                           splatmapData[i, j, 4] = biomeValues[3];
+                       }
                     }
-
-                    //float biomeResult = biomeMap[nativeArrayIndex];
-                    //switch (biomeResult)
-                    //{
-                    //    case 0f:
-                    //        splatmapData[i, j, 0] = 1;
-                    //        break;
-                    //    case 1f:
-                    //        splatmapData[i, j, 1] = 1;
-                    //        break;
-                    //    case 2f:
-                    //        splatmapData[i, j, 2] = 1;
-                    //        break;
-                    //    case 3f:
-                    //        if (facingUpAmount >= 0.6f)
-                    //        {
-                    //            splatmapData[i, j, 0] = 1;
-                    //        }
-                    //        else
-                    //        {
-                    //            splatmapData[i, j, 2] = 1;
-                    //        }
-                    //        break;
-                    //}
                 }
             }
             _terrain.terrainData.SetAlphamaps(0, 0, splatmapData);
@@ -707,8 +740,8 @@ public struct GenerateBiomes : IJobParallelFor
             }
         }
 
-        normalizationSum += 0.2f;
-        biomeResults[greatestIndex] += 0.2f;
+        // normalizationSum += 0.2f;
+        // biomeResults[greatestIndex] += 0.2f;
         
         for (int i = 0; i < biomeResults.Length; i++)
         {

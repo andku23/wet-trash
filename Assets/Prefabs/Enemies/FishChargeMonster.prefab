@@ -277,7 +277,7 @@ MonoBehaviour:
   Health:
     m_InternalValue: 10
   _rigidbody: {fileID: 6404482265344338283}
-  AGRO_RANGE: 10
+  AGRO_RANGE: 20
   IDLE_SPEED: 5
   ATTACK_COOLDOWN_TIME: 1
   SWIM_SPEED: 3.5

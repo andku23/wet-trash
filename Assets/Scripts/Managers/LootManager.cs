@@ -247,7 +247,7 @@ public class LootManager : NetworkBehaviour
         SpawnItemServer(position, itemIndex);
     }
     
-    public void ResetLootHolesServer()
+    public void ResetLootHoles_S()
     {
         _lootGroups.Clear();
     }

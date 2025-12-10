@@ -44,7 +44,8 @@ public class GameManager : NetworkBehaviour
         ShowDayResult = 2,
         BetweenDays = 3,
         QuotaFailed = 4,
-        LoadingNextDay = 5,
+        LoadingTerrain = 5,
+        LoadingTerrainStructures = 6
     }
     
     public static GameManager Instance;
@@ -112,8 +113,6 @@ public class GameManager : NetworkBehaviour
     {
         InteractionController.Instance.ChangeToBuildMode(shopItemIndex);
     }
-    
-    
 
     #region Player Death
     
@@ -153,9 +152,12 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.BetweenDays:
             case TimeState.QuotaFailed:
-                _timeState = TimeState.LoadingNextDay;
+                _timeState = TimeState.LoadingTerrain;
                 break;
-            case TimeState.LoadingNextDay:
+            case TimeState.LoadingTerrain:
+                _timeState = TimeState.LoadingTerrainStructures;
+                break;
+            case TimeState.LoadingTerrainStructures:
                 _timeState = TimeState.DayActive;
                 break;
             case TimeState.DayActive:
@@ -177,13 +179,19 @@ public class GameManager : NetworkBehaviour
                 GameUI.Instance.PopulateShopContent_ServerRpc();
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
-            case TimeState.LoadingNextDay:
+            case TimeState.LoadingTerrain:
                 _day++;
                 currentLevelData_s = new LevelData(gameData.MAX_MONSTERS_PER_DAY, gameData.MONSTER_SPAWN_PER_HOUR);
                 MoneyManager.Instance.ResetCurrentCollected();
                 WaitForPlayerResponse(ToNextGameState_ServerRpc);
                 var clientTerrainGenData = WorldManager.Instance.GenerateClientTerrainData_S();
-                WorldManager.Instance.AssignGenerationData_ClientRpc(clientTerrainGenData);
+                WorldManager.Instance.AssignTerrainGenerationData_ClientRpc(clientTerrainGenData);
+                UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
+                break;
+            case TimeState.LoadingTerrainStructures:
+                WaitForPlayerResponse(ToNextGameState_ServerRpc);
+                var clientStructureGenData = WorldManager.Instance.GenerateClientStructureData_S();
+                WorldManager.Instance.AssignStructureGenerationData_ClientRpc(clientStructureGenData);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.DayActive:
@@ -193,7 +201,6 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.ShowDayResult:
                 _lootManager.DeleteAllLoot();
-                
                 RogueCardPacketData[] datas = RogueEffectManager.Instance.GenerateCards_S(1, 1, gameData.NUM_ROGUE_CARDS);
                 RogueEffectManager.Instance.WaitForCardVote_S(datas, ToNextGameState_ServerRpc);
                 RogueEffectManager.Instance.ShowCards_ClientRpc(datas);
@@ -226,8 +233,11 @@ public class GameManager : NetworkBehaviour
             case TimeState.BetweenDays:
                 GameUI.Instance?.CloseAllPanels(false);
                 break;
-            case TimeState.LoadingNextDay:
-                LoadNextDay_Client();
+            case TimeState.LoadingTerrain:
+                LoadTerrain_Client();
+                break;
+            case TimeState.LoadingTerrainStructures:
+                LoadTerrainStructures_Client();
                 break;
             case TimeState.DayActive:
                 GameUI.Instance.UpdateDayInfoText(quota, day);
@@ -287,12 +297,20 @@ public class GameManager : NetworkBehaviour
     
     #endregion
 
-    private async Awaitable LoadNextDay_Client()
+    private async Awaitable LoadTerrain_Client()
     {
         await GameUI.Instance.ShowDayStartPanel(StartDayPanel.Mode.Loading);
-        await WorldManager.Instance.GenerateTerrain();
+        await WorldManager.Instance.BeginTerrainGeneration_C();
         PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
     }
+    
+    private async Awaitable LoadTerrainStructures_Client()
+    {
+        await GameUI.Instance.ShowDayStartPanel(StartDayPanel.Mode.Loading);
+        await WorldManager.Instance.BeginStructureGeneration_C();
+        PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
+    }
+    
     
     private async Awaitable DayActive_Client()
     {

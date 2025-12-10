@@ -26,7 +26,8 @@ public class WorldManager : NetworkBehaviour
     private Vector2[] currentHolePositions;
     private Vector2[] currentLootGroupPositions;
 
-    private ClientTerrainGenerationData currentGenerationData;
+    private ClientTerrainGenerationData terrainGenerationData;
+    private ClientStructureGenerationData structureGenerationData;
     
     public int NumSpawnedMonsters => SpawnedEnemies.Count;
 
@@ -62,6 +63,18 @@ public class WorldManager : NetworkBehaviour
     public ClientTerrainGenerationData GenerateClientTerrainData_S()
     {
         int seed = Random.Range(0, 999999);
+        
+        
+        ClientTerrainGenerationData data = new ClientTerrainGenerationData();
+        data.seed = seed;
+        //data.holePositions = holePosition;
+        //data.lootGroupPositions = lootGroupPosition;
+
+        return data;
+    }
+
+    public ClientStructureGenerationData GenerateClientStructureData_S()
+    {   
         Vector2[] holePosition = new Vector2[NUM_OF_HOLES];
         Vector2[] lootGroupPosition = new Vector2[NUM_OF_LOOT_GROUPS];
 
@@ -79,21 +92,23 @@ public class WorldManager : NetworkBehaviour
                 Random.Range(32, _terrain.terrainData.heightmapResolution - 32));
         }
         
-        ClientTerrainGenerationData data = new ClientTerrainGenerationData();
-        data.seed = seed;
+        ClientStructureGenerationData data = new ClientStructureGenerationData();
         data.holePositions = holePosition;
         data.lootGroupPositions = lootGroupPosition;
-
         return data;
     }
 
     [ClientRpc]
-    public void AssignGenerationData_ClientRpc(ClientTerrainGenerationData generationData)
+    public void AssignTerrainGenerationData_ClientRpc(ClientTerrainGenerationData generationData)
     {
-        currentGenerationData = generationData;
+        terrainGenerationData = generationData;
     }
     
-    
+    [ClientRpc]
+    public void AssignStructureGenerationData_ClientRpc(ClientStructureGenerationData generationData)
+    {
+        structureGenerationData = generationData;
+    }
     
     #region Get Terrain Info
     public Vector3 GetRandomPointOnTerrain()
@@ -239,7 +254,7 @@ public class WorldManager : NetworkBehaviour
             }
         }
         _terrain.terrainData.SetHoles(0, 0, clearHoles);
-        LootManager.Instance.ResetLootHolesServer();
+        LootManager.Instance.ResetLootHoles_S();
     }
 
     public void SpawnRandomEnemy_S()
@@ -277,20 +292,17 @@ public class WorldManager : NetworkBehaviour
             }
            
             terrainGenerationRequested = false;
-            CreateTerrain();
+            CreateTerrain_C();
         }
     }
     
-    public async Awaitable GenerateTerrain()
+    //Starts generation of noise maps with burst compiler
+    public async Awaitable BeginTerrainGeneration_C()
     {
-        if (currentGenerationData == null) return;
-        int seed = currentGenerationData.seed;
-        Vector2[] holePositions = currentGenerationData.holePositions; 
-        Vector2[] lootGroupPositions = currentGenerationData.lootGroupPositions;
+        if (structureGenerationData == null) return;
+        int seed = terrainGenerationData.seed;
         
         int resolution = _terrain.terrainData.heightmapResolution; 
-        currentHolePositions = holePositions;
-        currentLootGroupPositions = lootGroupPositions;
 
         noiseMaps.Clear();
 
@@ -367,7 +379,17 @@ public class WorldManager : NetworkBehaviour
         }
     }
     
-    // Sandy Bottom
+    //Starts generation of noise maps with burst compiler
+    public async Awaitable BeginStructureGeneration_C()
+    {
+        currentHolePositions = structureGenerationData.holePositions; 
+        currentLootGroupPositions = structureGenerationData.lootGroupPositions;
+        CreateStructures_C();
+        await Awaitable.NextFrameAsync(); //Just stops any race conditions
+    }
+
+    #region Biome Height Functions
+    // Initial Height Map
     private float CreateInitialHeight(int x, int z, int nativeArrayIndex)
     {
         float height = noiseMaps[NoiseMapType.TerrainHeightMap][nativeArrayIndex];
@@ -401,196 +423,198 @@ public class WorldManager : NetworkBehaviour
         float height =  0.15f * noiseMaps[NoiseMapType.SandyBottom][nativeArrayIndex];
         return height;
     }
+    
+    #endregion
 
-    private void CreateTerrain()
+    private void CreateTerrain_C()
     {
         int resolution = _terrain.terrainData.heightmapResolution;
-        float[,] heights = new float[
-                resolution,
-                resolution];
+        float[,] heights = new float[resolution, resolution];
 
-            ClearAllHoles();
-            
-            int biomeAccessOffset = resolution * resolution;
-            List<TreeInstance> treeInstances = new List<TreeInstance>();
-            
-            // Calculate terrain heights
-            for (int i = 0; i < resolution; i++)
+        ClearAllHoles();
+
+        int biomeAccessOffset = resolution * resolution;
+        List<TreeInstance> treeInstances = new List<TreeInstance>();
+
+        // Calculate terrain heights
+        for (int i = 0; i < resolution; i++)
+        {
+            for (int j = 0; j < resolution; j++)
             {
-                for (int j = 0; j < resolution; j++)
-                {
-                    float xRatio = i / (float) resolution;
-                    float zRatio = j / (float) resolution;
-                    float xInitialPosition = 1f - 2f * Mathf.Abs(xRatio - 0.5f);
-                    float zInitialPosition = 1f - 2f * Mathf.Abs(zRatio - 0.5f);
-                    
-                    float height = 0f;
-                    int nativeArrayIndex = i * resolution + j;
-                    
-                    
-                    float[] biomeValues = new float[NUM_BIOMES];
-                    for (int biomeIndex = 0; biomeIndex < biomeValues.Length; biomeIndex++)
-                    {
-                        biomeValues[biomeIndex] = biomeMap[nativeArrayIndex + biomeAccessOffset * biomeIndex];
-                    }
-                    
-                    float th0 = CreateTerrainType0(i,j, nativeArrayIndex);
-                    float th1 = CreateTerrainType1(i,j, nativeArrayIndex);
-                    float th2 = CreateTerrainType2(i,j, nativeArrayIndex);
-                    float th3 = CreateTerrainType3(i,j, nativeArrayIndex);
+                float xRatio = i / (float)resolution;
+                float zRatio = j / (float)resolution;
+                float xInitialPosition = 1f - 2f * Mathf.Abs(xRatio - 0.5f);
+                float zInitialPosition = 1f - 2f * Mathf.Abs(zRatio - 0.5f);
 
-                    height = CreateInitialHeight(i, j, nativeArrayIndex);
-                    if (height >= 0.8f)
+                float height = 0f;
+                int nativeArrayIndex = i * resolution + j;
+
+
+                float[] biomeValues = new float[NUM_BIOMES];
+                for (int biomeIndex = 0; biomeIndex < biomeValues.Length; biomeIndex++)
+                {
+                    biomeValues[biomeIndex] = biomeMap[nativeArrayIndex + biomeAccessOffset * biomeIndex];
+                }
+
+                float th0 = CreateTerrainType0(i, j, nativeArrayIndex);
+                float th1 = CreateTerrainType1(i, j, nativeArrayIndex);
+                float th2 = CreateTerrainType2(i, j, nativeArrayIndex);
+                float th3 = CreateTerrainType3(i, j, nativeArrayIndex);
+
+                height = CreateInitialHeight(i, j, nativeArrayIndex);
+                if (height >= 0.8f)
+                {
+                    height += CreateTerrainType0(i, j, nativeArrayIndex);
+                }
+                else if (height <= 0.2f)
+                {
+                    height += CreateTerrainType2(i, j, nativeArrayIndex);
+                }
+                else
+                {
+                    height += biomeValues[0] * th0;
+                    height += biomeValues[1] * th1;
+                    height += biomeValues[2] * th2;
+                    float noise = noiseMaps[NoiseMapType.Peaks][nativeArrayIndex];
+                    if (height < 0.7f && i % 4 == 0 && j % 4 == 0 && noise > 0.15)
                     {
-                        height += CreateTerrainType0(i, j, nativeArrayIndex);
-                    } else if (height <= 0.2f)
-                    {
-                        height += CreateTerrainType2(i, j, nativeArrayIndex);
+                        TreeInstance newTreeInstance = new TreeInstance();
+                        newTreeInstance.position = new Vector3((j + Random.Range(-3f, 3f)) / resolution, height,
+                            (i + Random.Range(-3f, 3f)) / resolution); // Normalized coordinates (0-1)
+                        newTreeInstance.rotation = 0f;
+                        newTreeInstance.widthScale = (noise - 0.15f) * 4f;
+                        newTreeInstance.heightScale = (noise - 0.15f) * 4f;
+                        newTreeInstance.prototypeIndex = 0;
+                        treeInstances.Add(newTreeInstance);
                     }
+                }
+
+                heights[i, j] = height;
+            }
+        }
+
+        _terrain.terrainData.SetHeights(0, 0, heights);
+        _terrain.terrainData.SetTreeInstances(treeInstances.ToArray(), true);
+
+        // Paint Terrain
+        float[,,] splatmapData = _terrain.terrainData.GetAlphamaps(0, 0, _terrain.terrainData.alphamapWidth,
+            _terrain.terrainData.alphamapHeight);
+        float xLength = splatmapData.GetLength(0);
+        float zLength = splatmapData.GetLength(1);
+
+        for (int i = 0; i < splatmapData.GetLength(0); i++)
+        {
+            for (int j = 0; j < splatmapData.GetLength(1); j++)
+            {
+                Vector3 interpolatedNormal = _terrain.terrainData.GetInterpolatedNormal(j / zLength, i / xLength);
+                float height = heights[i, j];
+
+                float facingUpAmount = Vector3.Dot(interpolatedNormal, Vector3.up);
+                facingUpAmount = Math.Clamp(facingUpAmount, 0, 1);
+                int nativeArrayIndex = i * _terrain.terrainData.heightmapResolution + j;
+
+                float[] biomeValues = new float[NUM_BIOMES];
+                for (int biomeIndex = 0; biomeIndex < biomeValues.Length; biomeIndex++)
+                {
+                    biomeValues[biomeIndex] = biomeMap[nativeArrayIndex + biomeAccessOffset * biomeIndex];
+                }
+
+                splatmapData[i, j, 0] = 0;
+                splatmapData[i, j, 1] = 0;
+                splatmapData[i, j, 2] = 0;
+                splatmapData[i, j, 3] = 0;
+                splatmapData[i, j, 4] = 0;
+                splatmapData[i, j, 5] = 0;
+
+                if (height > 0.7f)
+                {
+                    float blendAmount = Mathf.Min((height - 0.7f) / 0.1f, 1f);
+                    float multiplier = Mathf.Pow(10f, 2);
+                    blendAmount = Mathf.Floor(blendAmount * multiplier) / multiplier;
+
+                    if (facingUpAmount > 0.75f)
+                        splatmapData[i, j, 0] = blendAmount;
+                    else
+                        splatmapData[i, j, 5] = blendAmount;
+
+                    float inverseBlend = 1.0f - blendAmount;
+
+                    splatmapData[i, j, 1] = inverseBlend * biomeValues[0];
+                    splatmapData[i, j, 2] = inverseBlend * biomeValues[1];
+                    splatmapData[i, j, 3] = inverseBlend * biomeValues[2];
+                    splatmapData[i, j, 4] = inverseBlend * biomeValues[3];
+                }
+                else if (height <= 0.2f)
+                {
+                    splatmapData[i, j, 0] = 1;
+                }
+                else
+                {
+                    if (facingUpAmount <= 0.5f)
+                        splatmapData[i, j, 2] = 1;
                     else
                     {
-                        height += biomeValues[0] * th0;
-                        height += biomeValues[1] * th1;
-                        height += biomeValues[2] * th2;
-                        float noise = noiseMaps[NoiseMapType.Peaks][nativeArrayIndex];
-                        if (height < 0.7f && i % 4 == 0 && j % 4 == 0 && noise > 0.15)
-                        {
-                            TreeInstance newTreeInstance = new TreeInstance();
-                            newTreeInstance.position = new Vector3((j + Random.Range(-3f, 3f))/resolution, height, (i+Random.Range(-3f, 3f))/resolution); // Normalized coordinates (0-1)
-                            //newTreeInstance.position = new Vector3((float)j/resolution, height, (float)i/resolution); 
-                            newTreeInstance.rotation = 0f; // Random rotation
-                            newTreeInstance.widthScale = (noise - 0.15f) * 4f;
-                            newTreeInstance.heightScale = (noise - 0.15f) * 4f;
-                            //newTreeInstance.widthScale = 1;
-                            //newTreeInstance.heightScale = 1;
-                            newTreeInstance.prototypeIndex = 0;
-                            treeInstances.Add(newTreeInstance);
-                        }
-                    }
-                    
-                    //heights[i, j] = height;
-                    heights[i, j] = height;
-                }
-            }
-            _terrain.terrainData.SetHeights(0, 0, heights);
-            //_terrain.terrainData.treeInstances = treeInstances.ToArray();
-            _terrain.terrainData.SetTreeInstances(treeInstances.ToArray(), true);
-            
-            // Paint Terrain
-            float[,,] splatmapData = _terrain.terrainData.GetAlphamaps(0, 0, _terrain.terrainData.alphamapWidth, _terrain.terrainData.alphamapHeight);
-            float xLength = splatmapData.GetLength(0);
-            float zLength = splatmapData.GetLength(1);
-            
-            for (int i = 0; i < splatmapData.GetLength(0); i++)
-            {
-                for (int j = 0; j < splatmapData.GetLength(1); j++)
-                {
-                    Vector3 interpolatedNormal = _terrain.terrainData.GetInterpolatedNormal(j/zLength, i/xLength);
-                    float height = heights[i, j];
-                    
-                    float facingUpAmount = Vector3.Dot(interpolatedNormal, Vector3.up);
-                    facingUpAmount = Math.Clamp(facingUpAmount, 0, 1);
-                    int nativeArrayIndex = i * _terrain.terrainData.heightmapResolution + j;
-                    
-                    float[] biomeValues = new float[NUM_BIOMES];
-                    for (int biomeIndex = 0; biomeIndex < biomeValues.Length; biomeIndex++)
-                    {
-                        biomeValues[biomeIndex] = biomeMap[nativeArrayIndex + biomeAccessOffset * biomeIndex];
-                    }
-                    
-                    splatmapData[i, j, 0] = 0;
-                    splatmapData[i, j, 1] = 0;
-                    splatmapData[i, j, 2] = 0;
-                    splatmapData[i, j, 3] = 0;
-                    splatmapData[i, j, 4] = 0;
-                    splatmapData[i, j, 5] = 0;
-                    
-                    if (height > 0.7f)
-                    {
-                        float blendAmount = Mathf.Min((height - 0.7f)/0.1f, 1f);
-                        float multiplier = Mathf.Pow(10f, 2);
-                        blendAmount = Mathf.Floor(blendAmount * multiplier) / multiplier;
-                        
-                        if (facingUpAmount > 0.75f)
-                            splatmapData[i, j, 0] = blendAmount;
-                        else
-                            splatmapData[i, j, 5] = blendAmount;
-                        
-                        float inverseBlend = 1.0f - blendAmount;
-                        
-                        splatmapData[i, j, 1] = inverseBlend * biomeValues[0];
-                        splatmapData[i, j, 2] = inverseBlend * biomeValues[1];
-                        splatmapData[i, j, 3] = inverseBlend * biomeValues[2];
-                        splatmapData[i, j, 4] = inverseBlend * biomeValues[3];
-                        
-                    } 
-                    else if (height <= 0.2f)
-                    {
-                        splatmapData[i, j, 0] = 1;
-                    }
-                    else
-                    {
-                       if (facingUpAmount <= 0.5f)
-                            splatmapData[i, j, 2] = 1;
-                       else
-                       {
-                           splatmapData[i, j, 1] = biomeValues[0];
-                           splatmapData[i, j, 2] = biomeValues[1];
-                           splatmapData[i, j, 3] = biomeValues[2];
-                           splatmapData[i, j, 4] = biomeValues[3];
-                       }
+                        splatmapData[i, j, 1] = biomeValues[0];
+                        splatmapData[i, j, 2] = biomeValues[1];
+                        splatmapData[i, j, 3] = biomeValues[2];
+                        splatmapData[i, j, 4] = biomeValues[3];
                     }
                 }
             }
-            _terrain.terrainData.SetAlphamaps(0, 0, splatmapData);
-            
-            // Spawn in loot groups, enemies and terrain features
-            SpawnedHoles = new List<GameObject>();
-            SpawnedEnemies = new List<NetworkObject>();
-            InitialEnemies = new List<NetworkObject>();
-            SpawnedLootGroups = new List<GameObject>();
-            for (int i = 0; i < currentHolePositions.Length; i++)
+        }
+
+        _terrain.terrainData.SetAlphamaps(0, 0, splatmapData);
+
+        terrainGenerationCompleted = true;
+        foreach (var noiseMap in noiseMaps)
+        {
+            noiseMap.Value.Dispose();
+        }
+
+        biomeMap.Dispose();
+    }
+
+    private void CreateStructures_C()
+    {
+        // Spawn in loot groups, enemies and terrain features
+        SpawnedHoles = new List<GameObject>();
+        SpawnedEnemies = new List<NetworkObject>();
+        InitialEnemies = new List<NetworkObject>();
+        SpawnedLootGroups = new List<GameObject>();
+        
+        for (int i = 0; i < currentHolePositions.Length; i++)
+        {
+            LootGroup hole = CreateHole((int)currentHolePositions[i].x,
+                (int)currentHolePositions[i].y,
+                32, 32);
+
+            SpawnedHoles.Add(hole.gameObject);
+
+            if (IsServer)
             {
-                LootGroup hole = CreateHole((int)currentHolePositions[i].x,
-                    (int)currentHolePositions[i].y,
-                    32, 32);
-
-                SpawnedHoles.Add(hole.gameObject);
-
-                if (IsServer)
-                {
-                    NetworkObject no = Instantiate(enemyPrefabs[0],
-                        hole.transform.position,
-                        Quaternion.identity
-                    ).GetComponent<NetworkObject>();
-                    no.Spawn();
-                    InitialEnemies.Add(no);
-                    LootManager.Instance.RegisterLootGroupServer(hole);
-                }
+                NetworkObject no = Instantiate(enemyPrefabs[0],
+                    hole.transform.position,
+                    Quaternion.identity
+                ).GetComponent<NetworkObject>();
+                no.Spawn();
+                InitialEnemies.Add(no);
+                LootManager.Instance.RegisterLootGroupServer(hole);
             }
+        }
 
-            for (int i = 0; i < currentLootGroupPositions.Length; i++)
+        for (int i = 0; i < currentLootGroupPositions.Length; i++)
+        {
+            LootGroup lootGroup = CreateLootGroup(
+                (int)currentLootGroupPositions[i].x,
+                (int)currentLootGroupPositions[i].y);
+
+            SpawnedLootGroups.Add(lootGroup.gameObject);
+
+            if (IsServer)
             {
-                LootGroup lootGroup = CreateLootGroup(
-                    (int)currentLootGroupPositions[i].x,
-                    (int)currentLootGroupPositions[i].y);
-
-                SpawnedLootGroups.Add(lootGroup.gameObject);
-
-                if (IsServer)
-                {
-                    LootManager.Instance.RegisterLootGroupServer(lootGroup);
-                }
+                LootManager.Instance.RegisterLootGroupServer(lootGroup);
             }
-
-            terrainGenerationCompleted = true;
-
-            foreach (var noiseMap in noiseMaps)
-            {
-                noiseMap.Value.Dispose();
-            }
-
-            biomeMap.Dispose();
+        }
     }
 }
 
@@ -598,44 +622,24 @@ public class WorldManager : NetworkBehaviour
 public class ClientTerrainGenerationData: INetworkSerializable
 {
     public int seed;
+    
+    // INetworkSerializable
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref seed);
+    }
+}
+
+public class ClientStructureGenerationData: INetworkSerializable
+{
     public Vector2[] holePositions;
     public Vector2[] lootGroupPositions;
     
     // INetworkSerializable
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
-        serializer.SerializeValue(ref seed);
         serializer.SerializeValue(ref holePositions);
         serializer.SerializeValue(ref lootGroupPositions);
-    }
-}
-
-//For noise functions
-public struct GenerateNoiseJob : IJobParallelFor
-{
-    public NativeArray<float> NoiseMap; // Output array for noise values
-    public int Resolution; // Resolution of the noise map
-    public float Scale; // Scale of the noise
-    public int Seed; // Seed for reproducible noise
-
-    public void Execute(int index)
-    {
-        // Calculate UV coordinates from the index
-        int x = index % Resolution;
-        int y = index / Resolution;
-
-        float sampleX = (x + Seed/1000f) / Scale;
-        float sampleY = (y + Seed/1000f) / Scale;
-        
-        float sampleX2 = (x + Seed/1000f) / (Scale * 3f);
-        float sampleY2 = (y + Seed/1000f) / (Scale * 3f);
-
-        // Generate noise using Unity.Mathematics functions (e.g., Perlin noise)
-        float noiseValue = noise.snoise(new float2(sampleX, sampleY));
-        float noiseValue2 = noise.snoise(new float2(sampleX2, sampleY2));
-
-        // Map the noise value to a desired range (e.g., 0-1)
-        NoiseMap[index] = ((0.1f*noiseValue + 0.9f*noiseValue2) + 1f) / 2f; 
     }
 }
 

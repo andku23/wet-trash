@@ -79,7 +79,7 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
         base.OnNetworkSpawn();
         itemInstance = GetComponent<ItemInstance>();
         itemInstance.LoadNetwork(lootIndex.Value);
-        priceText.text = "$" + LootManager.Instance.ItemList.pairs[lootIndex.Value].price;
+        priceText.text = "$" + LootManager.Instance.ItemList.itemData[lootIndex.Value].price;
     }
 
     public bool EnableInteractable(IHoldable heldObject)

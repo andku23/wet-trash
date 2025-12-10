@@ -10,7 +10,6 @@ public class LootManager : NetworkBehaviour
 {
     public static LootManager Instance;
     
-    [SerializeField] private int _numLoot;
     [SerializeField] private ItemList itemList;
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] private List<LootDeposit> _lootDeposits;
@@ -26,11 +25,19 @@ public class LootManager : NetworkBehaviour
         get { return itemList; }
     }
 
+    public Dictionary<WorldManager.BiomeType, BiomeLootSpawnProbability> BiomeLootSpawnTable = new Dictionary<WorldManager.BiomeType, BiomeLootSpawnProbability>();
+
     private void Start()
     {
         if (Instance == null)
         {
             Instance = this;
+        }
+
+        for (int i = 0; i < itemList.biomeLootSpawnProbability.Length; i++)
+        {
+            var el = itemList.biomeLootSpawnProbability[i];
+            BiomeLootSpawnTable.Add(el.biomeType, el);
         }
     }
     
@@ -45,55 +52,68 @@ public class LootManager : NetworkBehaviour
     }
 
     // Returns total loot cost
-    public int SpawnLoot()
+    public int SpawnLoot_S()
     {
         int totalCost = 0;
-        // Create spawn probability tables for different depths
-        List<int> spawnProbabilityShallow = new List<int>();
-        List<int> spawnProbabilityDeep = new List<int>();
         
-        for (int i = 0; i < itemList.pairs.Length; i++)
+        // Fill probability arrays with n * probability of each item
+        // So that we can randomly sample from these later
+        List<int> spawnProbabilityCommon = new List<int>();
+        List<int> spawnProbabilityRare = new List<int>();
+        List<int> spawnProbabilitySuperRare = new List<int>();
+        
+        for (int i = 0; i < itemList.itemData.Length; i++)
         {
-            for (int j = 0; j < itemList.pairs[i].spawnRateShallow; j++)
+            for (int j = 0; j < itemList.itemData[i].spawnRateCommon; j++)
             {
-                spawnProbabilityShallow.Add(i);
+                spawnProbabilityCommon.Add(i);
             }
-        }
-        
-        for (int i = 0; i < itemList.pairs.Length; i++)
-        {
-            for (int j = 0; j < itemList.pairs[i].spawnRateDeep; j++)
+            for (int j = 0; j < itemList.itemData[i].spawnRateRare; j++)
             {
-                spawnProbabilityDeep.Add(i);
+                spawnProbabilityRare.Add(i);
+            }
+            for (int j = 0; j < itemList.itemData[i].spawnRateVeryRare; j++)
+            {
+                spawnProbabilitySuperRare.Add(i);
             }
         }
         
         int totalLootCost = 0;
         // Spawn loot based on created loot tables
         Vector3 spawnPosition = Vector3.zero;
-        for (int i = 0; i < _numLoot; i++)
+        List<Vector2> lootTerrainPosition = WorldManager.Instance.GetLootSpawnPositions();
+        foreach (var terrainPosition in lootTerrainPosition)
         {
-            spawnPosition = WorldManager.Instance.GetRandomPointOnTerrain();
-            if (spawnPosition.y < spawnCutoff.transform.position.y)
+            WorldManager.BiomeType biomeType = WorldManager.Instance.GetBiomeType((int)terrainPosition.x, (int)terrainPosition.y);
+            List<int> currentSpawnTable = null;
+            switch (biomeType)
             {
-                var itemData = SpawnAndLoadLoot(spawnPosition, spawnProbabilityDeep);
-                totalLootCost += itemData.price;
+                case WorldManager.BiomeType.NearShore:
+                case WorldManager.BiomeType.Biome1:
+                    currentSpawnTable = spawnProbabilityCommon;
+                    break;
+                case WorldManager.BiomeType.Biome2:
+                case WorldManager.BiomeType.Biome3:
+                case WorldManager.BiomeType.Biome4:
+                    currentSpawnTable = spawnProbabilityRare;
+                    break;
+                case WorldManager.BiomeType.Depths:
+                    currentSpawnTable = spawnProbabilitySuperRare;
+                    break;
             }
-            else
-            {
-                var itemData = SpawnAndLoadLoot(spawnPosition, spawnProbabilityShallow);
-                totalLootCost += itemData.price;
-            }
+            spawnPosition = WorldManager.Instance.GetPointOnTerrainFromResolution((int)terrainPosition.y, (int)terrainPosition.x);
+            var itemData = SpawnAndLoadLoot(spawnPosition, currentSpawnTable);
+            totalLootCost += itemData.price;
         }
         
         //One on the surface just to debug
-        totalLootCost += SpawnAndLoadLoot(new Vector3(0,0,0), spawnProbabilityShallow).price;
+        totalLootCost += SpawnAndLoadLoot(new Vector3(0,0,0), spawnProbabilityCommon).price;
         
         for (int i = 0; i < _lootGroups.Count; i++)
         {
             for (int j = 0; j < _lootGroups[i].lootSpawnLocations.Length; j++)
             {
-                totalLootCost += SpawnAndLoadLoot(_lootGroups[i].lootSpawnLocations[j].position, spawnProbabilityDeep).price;
+                totalLootCost += SpawnAndLoadLoot(_lootGroups[i].lootSpawnLocations[j].position, spawnProbabilityRare).price;
             }
         }
         
@@ -115,7 +135,7 @@ public class LootManager : NetworkBehaviour
         networkLoot.lootIndex.Value = selectedLootIndex;
         networkObject.Spawn();
         _loots.Add(networkObject);
-        return itemList.pairs[selectedLootIndex];
+        return itemList.itemData[selectedLootIndex];
     }
     
     private void DestroyLootInHand(ulong targetPlayerNetworkObjectId)
@@ -152,9 +172,9 @@ public class LootManager : NetworkBehaviour
 
     public ItemData LootIndextoData(int lootIndex)
     {
-        if (lootIndex < itemList.pairs.Length)
+        if (lootIndex < itemList.itemData.Length)
         {
-            return itemList.pairs[lootIndex];
+            return itemList.itemData[lootIndex];
         }
 
         return null;
@@ -165,9 +185,9 @@ public class LootManager : NetworkBehaviour
         ItemInstance item = prefabInstance.GetComponent<ItemInstance>();
         if (item != null)
         {
-            if (item.ItemIndex < itemList.pairs.Length)
+            if (item.ItemIndex < itemList.itemData.Length)
             {
-                return itemList.pairs[item.ItemIndex];
+                return itemList.itemData[item.ItemIndex];
             }
         }
         return null;
@@ -274,7 +294,7 @@ public class LootManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void Deposit_ServerRpc(ulong targetPlayerNetworkObjectId, int lootDepositIndex, int lootIndex)
     {
-        MoneyManager.Instance.AddCash(itemList.pairs[lootIndex].price);
+        MoneyManager.Instance.AddCash(itemList.itemData[lootIndex].price);
         Deposit_ClientRpc(targetPlayerNetworkObjectId, lootDepositIndex);
     }
     

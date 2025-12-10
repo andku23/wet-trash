@@ -12,4 +12,5 @@ public class GameData : ScriptableObject
     public int NUM_ROGUE_CARDS = 2;
     public int MAX_MONSTERS_PER_DAY = 30;
     public int MONSTER_SPAWN_PER_HOUR = 4;
+    public int LOOT_PROBABILITY_DIVISOR = 400;
 }

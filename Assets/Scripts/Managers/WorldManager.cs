@@ -34,11 +34,11 @@ public class WorldManager : NetworkBehaviour
 
     [SerializeField] private Terrain _terrain;
 
-    //private List<NativeArray<float>> noiseMaps = new List<NativeArray<float>>();
     private Dictionary<NoiseMapType, NativeArray<float>> noiseMaps = new Dictionary<NoiseMapType, NativeArray<float>>();
     private NativeArray<float> biomeMap;
-    //List<NativeArray<float>> noiseMaps = new List<NativeArray<float>>();
     private List<JobHandle> concurrentJobs = new List<JobHandle>();
+    private int[,] terrainBiomes = null;
+    
     private bool terrainGenerationRequested = false;
     private bool terrainGenerationCompleted = false;
 
@@ -48,6 +48,16 @@ public class WorldManager : NetworkBehaviour
         SandyBottom,
         Cliffs,
         Peaks
+    }
+
+    public enum BiomeType
+    {
+        NearShore,
+        Biome1,
+        Biome2,
+        Biome3,
+        Biome4,
+        Depths
     }
 
     private void Start()
@@ -121,6 +131,15 @@ public class WorldManager : NetworkBehaviour
 
         return GetPointOnTerrain(randomX, randomZ);
     }
+
+    // Uses terrain resolution as input
+    public Vector3 GetPointOnTerrainFromResolution(int x, int z)
+    {
+        Vector3 terrainPosition = _terrain.transform.position;
+        float calculatedX = terrainPosition.x + x;
+        float calculatedZ = terrainPosition.z + z;
+        return GetPointOnTerrain(calculatedX, calculatedZ);
+    }
     
     public Vector3 GetRandomPointInOcean()
     {
@@ -138,6 +157,32 @@ public class WorldManager : NetworkBehaviour
         float height = _terrain.SampleHeight(pointOnXZPlane);
 
         return new Vector3(x, height + terrainPosition.y, z);
+    }
+
+    public BiomeType GetBiomeType(int x, int z)
+    {
+        return (BiomeType) terrainBiomes[x, z];
+    }
+
+    public List<Vector2> GetLootSpawnPositions()
+    {
+        int resolution = _terrain.terrainData.heightmapResolution;
+        List<Vector2> lootSpawnPositions = new List<Vector2>();
+        for (int i = 0; i < resolution; i++)
+        {
+            for (int j = 0; j < resolution; j++)
+            {
+                BiomeType biomeType = (BiomeType) terrainBiomes[i, j];
+                int probabilityThreshold  = LootManager.Instance.BiomeLootSpawnTable[biomeType].probability;
+                int probability = Random.Range(0, GameManager.Instance.gameData.LOOT_PROBABILITY_DIVISOR);
+                if (probability < probabilityThreshold)
+                {
+                    lootSpawnPositions.Add(new Vector2(i, j));
+                }
+            }
+        }
+
+        return lootSpawnPositions;
     }
     
     #endregion
@@ -174,8 +219,8 @@ public class WorldManager : NetworkBehaviour
         Vector3 lowestHolePosition = new Vector3(xPos, 0, zPos);
         lowestHolePosition.y = heights[holeWidth/2, holeHeight/2] - 0.05f;
         float lowestHoleHeight = lowestHolePosition.y;
-        float fullSize = holeWidth / 2;
-        float holeSize = holeWidth / 4;
+        float fullSize = (float)holeWidth / 2;
+        float holeSize = (float)holeWidth / 4;
         float outsideToHoleEdge = fullSize - holeSize;
         
         for (int x = 0; x < holeWidth; x++)
@@ -299,10 +344,16 @@ public class WorldManager : NetworkBehaviour
     //Starts generation of noise maps with burst compiler
     public async Awaitable BeginTerrainGeneration_C()
     {
-        if (structureGenerationData == null) return;
+        if (terrainGenerationData == null) return;
         int seed = terrainGenerationData.seed;
-        
-        int resolution = _terrain.terrainData.heightmapResolution; 
+        int resolution = _terrain.terrainData.heightmapResolution;
+
+        if (terrainBiomes == null ||
+            _terrain.terrainData.heightmapResolution != terrainBiomes.GetLength(0) ||
+            _terrain.terrainData.heightmapResolution != terrainBiomes.GetLength(1))
+        {
+            terrainBiomes = new int[resolution, resolution];
+        }
 
         noiseMaps.Clear();
 
@@ -382,6 +433,7 @@ public class WorldManager : NetworkBehaviour
     //Starts generation of noise maps with burst compiler
     public async Awaitable BeginStructureGeneration_C()
     {
+        if (structureGenerationData == null) return;
         currentHolePositions = structureGenerationData.holePositions; 
         currentLootGroupPositions = structureGenerationData.lootGroupPositions;
         CreateStructures_C();
@@ -465,16 +517,35 @@ public class WorldManager : NetworkBehaviour
                 if (height >= 0.8f)
                 {
                     height += CreateTerrainType0(i, j, nativeArrayIndex);
+                    terrainBiomes[i, j] = (int)BiomeType.NearShore;
                 }
                 else if (height <= 0.2f)
                 {
-                    height += CreateTerrainType2(i, j, nativeArrayIndex);
+                    height -= CreateTerrainType2(i, j, nativeArrayIndex);
+                    terrainBiomes[i, j] = (int)BiomeType.Depths;
                 }
                 else
                 {
+                    int mostBiome = VarietyUtilities.GetGreatestIndexInArray(biomeValues);
                     height += biomeValues[0] * th0;
                     height += biomeValues[1] * th1;
                     height += biomeValues[2] * th2;
+
+                    if (mostBiome == 0)
+                    {
+                        terrainBiomes[i, j] = (int)BiomeType.Biome1;
+                    } else if (mostBiome == 1)
+                    {
+                        terrainBiomes[i, j] = (int)BiomeType.Biome2;
+                    } else if (mostBiome == 2)
+                    {
+                        terrainBiomes[i, j] = (int)BiomeType.Biome3;
+                    }
+                    else
+                    {
+                        terrainBiomes[i, j] = (int)BiomeType.Biome4;
+                    }
+                    
                     float noise = noiseMaps[NoiseMapType.Peaks][nativeArrayIndex];
                     if (height < 0.7f && i % 4 == 0 && j % 4 == 0 && noise > 0.15)
                     {

@@ -196,7 +196,7 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.DayActive:
                 _lootManager.DeleteAllLoot();
-                _quota = Mathf.FloorToInt(_lootManager.SpawnLoot() * gameData.QUOTA_PERCENTAGE);
+                _quota = Mathf.FloorToInt(_lootManager.SpawnLoot_S() * gameData.QUOTA_PERCENTAGE);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.ShowDayResult:

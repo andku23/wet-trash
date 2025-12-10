@@ -1,11 +1,13 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "LootList", menuName = "Scriptable Objects/LootList")]
 public class ItemList : ScriptableObject
 {
     public GameObject networkLootPrefab;
     public GameObject localLootPrefab;
-    public ItemData[] pairs;
+    [FormerlySerializedAs("pairs")] public ItemData[] itemData;
+    public BiomeLootSpawnProbability[] biomeLootSpawnProbability;
 }
 
 [System.Serializable]
@@ -13,12 +15,20 @@ public class ItemData
 {
     public ItemType itemType;
     public GameObject model;
-    public int spawnRateShallow;
-    public int spawnRateDeep;
+    public int spawnRateCommon;
+    public int spawnRateRare;
+    public int spawnRateVeryRare;
     public int price;
     public float weight;
     public Sprite hotbarIcon;
     public HoldableHandType holdableHandType;
+}
+
+[System.Serializable]
+public class BiomeLootSpawnProbability
+{
+    public WorldManager.BiomeType biomeType;
+    public int probability;
 }
 
 public enum ItemType

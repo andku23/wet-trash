@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: -5790363226178547266}
   - component: {fileID: 2240173207281510557}
   m_Layer: 6
-  m_Name: SpecialLootModel
+  m_Name: BarrelLootModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

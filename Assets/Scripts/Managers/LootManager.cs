@@ -51,10 +51,12 @@ public class LootManager : NetworkBehaviour
         moneyText.text = $"${next}";
     }
 
-    // Returns total loot cost
-    public int SpawnLoot_S()
+    // Returns dictionary of total loot costs of each currency time
+    public Dictionary<CurrencyType, int> SpawnLoot_S()
     {
-        int totalCost = 0;
+        //int totalCost = 0;
+        var totalCosts = VarietyUtilities.GetInitializedCurrencyDictionary();
+        
         
         // Fill probability arrays with n * probability of each item
         // So that we can randomly sample from these later
@@ -78,7 +80,7 @@ public class LootManager : NetworkBehaviour
             }
         }
         
-        int totalLootCost = 0;
+        //int totalLootCost = 0;
         // Spawn loot based on created loot tables
         Vector3 spawnPosition = Vector3.zero;
         List<Vector2> lootTerrainPosition = WorldManager.Instance.GetLootSpawnPositions();
@@ -103,21 +105,33 @@ public class LootManager : NetworkBehaviour
             }
             spawnPosition = WorldManager.Instance.GetPointOnTerrainFromResolution((int)terrainPosition.y, (int)terrainPosition.x);
             var itemData = SpawnLootFromTable(spawnPosition, currentSpawnTable);
-            totalLootCost += itemData.price;
+            foreach (var valueType in itemData.valueRange)
+            {
+                totalCosts[valueType.CurrencyType] += valueType.MaxValue;
+            }
         }
         
         //One on the surface just to debug
-        totalLootCost += SpawnLootFromTable(new Vector3(0,0,0), spawnProbabilityCommon).price;
+        var testItemData = SpawnLootFromTable(new Vector3(0,0,0), spawnProbabilityCommon);
+        foreach (var valueType in testItemData.valueRange)
+        {
+            totalCosts[valueType.CurrencyType] += valueType.MaxValue;
+        }
         
         for (int i = 0; i < _lootGroups.Count; i++)
         {
             for (int j = 0; j < _lootGroups[i].lootSpawnLocations.Length; j++)
             {
-                totalLootCost += SpawnLootFromTable(_lootGroups[i].lootSpawnLocations[j].position, spawnProbabilityRare).price;
+                var groupItemData =
+                    SpawnLootFromTable(_lootGroups[i].lootSpawnLocations[j].position, spawnProbabilityRare);
+                foreach (var valueType in groupItemData.valueRange)
+                {
+                    totalCosts[valueType.CurrencyType] += valueType.MaxValue;
+                }
             }
         }
         
-        return totalLootCost;
+        return totalCosts;
     }
     
     private ItemData SpawnLootFromTable(Vector3 spawnPosition, List<int> spawnProbabilityTable)
@@ -297,7 +311,7 @@ public class LootManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void Deposit_ServerRpc(ulong targetPlayerNetworkObjectId, int lootDepositIndex, int lootIndex)
     {
-        MoneyManager.Instance.AddCash(itemList.itemData[lootIndex].price);
+        MoneyManager.Instance.CashInLoot(lootIndex);
         Deposit_ClientRpc(targetPlayerNetworkObjectId, lootDepositIndex);
     }
     

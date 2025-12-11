@@ -182,7 +182,7 @@ public class GameManager : NetworkBehaviour
             case TimeState.LoadingTerrain:
                 _day++;
                 currentLevelData_s = new LevelData(gameData.MAX_MONSTERS_PER_DAY, gameData.MONSTER_SPAWN_PER_HOUR);
-                MoneyManager.Instance.ResetCurrentCollected();
+                MoneyManager.Instance.ResetCurrentCollected_S();
                 WaitForPlayerResponse(ToNextGameState_ServerRpc);
                 var clientTerrainGenData = WorldManager.Instance.GenerateClientTerrainData_S();
                 WorldManager.Instance.AssignTerrainGenerationData_ClientRpc(clientTerrainGenData);
@@ -196,7 +196,12 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.DayActive:
                 _lootManager.DeleteAllLoot();
-                _quota = Mathf.FloorToInt(_lootManager.SpawnLoot_S() * gameData.QUOTA_PERCENTAGE);
+                var lootValue = _lootManager.SpawnLoot_S();
+                foreach (var item in lootValue)
+                {
+                    _quota += item.Value;
+                }
+                _quota = Mathf.FloorToInt(_quota * gameData.QUOTA_PERCENTAGE);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quota, MoneyManager.Instance.CurrentDayCash);
                 break;
             case TimeState.ShowDayResult:
@@ -225,7 +230,7 @@ public class GameManager : NetworkBehaviour
             _timeState = timeState;
             _day = day;
             _quota = quota;
-            MoneyManager.Instance.CurrentDayCash = currentDayCash;
+            //MoneyManager.Instance.CurrentDayCash = currentDayCash;
         }
         
         switch (_timeState)

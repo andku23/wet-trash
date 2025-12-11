@@ -11,20 +11,6 @@ public class ItemList : ScriptableObject
 }
 
 [System.Serializable]
-public class ItemData
-{
-    public ItemType itemType;
-    public GameObject model;
-    public int spawnRateCommon;
-    public int spawnRateRare;
-    public int spawnRateVeryRare;
-    public int price;
-    public float weight;
-    public Sprite hotbarIcon;
-    public HoldableHandType holdableHandType;
-}
-
-[System.Serializable]
 public class BiomeLootSpawnProbability
 {
     public WorldManager.BiomeType biomeType;

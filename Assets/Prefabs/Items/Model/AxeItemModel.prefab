@@ -44,7 +44,7 @@ GameObject:
   - component: {fileID: 3051250846797679216}
   - component: {fileID: 7132905628500709893}
   m_Layer: 6
-  m_Name: WeaponItemModel
+  m_Name: AxeItemModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

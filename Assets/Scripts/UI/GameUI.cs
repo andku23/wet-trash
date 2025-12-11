@@ -67,7 +67,7 @@ public class GameUI : NetworkBehaviour
         GameManager.Instance.OnBreathUpdated.AddListener(UpdateBreathBar);
         MoneyManager.Instance.OnCashChanged.AddListener(UpdateCashText);
         
-        UpdateCashText(MoneyManager.Instance.Cash);
+        UpdateCashText(CurrencyType.Ore, 0);
     }
 
     private void OnDestroy()
@@ -247,7 +247,8 @@ public class GameUI : NetworkBehaviour
         ShopItem shopItem = ShopManager.Instance.shopList.items[shopItemIndex];
         if (MoneyManager.Instance.Cash >= shopItem.price)
         {
-            MoneyManager.Instance.SubtractCash(shopItem.price);
+            //TODO Update shop items to use prices as  well
+            //MoneyManager.Instance.SubtractCash(shopItem.price);
             ShopManager.Instance.PurchaseItem(shopItem, shopItemIndex);
         }
     }
@@ -291,9 +292,14 @@ public class GameUI : NetworkBehaviour
         endScreenCurrentCashText.text = currentRunCash.ToString();
     }
     
-    public void UpdateCashText(int amount)
+    public void UpdateCashText(CurrencyType type, int amount)
     {
-        cashText.text = "$" + amount.ToString();
+        cashText.text = "";
+        var wallet = MoneyManager.Instance.Wallet;
+        for (int i = 0; i < wallet.Count; i++)
+        {
+            cashText.text += ((CurrencyType)i).ToString() + ": " + wallet[i] + "\n";
+        }
     }
     
     public void UpdateCountdownText(int timeLeft, int timeTotal)

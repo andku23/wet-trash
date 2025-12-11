@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -6,12 +7,29 @@ public class MoneyManager : NetworkBehaviour
 {
     public static MoneyManager Instance;
     
-    private NetworkVariable<int> _cash = new NetworkVariable<int>();
-    public UnityEvent<int> OnCashChanged = new UnityEvent<int>();
-    private int _currentDayCash = 0;
+    //private NetworkVariable<int> _cash = new NetworkVariable<int>();
+    private NetworkList<int> _wallet = new NetworkList<int>();
     
-    public int Cash {get{return _cash.Value;}}
-    public int CurrentDayCash {get{return _currentDayCash;}set{_currentDayCash=value;}}
+    public UnityEvent<CurrencyType, int> OnCashChanged = new UnityEvent<CurrencyType, int>();
+    //private int _currentDayCash = 0;
+    public List<int> CurrentDayCash_S = new List<int>();
+    
+    public int Cash {get{return 0;}}
+    public NetworkList<int> Wallet {get{return _wallet;}}
+
+    public int CurrentDayCash
+    {
+        get
+        {
+            int total = 0;
+            foreach (var item in CurrentDayCash_S)
+            {
+                total += item;
+            }
+
+            return total;
+        }
+    }
     
     public override void OnNetworkSpawn()
     {
@@ -22,41 +40,71 @@ public class MoneyManager : NetworkBehaviour
             Instance = this;
         }
         
-        _cash.OnValueChanged += OnCashUpdated;
+        
+        //_cash.OnValueChanged += OnCashUpdated;
+        _wallet.OnListChanged += OnCashUpdated;
 
         if (IsServer)
         {
-            _cash.Value = GameManager.Instance.gameData.INITIAL_CASH;
+            int[] generatedWallet = VarietyUtilities.GetInitializedCurrencyArray();
+            foreach (int i in generatedWallet)
+            {
+                _wallet.Add(0);
+                CurrentDayCash_S.Add(0);
+            }
+
+            //_cash.Value = GameManager.Instance.gameData.INITIAL_CASH;
         }
-        
-        OnCashChanged.Invoke(_cash.Value);
+
+        for (int i = 0; i < _wallet.Count; i++)
+        {
+            OnCashChanged.Invoke((CurrencyType) i, _wallet[i]);
+        }
 
     }
 
-    public void AddCash(int addAmount)
+    public void CashInLoot(int itemDataIndex)
     {
-        AddCash_ServerRpc(addAmount);
+        CashInLoot_ServerRpc(itemDataIndex);
     }
     
     [ServerRpc(RequireOwnership = false)]
-    public void AddCash_ServerRpc(int addAmount)
+    public void CashInLoot_ServerRpc(int itemDataIndex)
     {
-        _cash.Value += addAmount;
-        CurrentDayCash += addAmount;
+        var itemData = LootManager.Instance.LootIndextoData(itemDataIndex);
+
+        foreach (var currency in itemData.valueRange)
+        {
+            _wallet[(int)currency.CurrencyType] += currency.MaxValue;
+            CurrentDayCash_S[(int)currency.CurrencyType] += currency.MaxValue;
+        }
     }
     
-    public void SubtractCash(int subAmount)
+    public void SubtractCash(CurrencyType currencyType, int subAmount)
     {
-        AddCash(-subAmount);
+        ChangeCash_ServerRpc(currencyType, -subAmount);
     }
     
-    public void ResetCurrentCollected()
+    [ServerRpc(RequireOwnership = false)]
+    public void ChangeCash_ServerRpc(CurrencyType currencyType, int amount)
     {
-        CurrentDayCash = 0;
+        _wallet[(int)currencyType] += amount;
+        CurrentDayCash_S[(int)currencyType] += amount;
     }
     
-    public void OnCashUpdated(int prev, int next)
+    public void ResetCurrentCollected_S()
     {
-        OnCashChanged.Invoke(next);
+        for (int i = 0; i < CurrentDayCash_S.Count; i++)
+        {
+            CurrentDayCash_S[i] = 0;
+        }
+    }
+    
+    public void OnCashUpdated(NetworkListEvent<int> changeEvent)
+    {
+        if (changeEvent.Type == NetworkListEvent<int>.EventType.Value)
+        {
+            OnCashChanged.Invoke((CurrencyType)changeEvent.Index, changeEvent.Value);
+        }
     }
 }

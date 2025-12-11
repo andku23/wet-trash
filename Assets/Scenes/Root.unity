@@ -4595,7 +4595,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  _numLoot: 40
   itemList: {fileID: 11400000, guid: 4623b85544d214945bd6f8e8f852d1ce, type: 2}
   moneyText: {fileID: 0}
   _lootDeposits: []

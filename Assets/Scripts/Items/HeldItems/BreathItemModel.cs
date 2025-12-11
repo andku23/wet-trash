@@ -1,9 +1,9 @@
 using UnityEngine;
 
-public class WeaponItemModel : HeldItemModel
+public class BreathItemModel : HeldItemModel
 {
     public override void UseItem(InteractionController interactionController, PlayerState playerState)
     {
-        interactionController.DoAttack();
+        // interactionController.DoAttack();
     }
 }

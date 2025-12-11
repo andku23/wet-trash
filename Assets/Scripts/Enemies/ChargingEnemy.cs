@@ -44,6 +44,7 @@ public class ChargingEnemy : BaseEnemy
         if (IsServer)
         {
             ChangeState_ServerRpc((int)ServerStates.Dead);
+            DropLoot_S();
             yield return new WaitForSeconds(1.5f);
             GetComponent<NetworkObject>().Despawn(true);
         }

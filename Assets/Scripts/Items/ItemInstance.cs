@@ -32,6 +32,8 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
     public void LoadNetwork(int lootIndex)
     {
         ItemIndex = lootIndex;
+        Debug.Log(LootManager.Instance.ItemList.itemData.Length);
+        Debug.Log(lootIndex);
         GameObject model = Instantiate(LootManager.Instance.ItemList.itemData[lootIndex].model, transform);
         model.GetComponent<ColliderReference>().reference = gameObject;
         Model = model.GetComponent<HeldItemModel>();
@@ -52,8 +54,18 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
         return LootManager.Instance.LootIndextoData(ItemIndex).weight;
     }
 
-    public void UseItem(InteractionController interactionController)
+    public void OnEquip(InteractionController interactionController, PlayerState playerState)
     {
-        Model.UseItem(interactionController);
+        Model.OnEquip(interactionController, playerState);
+    }
+
+    public void UseItem(InteractionController interactionController, PlayerState playerState)
+    {
+        Model.UseItem(interactionController, playerState);
+    }
+    
+    public void OnUnequip(InteractionController interactionController, PlayerState playerState)
+    {
+        Model.OnUnequip(interactionController, playerState);
     }
 }

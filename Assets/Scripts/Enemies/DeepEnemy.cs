@@ -55,6 +55,7 @@ public class DeepEnemy : BaseEnemy
         if (IsServer)
         {
             ChangeState_ServerRpc((int)ServerStates.Death);
+            DropLoot_S();
             yield return new WaitForSeconds(1.5f);
             GetComponent<NetworkObject>().Despawn(true);
         }

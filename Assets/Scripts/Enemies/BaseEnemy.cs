@@ -7,6 +7,7 @@ public abstract class BaseEnemy : NetworkBehaviour
 {
     [SerializeField] protected Animator _animator;
     [SerializeField] protected PlayerAudioSource _audioSource;
+    [SerializeField] protected List<int> _lootDroppedOnDeath = new List<int>();
     
     protected Vector3 nextPosition;
     protected Vector3 lastPosition;
@@ -43,7 +44,20 @@ public abstract class BaseEnemy : NetworkBehaviour
 
     protected virtual IEnumerator DoDeath()
     {
+        DropLoot_S();
         yield return null;
+    }
+
+    protected virtual void DropLoot_S()
+    {
+        if (IsServer)
+        {
+            foreach (var loot in _lootDroppedOnDeath)
+            {
+                LootManager.Instance.SpawnAndLoadLoot(transform.position, loot);
+            }
+        }
+        
     }
 
     public virtual void OnNetworkStateUpdated(int prev, int next)

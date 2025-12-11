@@ -273,6 +273,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   _animator: {fileID: 5367490368920914648}
   _audioSource: {fileID: 4821622056325235315}
+  _lootDroppedOnDeath: 05000000
   Health:
     m_InternalValue: 10
   travelTime: 2

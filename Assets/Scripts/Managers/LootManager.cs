@@ -102,42 +102,45 @@ public class LootManager : NetworkBehaviour
                     break;
             }
             spawnPosition = WorldManager.Instance.GetPointOnTerrainFromResolution((int)terrainPosition.y, (int)terrainPosition.x);
-            var itemData = SpawnAndLoadLoot(spawnPosition, currentSpawnTable);
+            var itemData = SpawnLootFromTable(spawnPosition, currentSpawnTable);
             totalLootCost += itemData.price;
         }
         
         //One on the surface just to debug
-        totalLootCost += SpawnAndLoadLoot(new Vector3(0,0,0), spawnProbabilityCommon).price;
+        totalLootCost += SpawnLootFromTable(new Vector3(0,0,0), spawnProbabilityCommon).price;
         
         for (int i = 0; i < _lootGroups.Count; i++)
         {
             for (int j = 0; j < _lootGroups[i].lootSpawnLocations.Length; j++)
             {
-                totalLootCost += SpawnAndLoadLoot(_lootGroups[i].lootSpawnLocations[j].position, spawnProbabilityRare).price;
+                totalLootCost += SpawnLootFromTable(_lootGroups[i].lootSpawnLocations[j].position, spawnProbabilityRare).price;
             }
         }
         
         return totalLootCost;
     }
     
-    private ItemData SpawnAndLoadLoot(Vector3 spawnPosition, List<int> spawnProbabilityTable)
+    private ItemData SpawnLootFromTable(Vector3 spawnPosition, List<int> spawnProbabilityTable)
+    {
+        int selectedLootIndex = spawnProbabilityTable[Random.Range(0, spawnProbabilityTable.Count)];
+        return SpawnAndLoadLoot(spawnPosition, selectedLootIndex);
+    }
+
+    public ItemData SpawnAndLoadLoot(Vector3 spawnPosition, int lootIndex)
     {
         GameObject go = Instantiate(itemList.networkLootPrefab,
             spawnPosition,
             Quaternion.identity);
-        //LootBaseData lootBaseData = go.GetComponent<LootBaseData>();
-        int selectedLootIndex = spawnProbabilityTable[Random.Range(0, spawnProbabilityTable.Count)];
-        //LootData randomlySelectedData = lootList.pairs[selectedPrefabIndex];
-            
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
         NetworkLoot networkLoot = go.GetComponent<NetworkLoot>();
             
-        networkLoot.lootIndex.Value = selectedLootIndex;
+        networkLoot.lootIndex.Value = lootIndex;
         networkObject.Spawn();
         _loots.Add(networkObject);
-        return itemList.itemData[selectedLootIndex];
+        return itemList.itemData[lootIndex];
     }
-    
+
+
     private void DestroyLootInHand(ulong targetPlayerNetworkObjectId)
     {
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];

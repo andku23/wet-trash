@@ -12,17 +12,17 @@ public class MoneyManager : NetworkBehaviour
     
     public UnityEvent<CurrencyType, int> OnCashChanged = new UnityEvent<CurrencyType, int>();
     //private int _currentDayCash = 0;
-    public List<int> CurrentDayCash_S = new List<int>();
+    [HideInInspector] public List<int> CurrentDayCash_C = new List<int>();
     
     public int Cash {get{return 0;}}
     public NetworkList<int> Wallet {get{return _wallet;}}
 
-    public int CurrentDayCash
+    public int CurrentAllLootTotal_S
     {
         get
         {
             int total = 0;
-            foreach (var item in CurrentDayCash_S)
+            foreach (var item in CurrentDayCash_C)
             {
                 total += item;
             }
@@ -50,7 +50,7 @@ public class MoneyManager : NetworkBehaviour
             foreach (int i in generatedWallet)
             {
                 _wallet.Add(0);
-                CurrentDayCash_S.Add(0);
+                CurrentDayCash_C.Add(0);
             }
 
             //_cash.Value = GameManager.Instance.gameData.INITIAL_CASH;
@@ -76,7 +76,7 @@ public class MoneyManager : NetworkBehaviour
         foreach (var currency in itemData.valueRange)
         {
             _wallet[(int)currency.CurrencyType] += currency.MaxValue;
-            CurrentDayCash_S[(int)currency.CurrencyType] += currency.MaxValue;
+            CurrentDayCash_C[(int)currency.CurrencyType] += currency.MaxValue;
         }
     }
     
@@ -89,14 +89,14 @@ public class MoneyManager : NetworkBehaviour
     public void ChangeCash_ServerRpc(CurrencyType currencyType, int amount)
     {
         _wallet[(int)currencyType] += amount;
-        CurrentDayCash_S[(int)currencyType] += amount;
+        CurrentDayCash_C[(int)currencyType] += amount;
     }
     
-    public void ResetCurrentCollected_S()
+    public void ResetCurrentCollected_C()
     {
-        for (int i = 0; i < CurrentDayCash_S.Count; i++)
+        for (int i = 0; i < CurrentDayCash_C.Count; i++)
         {
-            CurrentDayCash_S[i] = 0;
+            CurrentDayCash_C[i] = 0;
         }
     }
     
@@ -105,6 +105,7 @@ public class MoneyManager : NetworkBehaviour
         if (changeEvent.Type == NetworkListEvent<int>.EventType.Value)
         {
             OnCashChanged.Invoke((CurrencyType)changeEvent.Index, changeEvent.Value);
+            CurrentDayCash_C[changeEvent.Index] += changeEvent.Value;
         }
     }
 }

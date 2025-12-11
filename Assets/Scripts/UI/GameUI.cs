@@ -271,13 +271,19 @@ public class GameUI : NetworkBehaviour
     
     #region Text Updates
 
-    public void UpdateDayInfoText(int quota, int day)
+    public void UpdateDayInfoText(NetworkList<int> quotas, int day)
     {
         UpdateDayText(day);
-        UpdateQuotaText(quota);
+
+        string quotaText = "";
+        for (int i = 0; i < quotas.Count; i++)
+        {
+            quotaText += ((CurrencyType)i)+": " + quotas[i] + "\n";
+        }
+        UpdateQuotaText(quotaText);
     }
     
-    public void UpdateEndScreen(int quota, int currentRunCash, bool showCards = false)
+    public void UpdateEndScreen(NetworkList<int> quotas, List<int> currentRunCash, bool showCards = false)
     {
         if (showCards)
         {
@@ -288,8 +294,20 @@ public class GameUI : NetworkBehaviour
             rogueCardArea.gameObject.SetActive(false);
         }
         
-        endScreenQuotaText.text = quota.ToString();
-        endScreenCurrentCashText.text = currentRunCash.ToString();
+        string quotaText = "";
+        for (int i = 0; i < quotas.Count; i++)
+        {
+            quotaText += ((CurrencyType)i)+": " + quotas[i] + "\n";
+        }
+        
+        string currentCashText = "";
+        for (int i = 0; i < currentRunCash.Count; i++)
+        {
+            currentCashText += ((CurrencyType)i)+": " + currentRunCash[i] + "\n";
+        }
+        
+        endScreenQuotaText.text = quotaText;
+        endScreenCurrentCashText.text = currentCashText.ToString();
     }
     
     public void UpdateCashText(CurrencyType type, int amount)
@@ -321,10 +339,10 @@ public class GameUI : NetworkBehaviour
         startDayText.text = "Day: " + day.ToString();
     }
     
-    public void UpdateQuotaText(int quota)
+    public void UpdateQuotaText(string quota)
     {
-        quotaText.text = "Quota: $" + quota.ToString();
-        startQuotaText.text = "Quota: " + quota.ToString();
+        quotaText.text = "Quota: \n" + quota;
+        startQuotaText.text = "Quota: \n" + quota;
     }
     
     public void UpdateBreathBar(float percentage)

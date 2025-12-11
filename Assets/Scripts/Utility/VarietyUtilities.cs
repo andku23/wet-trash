@@ -45,4 +45,10 @@ public class VarietyUtilities
 
         return array;
     }
+    
+    public static int GetInitializedCurrencySize()
+    {
+        string[] PieceTypeNames = System.Enum.GetNames(typeof(CurrencyType));
+        return PieceTypeNames.Length;
+    }
 }

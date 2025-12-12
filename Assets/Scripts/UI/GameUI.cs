@@ -65,7 +65,7 @@ public class GameUI : NetworkBehaviour
         GameManager.Instance.TimeUpdatedEvent.AddListener(UpdateCountdownText);
         GameManager.Instance.OnDayUpdatedEvent.AddListener(UpdateDayText);
         GameManager.Instance.OnBreathUpdated.AddListener(UpdateBreathBar);
-        MoneyManager.Instance.OnCashChanged.AddListener(UpdateCashText);
+        MoneyManager.Instance.OnWalletChanged.AddListener(UpdateCashText);
         
         UpdateCashText(CurrencyType.Ore, 0);
     }
@@ -76,7 +76,7 @@ public class GameUI : NetworkBehaviour
         GameManager.Instance.TimeUpdatedEvent.RemoveListener(UpdateCountdownText);
         GameManager.Instance.OnDayUpdatedEvent.RemoveListener(UpdateDayText);
         GameManager.Instance.OnBreathUpdated.RemoveListener(UpdateBreathBar);
-        MoneyManager.Instance.OnCashChanged.RemoveListener(UpdateCashText);
+        MoneyManager.Instance.OnWalletChanged.RemoveListener(UpdateCashText);
     }
     
     public void SetActiveHotbarItem(int hotbarIndex)
@@ -190,7 +190,6 @@ public class GameUI : NetworkBehaviour
             ShopItemTypeData shopItemData = ShopManager.Instance.ShopItemTypeLookup[shopItem.type];
             uiShopItem.background.color = shopItemData.color;
             uiShopItem.name.text = shopItem.name;
-            //Debug.Log(shopItem.type);
             uiShopItem.price.text = "";
             foreach (CurrencyValuePair currencyValuePair in shopItem.cost)
             {

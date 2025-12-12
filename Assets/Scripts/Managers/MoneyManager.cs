@@ -10,7 +10,7 @@ public class MoneyManager : NetworkBehaviour
     //private NetworkVariable<int> _cash = new NetworkVariable<int>();
     private NetworkList<int> _wallet;
     
-    public UnityEvent<CurrencyType, int> OnCashChanged = new();
+    public UnityEvent<CurrencyType, int> OnWalletChanged;
     //private int _currentDayCash = 0;
     [HideInInspector] public List<int> CurrentDayCash_C = new();
     
@@ -47,7 +47,7 @@ public class MoneyManager : NetworkBehaviour
         
         
         //_cash.OnValueChanged += OnCashUpdated;
-        _wallet.OnListChanged += OnCashUpdated;
+        _wallet.OnListChanged += OnWalletUpdated;
 
         if (IsServer)
         {
@@ -66,7 +66,7 @@ public class MoneyManager : NetworkBehaviour
 
         for (int i = 0; i < _wallet.Count; i++)
         {
-            OnCashChanged.Invoke((CurrencyType) i, _wallet[i]);
+            OnWalletChanged.Invoke((CurrencyType) i, _wallet[i]);
         }
     }
 
@@ -121,11 +121,11 @@ public class MoneyManager : NetworkBehaviour
         }
     }
     
-    public void OnCashUpdated(NetworkListEvent<int> changeEvent)
+    public void OnWalletUpdated(NetworkListEvent<int> changeEvent)
     {
         if (changeEvent.Type == NetworkListEvent<int>.EventType.Value)
         {
-            OnCashChanged.Invoke((CurrencyType)changeEvent.Index, changeEvent.Value);
+            OnWalletChanged.Invoke((CurrencyType)changeEvent.Index, changeEvent.Value);
             CurrentDayCash_C[changeEvent.Index] += changeEvent.Value;
         }
     }

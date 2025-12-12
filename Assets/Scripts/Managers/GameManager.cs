@@ -24,6 +24,7 @@ public class GameManager : NetworkBehaviour
     public UnityEvent TimeFinishedEvent;
     public UnityEvent<int> OnDayUpdatedEvent;
     public UnityEvent<float> OnBreathUpdated;
+    public UnityEvent<int[]> OnQuotaUpdated;
 
     public Action OnUIOpened;
     public Action OnUIClosed;
@@ -272,6 +273,7 @@ public class GameManager : NetworkBehaviour
             _quotas_sc = quota;
             //MoneyManager.Instance.CurrentDayCash = currentDayCash;
         }
+        OnQuotaUpdated.Invoke(_quotas_sc);
         
         switch (_timeState)
         {

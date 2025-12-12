@@ -9,16 +9,6 @@ public class ShopItems : ScriptableObject
     public ShopItemTypeData[] itemsTypesToNames;
 }
 
-[System.Serializable]
-public class ShopItem
-{
-    public string id;
-    public ShopItemType type;
-    public string name;
-    public int price;
-    public int itemListIndex;
-    public GameObject placePrefab;
-}
 
 [System.Serializable]
 public class ShopItemTypeData

@@ -14,7 +14,7 @@ public class MoneyManager : NetworkBehaviour
     //private int _currentDayCash = 0;
     [HideInInspector] public List<int> CurrentDayCash_C = new();
     
-    public int Cash {get{return 0;}}
+    public int Cash {get{return 1000;}}
     public NetworkList<int> Wallet => _wallet;
 
     public int CurrentAllLootTotal_S
@@ -58,7 +58,10 @@ public class MoneyManager : NetworkBehaviour
                 CurrentDayCash_C.Add(0);
             }
 
-            //_cash.Value = GameManager.Instance.gameData.INITIAL_CASH;
+            foreach (var currencyValuePair in GameManager.Instance.gameData.INITIAL_CASH)
+            {
+                _wallet[(int)currencyValuePair.CurrencyType] += currencyValuePair.Value;
+            }
         }
 
         for (int i = 0; i < _wallet.Count; i++)

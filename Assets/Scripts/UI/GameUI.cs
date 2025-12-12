@@ -248,7 +248,7 @@ public class GameUI : NetworkBehaviour
         if (MoneyManager.Instance.Cash >= shopItem.price)
         {
             //TODO Update shop items to use prices as  well
-            //MoneyManager.Instance.SubtractCash(shopItem.price);
+            MoneyManager.Instance.SubtractCash(CurrencyType.Scrap,shopItem.price);
             ShopManager.Instance.PurchaseItem(shopItem, shopItemIndex);
         }
     }

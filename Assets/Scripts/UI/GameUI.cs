@@ -191,7 +191,12 @@ public class GameUI : NetworkBehaviour
             uiShopItem.background.color = shopItemData.color;
             uiShopItem.name.text = shopItem.name;
             //Debug.Log(shopItem.type);
-            uiShopItem.price.text = "$" + shopItem.price.ToString();
+            uiShopItem.price.text = "";
+            foreach (CurrencyValuePair currencyValuePair in shopItem.cost)
+            {
+                uiShopItem.price.text += currencyValuePair.CurrencyType.ToString()+": "+currencyValuePair.Value+"\n";
+            }
+            
             uiShopItem.button.onClick.AddListener(() =>
             {
                 OnSharedInventoryButtonClick(shopItemIndex, boughtItemIndex);
@@ -233,7 +238,11 @@ public class GameUI : NetworkBehaviour
             UIShopItem uiShopItem = Instantiate(shopItemPrefab, shopContent).GetComponent<UIShopItem>();
             uiShopItem.name.text = shopItem.name;
             uiShopItem.background.color = shopItemData.color;
-            uiShopItem.price.text = "$"+shopItem.price.ToString();
+            uiShopItem.price.text = "";
+            foreach (CurrencyValuePair currencyValuePair in shopItem.cost)
+            {
+                uiShopItem.price.text += currencyValuePair.CurrencyType.ToString()+": "+currencyValuePair.Value+"\n";
+            }
             uiShopItem.button.onClick.AddListener(() =>
             {
                 OnShopButtonClick(index);
@@ -245,10 +254,12 @@ public class GameUI : NetworkBehaviour
     public void OnShopButtonClick(int shopItemIndex)
     {
         ShopItem shopItem = ShopManager.Instance.shopList.items[shopItemIndex];
-        if (MoneyManager.Instance.Cash >= shopItem.price)
+        if (MoneyManager.Instance.CheckEnoughFunds(shopItem.cost))
         {
-            //TODO Update shop items to use prices as  well
-            MoneyManager.Instance.SubtractCash(CurrencyType.Scrap,shopItem.price);
+            foreach (CurrencyValuePair currencyValuePair in shopItem.cost)
+            {
+                MoneyManager.Instance.SubtractCash(currencyValuePair.CurrencyType, currencyValuePair.Value);
+            }
             ShopManager.Instance.PurchaseItem(shopItem, shopItemIndex);
         }
     }

@@ -68,7 +68,20 @@ public class MoneyManager : NetworkBehaviour
         {
             OnCashChanged.Invoke((CurrencyType) i, _wallet[i]);
         }
+    }
 
+    public bool CheckEnoughFunds(CurrencyValuePair[] costs)
+    {
+        bool hasEnoughFunds = true;
+        foreach (CurrencyValuePair currencyValuePair in costs)
+        {
+            if (_wallet[(int)currencyValuePair.CurrencyType] < currencyValuePair.Value)
+            {
+                hasEnoughFunds = false;
+                break;
+            }
+        }
+        return hasEnoughFunds;
     }
 
     public void CashInLoot(int itemDataIndex)

@@ -54,7 +54,7 @@ public abstract class BaseEnemy : NetworkBehaviour
         {
             foreach (var loot in _lootDroppedOnDeath)
             {
-                LootManager.Instance.SpawnAndLoadLoot(transform.position, loot);
+                LootManager.Instance.SpawnAndLoadLoot_S(transform.position, loot);
             }
         }
         

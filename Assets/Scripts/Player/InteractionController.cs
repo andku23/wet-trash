@@ -216,7 +216,8 @@ public class InteractionController : NetworkBehaviour
             }
             playerController.ToggleCarrying(false);
         }
-        GameUI.Instance.SetActiveHotbarItem(_currentInventoryIndex);
+        if(GameUI.Instance != null)
+            GameUI.Instance.SetActiveHotbarItem(_currentInventoryIndex);
         
     }
     

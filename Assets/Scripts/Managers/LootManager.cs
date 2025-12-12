@@ -17,8 +17,8 @@ public class LootManager : NetworkBehaviour
     [SerializeField] private GameObject spawnCutoff;
 
     public Action<int> OnLootDeposited;
-    
-    private List<NetworkObject> _loots = new List<NetworkObject>();
+
+    private List<NetworkObject> _loots_S;
     
     public ItemList ItemList
     {
@@ -44,6 +44,10 @@ public class LootManager : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        if (IsServer)
+        {
+            _loots_S = new List<NetworkObject>();
+        }
     }
 
     private void UpdateScore(int prev, int next)
@@ -56,7 +60,6 @@ public class LootManager : NetworkBehaviour
     {
         //int totalCost = 0;
         var totalCosts = VarietyUtilities.GetInitializedCurrencyDictionary();
-        
         
         // Fill probability arrays with n * probability of each item
         // So that we can randomly sample from these later
@@ -80,7 +83,6 @@ public class LootManager : NetworkBehaviour
             }
         }
         
-        //int totalLootCost = 0;
         // Spawn loot based on created loot tables
         Vector3 spawnPosition = Vector3.zero;
         List<Vector2> lootTerrainPosition = WorldManager.Instance.GetLootSpawnPositions();
@@ -137,10 +139,10 @@ public class LootManager : NetworkBehaviour
     private ItemData SpawnLootFromTable(Vector3 spawnPosition, List<int> spawnProbabilityTable)
     {
         int selectedLootIndex = spawnProbabilityTable[Random.Range(0, spawnProbabilityTable.Count)];
-        return SpawnAndLoadLoot(spawnPosition, selectedLootIndex);
+        return SpawnAndLoadLoot_S(spawnPosition, selectedLootIndex);
     }
 
-    public ItemData SpawnAndLoadLoot(Vector3 spawnPosition, int lootIndex)
+    public ItemData SpawnAndLoadLoot_S(Vector3 spawnPosition, int lootIndex)
     {
         GameObject go = Instantiate(itemList.networkLootPrefab,
             spawnPosition,
@@ -150,7 +152,7 @@ public class LootManager : NetworkBehaviour
             
         networkLoot.lootIndex.Value = lootIndex;
         networkObject.Spawn();
-        _loots.Add(networkObject);
+        _loots_S.Add(networkObject);
         return itemList.itemData[lootIndex];
     }
 
@@ -162,7 +164,7 @@ public class LootManager : NetworkBehaviour
         pickupPlayerCollector.DropItemNetwork(targetPlayerNetworkObjectId);
     }
 
-    private NetworkObject SpawnItemServer(Vector3 position, int itemIndex)
+    private NetworkObject SpawnItem_S(Vector3 position, int itemIndex)
     {
         GameObject go = Instantiate(itemList.networkLootPrefab, position, Quaternion.identity);
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
@@ -178,13 +180,13 @@ public class LootManager : NetworkBehaviour
         return networkObject;
     }
 
-    public void DeleteAllLoot()
+    public void DeleteAllLoot_S()
     {
-        for (int i = 0; i < _loots.Count; i++)
+        for (int i = 0; i < _loots_S.Count; i++)
         {
-            _loots[i].Despawn();
+            _loots_S[i].Despawn();
         }
-        _loots.Clear();
+        _loots_S.Clear();
     }
 
     public ItemData LootIndextoData(int lootIndex)
@@ -233,14 +235,14 @@ public class LootManager : NetworkBehaviour
         
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject networkLootObject))
         {
-            DespawnLoot_Server(networkLootObject);
+            DespawnLoot_S(networkLootObject);
             Pickup_ClientRpc(targetPlayerNetworkObjectId, lootIndex);
         }
     }
 
-    public void DespawnLoot_Server(NetworkObject networkObject)
+    public void DespawnLoot_S(NetworkObject networkObject)
     {
-        _loots.Remove(networkObject);
+        _loots_S.Remove(networkObject);
         networkObject.Despawn();
     }
 
@@ -262,8 +264,8 @@ public class LootManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void Drop_ServerRpc(ulong targetPlayerNetworkObjectId, Vector3 position, int lootIndex)
     {
-        NetworkObject networkObject = SpawnItemServer(position, lootIndex);
-        _loots.Add(networkObject);
+        NetworkObject networkObject = SpawnItem_S(position, lootIndex);
+        _loots_S.Add(networkObject);
         Drop_ClientRpc(targetPlayerNetworkObjectId);
     }
     
@@ -281,7 +283,7 @@ public class LootManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void RequestSpawnItem_ServerRpc(Vector3 position, int itemIndex, ulong targetPlayerNetworkObjectId)
     {
-        SpawnItemServer(position, itemIndex);
+        SpawnItem_S(position, itemIndex);
     }
     
     public void ResetLootHoles_S()

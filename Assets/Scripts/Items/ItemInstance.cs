@@ -32,8 +32,6 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
     public void LoadNetwork(int lootIndex)
     {
         ItemIndex = lootIndex;
-        Debug.Log(LootManager.Instance.ItemList.itemData.Length);
-        Debug.Log(lootIndex);
         GameObject model = Instantiate(LootManager.Instance.ItemList.itemData[lootIndex].model, transform);
         model.GetComponent<ColliderReference>().reference = gameObject;
         Model = model.GetComponent<HeldItemModel>();

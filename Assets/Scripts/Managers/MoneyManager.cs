@@ -8,14 +8,14 @@ public class MoneyManager : NetworkBehaviour
     public static MoneyManager Instance;
     
     //private NetworkVariable<int> _cash = new NetworkVariable<int>();
-    private NetworkList<int> _wallet = new NetworkList<int>();
+    private NetworkList<int> _wallet;
     
-    public UnityEvent<CurrencyType, int> OnCashChanged = new UnityEvent<CurrencyType, int>();
+    public UnityEvent<CurrencyType, int> OnCashChanged = new();
     //private int _currentDayCash = 0;
-    [HideInInspector] public List<int> CurrentDayCash_C = new List<int>();
+    [HideInInspector] public List<int> CurrentDayCash_C = new();
     
     public int Cash {get{return 0;}}
-    public NetworkList<int> Wallet {get{return _wallet;}}
+    public NetworkList<int> Wallet => _wallet;
 
     public int CurrentAllLootTotal_S
     {
@@ -29,6 +29,11 @@ public class MoneyManager : NetworkBehaviour
 
             return total;
         }
+    }
+
+    private void Awake()
+    {
+        _wallet = new NetworkList<int>();
     }
     
     public override void OnNetworkSpawn()

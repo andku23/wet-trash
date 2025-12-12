@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Components;
 using UnityEngine;
@@ -15,6 +16,9 @@ public class GameManager : NetworkBehaviour
 
     [SerializeField] private LootManager _lootManager;
     [SerializeField] private BoatManager _boatManager;
+    
+    [SerializeField] private TextMeshProUGUI _debugText;
+    
     private GameUI gameUI;
     public UnityEvent<int, int> TimeUpdatedEvent;
     public UnityEvent TimeFinishedEvent;
@@ -33,7 +37,7 @@ public class GameManager : NetworkBehaviour
     private int _day = 0;
 
     //private int _quota = 0;
-    private NetworkList<int> _quotas = new NetworkList<int>();
+    private NetworkList<int> _quotas;
 
     private int _currentAdditiveScene = -1;
     private bool _isLoadingScene;
@@ -56,6 +60,11 @@ public class GameManager : NetworkBehaviour
 
     public static GameManager Instance;
 
+    private void Awake()
+    {
+        _quotas = new NetworkList<int>();
+    }
+
     private void Start()
     {
         if (Instance == null)
@@ -74,8 +83,8 @@ public class GameManager : NetworkBehaviour
             {
                 _quotas.Add(0);
             }
-            Debug.Log(_quotas.Count);
         }
+        Debug.Log(_quotas.Count);
     }
 
     public void RequestToNextGameState()
@@ -83,17 +92,36 @@ public class GameManager : NetworkBehaviour
         ToNextGameState_ServerRpc();
     }
 
-    private void WaitForPlayerResponse_S(Action onComplete)
+    private async Awaitable WaitForPlayerResponse_S(Action onComplete)
     {
+        if (playerWaitConfirm_s != null)
+        {
+            playerWaitConfirm_s.Clear();
+        }
         playerWaitConfirm_s = new Dictionary<ulong, bool>();
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
         foreach (var client in connectedClients)
         {
             playerWaitConfirm_s.Add(client.Key, false);
         }
-
-        Debug.Log("start wait corout");
-        StartCoroutine(Co_WaitForPlayerResponse(onComplete));
+        
+        bool allPlayersResponded = false;
+        while (!allPlayersResponded)
+        {
+            allPlayersResponded = true;
+            foreach (var player in playerWaitConfirm_s)
+            {
+                if (!player.Value)
+                {
+                    allPlayersResponded = false;
+                    break;
+                }
+            }
+            await Awaitable.WaitForSecondsAsync(0.5f);
+            
+            //Debug.Log("waiting for players");
+        }
+        onComplete?.Invoke();
     }
 
     private void ResetQuotas_S()
@@ -104,30 +132,10 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-[ServerRpc(RequireOwnership = false)]
+    [ServerRpc(RequireOwnership = false)]
     public void PlayerWaitResponse_ServerRpc(ulong targetPlayerNetworkObjectId)
     {
         playerWaitConfirm_s[targetPlayerNetworkObjectId] = true;
-    }
-
-    private IEnumerator Co_WaitForPlayerResponse(Action onComplete)
-    {
-        bool allPlayersResponded = false;
-        while (!allPlayersResponded)
-        {
-            yield return new WaitForSeconds(0.5f);
-            allPlayersResponded = true;
-            foreach (var player in playerWaitConfirm_s)
-            {
-                if (!player.Value)
-                {
-                    allPlayersResponded = false;
-                    break;
-                }
-            }
-            Debug.Log("waiting for players");
-        }
-        onComplete?.Invoke();
     }
 
     public void ChangeToAttachmentMode(int shopItemIndex)
@@ -218,19 +226,19 @@ public class GameManager : NetworkBehaviour
             case TimeState.LoadingTerrain:
                 _day++;
                 currentLevelData_s = new LevelData(gameData.MAX_MONSTERS_PER_DAY, gameData.MONSTER_SPAWN_PER_HOUR);
-                WaitForPlayerResponse_S(ToNextGameState_ServerRpc);
                 var clientTerrainGenData = WorldManager.Instance.GenerateClientTerrainData_S();
                 WorldManager.Instance.AssignTerrainGenerationData_ClientRpc(clientTerrainGenData);
+                WaitForPlayerResponse_S(ToNextGameState_ServerRpc);
                 UpdateTimeState_ClientRpc(_timeState, _day);
                 break;
             case TimeState.LoadingTerrainStructures:
-                WaitForPlayerResponse_S(ToNextGameState_ServerRpc);
                 var clientStructureGenData = WorldManager.Instance.GenerateClientStructureData_S();
                 WorldManager.Instance.AssignStructureGenerationData_ClientRpc(clientStructureGenData);
+                WaitForPlayerResponse_S(ToNextGameState_ServerRpc);
                 UpdateTimeState_ClientRpc(_timeState, _day);
                 break;
             case TimeState.DayActive:
-                _lootManager.DeleteAllLoot();
+                _lootManager.DeleteAllLoot_S();
                 var lootValue = _lootManager.SpawnLoot_S();
                 foreach (var item in lootValue)
                 {
@@ -241,18 +249,19 @@ public class GameManager : NetworkBehaviour
                 {
                     _quotas[i] = Mathf.FloorToInt(_quotas[i] * gameData.QUOTA_PERCENTAGE);
                 }
+                _debugText.text = "Day Active 4";
 
                 UpdateTimeState_ClientRpc(_timeState, _day);
                 break;
             case TimeState.ShowDayResult:
-                _lootManager.DeleteAllLoot();
+                _lootManager.DeleteAllLoot_S();
                 RogueCardPacketData[] datas = RogueEffectManager.Instance.GenerateCards_S(1, 1, gameData.NUM_ROGUE_CARDS);
                 RogueEffectManager.Instance.WaitForCardVote_S(datas, ToNextGameState_ServerRpc);
                 RogueEffectManager.Instance.ShowCards_ClientRpc(datas);
                 UpdateTimeState_ClientRpc(_timeState, _day);
                 break;
             case TimeState.QuotaFailed:
-                _lootManager.DeleteAllLoot();
+                _lootManager.DeleteAllLoot_S();
                 RespawnAllPlayers_ServerRpc();
                 _day = 0;
                 ResetQuotas_S();
@@ -346,6 +355,7 @@ public class GameManager : NetworkBehaviour
     {
         await GameUI.Instance.ShowDayStartPanel(StartDayPanel.Mode.Loading);
         await WorldManager.Instance.BeginTerrainGeneration_C();
+        Debug.Log("Generating terrain finished");
         PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
     }
     
@@ -353,6 +363,7 @@ public class GameManager : NetworkBehaviour
     {
         await GameUI.Instance.ShowDayStartPanel(StartDayPanel.Mode.Loading);
         await WorldManager.Instance.BeginStructureGeneration_C();
+        Debug.Log("Generating structures finished");
         PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
     }
     

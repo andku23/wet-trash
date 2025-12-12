@@ -194,7 +194,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable, IAttachment
         _networkedState.Value = (int)NetworkStates.ReelFinished;
         _hookedLoot.transform.position = pullEndPosition;
         int lootIndex = _hookedLoot.GetComponent<NetworkLoot>().lootIndex.Value;
-        LootManager.Instance.DespawnLoot_Server(_hookedLoot);
+        LootManager.Instance.DespawnLoot_S(_hookedLoot);
         MoneyManager.Instance.CashInLoot(lootIndex);
         ReelFinished_ClientRpc(lootIndex, pullEndPosition);
     }

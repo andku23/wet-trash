@@ -28,7 +28,7 @@ public class GameDataDisplay : MonoBehaviour
 
     private void OnQuotaUpdated(int[] newQuotas)
     {
-        quotaText.text = "";
+        quotaText.text = "Quota:\n";
         for (int i = 0; i < newQuotas.Length; i++)
         {
             quotaText.text += ((CurrencyType)i).ToString() + ": " + newQuotas[i] + "\n";
@@ -42,7 +42,7 @@ public class GameDataDisplay : MonoBehaviour
 
     private void OnWalletUpdated(CurrencyType type, int amount)
     {
-        walletText.text = "";
+        walletText.text = "Wallet:\n";
         var wallet = MoneyManager.Instance.Wallet;
         for (int i = 0; i < wallet.Count; i++)
         {

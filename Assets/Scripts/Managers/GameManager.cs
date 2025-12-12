@@ -37,7 +37,7 @@ public class GameManager : NetworkBehaviour
     private int _day = 0;
 
     //private int _quota = 0;
-    private NetworkList<int> _quotas;
+    private int[] _quotas_sc;
 
     private int _currentAdditiveScene = -1;
     private bool _isLoadingScene;
@@ -62,7 +62,7 @@ public class GameManager : NetworkBehaviour
 
     private void Awake()
     {
-        _quotas = new NetworkList<int>();
+        _quotas_sc = new int[VarietyUtilities.GetInitializedCurrencySize()];
     }
 
     private void Start()
@@ -77,14 +77,6 @@ public class GameManager : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        if (IsServer)
-        {
-            for (int i = 0; i < VarietyUtilities.GetInitializedCurrencySize(); i++)
-            {
-                _quotas.Add(0);
-            }
-        }
-        Debug.Log(_quotas.Count);
     }
 
     public void RequestToNextGameState()
@@ -126,9 +118,9 @@ public class GameManager : NetworkBehaviour
 
     private void ResetQuotas_S()
     {
-        for (int i = 0; i < _quotas.Count; i++)
+        for (int i = 0; i < _quotas_sc.Length; i++)
         {
-            _quotas[i] = 0;
+            _quotas_sc[i] = 0;
         }
     }
 
@@ -197,9 +189,9 @@ public class GameManager : NetworkBehaviour
             case TimeState.DayActive:
                 bool hasMetQuotas = true;
                 var currentDayCurrencies = MoneyManager.Instance.CurrentDayCash_C;
-                for (int i = 0; i < _quotas.Count; i++)
+                for (int i = 0; i < _quotas_sc.Length; i++)
                 {
-                    if (_quotas[i] > currentDayCurrencies[i])
+                    if (_quotas_sc[i] > currentDayCurrencies[i])
                     {
                         hasMetQuotas = false;
                     }
@@ -221,7 +213,7 @@ public class GameManager : NetworkBehaviour
             case TimeState.BetweenDays:
                 RespawnAllPlayers_ServerRpc();
                 GameUI.Instance.PopulateShopContent_ServerRpc();
-                UpdateTimeState_ClientRpc(_timeState, _day);
+                UpdateTimeState_ClientRpc(_timeState, _day, _quotas_sc);
                 break;
             case TimeState.LoadingTerrain:
                 _day++;
@@ -229,55 +221,55 @@ public class GameManager : NetworkBehaviour
                 var clientTerrainGenData = WorldManager.Instance.GenerateClientTerrainData_S();
                 WorldManager.Instance.AssignTerrainGenerationData_ClientRpc(clientTerrainGenData);
                 WaitForPlayerResponse_S(ToNextGameState_ServerRpc);
-                UpdateTimeState_ClientRpc(_timeState, _day);
+                UpdateTimeState_ClientRpc(_timeState, _day, _quotas_sc);
                 break;
             case TimeState.LoadingTerrainStructures:
                 var clientStructureGenData = WorldManager.Instance.GenerateClientStructureData_S();
                 WorldManager.Instance.AssignStructureGenerationData_ClientRpc(clientStructureGenData);
                 WaitForPlayerResponse_S(ToNextGameState_ServerRpc);
-                UpdateTimeState_ClientRpc(_timeState, _day);
+                UpdateTimeState_ClientRpc(_timeState, _day, _quotas_sc);
                 break;
             case TimeState.DayActive:
                 _lootManager.DeleteAllLoot_S();
                 var lootValue = _lootManager.SpawnLoot_S();
                 foreach (var item in lootValue)
                 {
-                    _quotas[(int)item.Key] += item.Value;
+                    _quotas_sc[(int)item.Key] += item.Value;
                 }
 
-                for (int i = 0; i < _quotas.Count; i++)
+                for (int i = 0; i < _quotas_sc.Length; i++)
                 {
-                    _quotas[i] = Mathf.FloorToInt(_quotas[i] * gameData.QUOTA_PERCENTAGE);
+                    _quotas_sc[i] = Mathf.FloorToInt(_quotas_sc[i] * gameData.QUOTA_PERCENTAGE);
                 }
-                _debugText.text = "Day Active 4";
 
-                UpdateTimeState_ClientRpc(_timeState, _day);
+                UpdateTimeState_ClientRpc(_timeState, _day, _quotas_sc);
                 break;
             case TimeState.ShowDayResult:
                 _lootManager.DeleteAllLoot_S();
                 RogueCardPacketData[] datas = RogueEffectManager.Instance.GenerateCards_S(1, 1, gameData.NUM_ROGUE_CARDS);
                 RogueEffectManager.Instance.WaitForCardVote_S(datas, ToNextGameState_ServerRpc);
                 RogueEffectManager.Instance.ShowCards_ClientRpc(datas);
-                UpdateTimeState_ClientRpc(_timeState, _day);
+                UpdateTimeState_ClientRpc(_timeState, _day, _quotas_sc);
                 break;
             case TimeState.QuotaFailed:
                 _lootManager.DeleteAllLoot_S();
                 RespawnAllPlayers_ServerRpc();
                 _day = 0;
                 ResetQuotas_S();
-                UpdateTimeState_ClientRpc(_timeState, _day);
+                UpdateTimeState_ClientRpc(_timeState, _day, _quotas_sc);
                 break;
         }
     }
 
     [ClientRpc(RequireOwnership = false)]
-    private void UpdateTimeState_ClientRpc(TimeState timeState, int day)
+    private void UpdateTimeState_ClientRpc(TimeState timeState, int day, int[] quota)
     {
         // Update client version of important variables
         if (!IsServer)
         {
             _timeState = timeState;
             _day = day;
+            _quotas_sc = quota;
             //MoneyManager.Instance.CurrentDayCash = currentDayCash;
         }
         
@@ -294,11 +286,11 @@ public class GameManager : NetworkBehaviour
                 LoadTerrainStructures_Client();
                 break;
             case TimeState.DayActive:
-                GameUI.Instance.UpdateDayInfoText(_quotas, day);
+                GameUI.Instance.UpdateDayInfoText(_quotas_sc, day);
                 DayActive_Client();
                 break;
             case TimeState.ShowDayResult:
-                ShowDayResult_Client(_quotas, MoneyManager.Instance.CurrentDayCash_C);
+                ShowDayResult_Client(_quotas_sc, MoneyManager.Instance.CurrentDayCash_C);
                 break;
             case TimeState.QuotaFailed:
                 StopCountdown();
@@ -376,7 +368,7 @@ public class GameManager : NetworkBehaviour
         await GameUI.Instance.HideDayStartPanel();
     }
     
-    private async Awaitable ShowDayResult_Client(NetworkList<int> quotas, List<int> currentDayCash)
+    private async Awaitable ShowDayResult_Client(int[] quotas, List<int> currentDayCash)
     {
         TimeFinishedEvent?.Invoke();
         GameUI.Instance.UpdateEndScreen(quotas, currentDayCash, false);

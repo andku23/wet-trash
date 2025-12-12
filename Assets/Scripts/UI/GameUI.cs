@@ -271,19 +271,19 @@ public class GameUI : NetworkBehaviour
     
     #region Text Updates
 
-    public void UpdateDayInfoText(NetworkList<int> quotas, int day)
+    public void UpdateDayInfoText(int[] quotas, int day)
     {
         UpdateDayText(day);
 
-        string quotaText = "";
-        for (int i = 0; i < quotas.Count; i++)
+        string currentQuotaText = "";
+        for (int i = 0; i < quotas.Length; i++)
         {
-            quotaText += ((CurrencyType)i)+": " + quotas[i] + "\n";
+            currentQuotaText += ((CurrencyType)i)+": " + quotas[i] + "\n";
         }
-        UpdateQuotaText(quotaText);
+        UpdateQuotaText(currentQuotaText);
     }
     
-    public void UpdateEndScreen(NetworkList<int> quotas, List<int> currentRunCash, bool showCards = false)
+    public void UpdateEndScreen(int[] quotas, List<int> currentRunCash, bool showCards = false)
     {
         if (showCards)
         {
@@ -295,7 +295,7 @@ public class GameUI : NetworkBehaviour
         }
         
         string quotaText = "";
-        for (int i = 0; i < quotas.Count; i++)
+        for (int i = 0; i < quotas.Length; i++)
         {
             quotaText += ((CurrencyType)i)+": " + quotas[i] + "\n";
         }

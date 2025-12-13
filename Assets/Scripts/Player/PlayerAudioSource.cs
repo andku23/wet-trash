@@ -19,6 +19,8 @@ public class PlayerAudioSource : MonoBehaviour
         Trumpet,
         EnemyTakeDamage,
         EnemyDie,
+        RockHit,
+        RockBreak
     }
 
     public void PlaySound(int index)

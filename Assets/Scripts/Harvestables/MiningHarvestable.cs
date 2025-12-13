@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class MiningHarvestable : BaseHarvestableObject
 {
+    [SerializeField] private PlayerAudioSource _audioSource;
     [SerializeField] private Animator _animator;
     
     private int _animID_Hit;
@@ -33,13 +34,13 @@ public class MiningHarvestable : BaseHarvestableObject
     {
         if (!ContainsInteractableType(interactionType)) return;
         _animator.SetTrigger(_animID_Hit);
-        Debug.Log("do hit");
+        _audioSource.PlaySound(PlayerAudioSource.SoundType.RockHit);
         DoDamage_ServerRpc(interactionType, amount);
     }
     
     protected override async Awaitable DoDeath()
     {
-        //_audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+        _audioSource.PlaySound(PlayerAudioSource.SoundType.RockBreak);
         if (IsServer)
         {
             ChangeState_ServerRpc((int)ServerStates.Die);

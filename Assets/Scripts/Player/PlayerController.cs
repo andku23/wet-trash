@@ -158,7 +158,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    public void DoAttack()
+    public void DoHit()
     {
         if (_hasAnimator)
         {

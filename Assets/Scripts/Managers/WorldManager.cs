@@ -13,6 +13,7 @@ public class WorldManager : NetworkBehaviour
     [SerializeField] private GameObject[] caveRoomEnds;
     [SerializeField] private GameObject[] enemyPrefabs;
     [SerializeField] private GameObject[] lootGroupPrefabs;
+    [SerializeField] private GameObject[] harvestablePrefabs;
     public int NUM_OF_HOLES;
     public int NUM_OF_LOOT_GROUPS;
     public int NUM_BIOMES = 4;
@@ -22,6 +23,7 @@ public class WorldManager : NetworkBehaviour
     
     public List<NetworkObject> InitialEnemies; // Enemies spawned at start
     public List<NetworkObject> SpawnedEnemies; // Enemis that spawn as the day goes on
+    public List<NetworkObject> SpawnedHarvestables; 
 
     private Vector2[] currentHolePositions;
     private Vector2[] currentLootGroupPositions;
@@ -249,7 +251,6 @@ public class WorldManager : NetworkBehaviour
         _terrain.terrainData.SetHoles(xbase, zbase, holeMap);
         _terrain.terrainData.SetHeights(xbase, zbase, heightMap);
         
-        
         GameObject caveRoom = Instantiate(caveRoomEnds[Random.Range(0, caveRoomEnds.Length)]);
         lowestHolePosition.x /=  _terrain.terrainData.heightmapResolution;
         lowestHolePosition.z /=  _terrain.terrainData.heightmapResolution;
@@ -261,7 +262,7 @@ public class WorldManager : NetworkBehaviour
         return caveRoom.GetComponent<LootGroup>();
     }
 
-    private void ClearAllHoles()
+    private void ClearAllTerrainStructures()
     {
         bool[,] clearHoles  = new bool[
             _terrain.terrainData.heightmapResolution - 1,
@@ -290,6 +291,12 @@ public class WorldManager : NetworkBehaviour
             InitialEnemies[enemyIndex].Despawn(true);
         }
         InitialEnemies.Clear();
+        
+        for (int index = 0; index < SpawnedHarvestables.Count; index++)
+        {
+            SpawnedHarvestables[index].Despawn(true);
+        }
+        SpawnedHarvestables.Clear();
 
         for (int i = 0; i < _terrain.terrainData.heightmapResolution - 1; i++)
         {
@@ -312,6 +319,18 @@ public class WorldManager : NetworkBehaviour
         ).GetComponent<NetworkObject>();
         no.Spawn();
         SpawnedEnemies.Add(no);
+    }
+
+    public void SpawnRandomHarvestable_S()
+    {
+        Vector3 spawnLocation = GetRandomPointOnTerrain();
+        var randomHarvestable = harvestablePrefabs[Random.Range(0, harvestablePrefabs.Length)];
+        NetworkObject no = Instantiate(randomHarvestable,
+            spawnLocation,
+            Quaternion.identity
+        ).GetComponent<NetworkObject>();
+        no.Spawn();
+        SpawnedHarvestables.Add(no);
     }
     
     #endregion
@@ -483,7 +502,7 @@ public class WorldManager : NetworkBehaviour
         int resolution = _terrain.terrainData.heightmapResolution;
         float[,] heights = new float[resolution, resolution];
 
-        ClearAllHoles();
+        ClearAllTerrainStructures();
 
         int biomeAccessOffset = resolution * resolution;
         List<TreeInstance> treeInstances = new List<TreeInstance>();

@@ -119,7 +119,14 @@ public class LootManager : NetworkBehaviour
         {
             totalCosts[valueType.CurrencyType] += valueType.MaxValue;
         }
-        
+
+        int NUM_HARVESTABLES = 20;
+
+        for (int i = 0; i < NUM_HARVESTABLES; i++)
+        {
+            WorldManager.Instance.SpawnRandomHarvestable_S();
+        }
+
         for (int i = 0; i < _lootGroups.Count; i++)
         {
             for (int j = 0; j < _lootGroups[i].lootSpawnLocations.Length; j++)

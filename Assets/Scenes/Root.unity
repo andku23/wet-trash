@@ -1084,6 +1084,9 @@ MonoBehaviour:
   OnBreathUpdated:
     m_PersistentCalls:
       m_Calls: []
+  OnQuotaUpdated:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &225720092
 GameObject:
   m_ObjectHideFlags: 0
@@ -1878,7 +1881,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoneyManager
   ShowTopMostFoldoutHeaderGroup: 1
-  OnCashChanged:
+  OnWalletChanged:
     m_PersistentCalls:
       m_Calls: []
   CurrentDayCash_C: 
@@ -3091,6 +3094,8 @@ MonoBehaviour:
   - {fileID: 6626012648495537791, guid: b7062d4672358eb4d96da810a301a6a1, type: 3}
   lootGroupPrefabs:
   - {fileID: 7466929072936789752, guid: 7d7d61c3e1cf8a049be03f92b7cb46f1, type: 3}
+  harvestablePrefabs:
+  - {fileID: 3289730492793508007, guid: fea7195e8aa673b41a1b897e954c5f62, type: 3}
   NUM_OF_HOLES: 4
   NUM_OF_LOOT_GROUPS: 3
   NUM_BIOMES: 4
@@ -3098,6 +3103,7 @@ MonoBehaviour:
   SpawnedLootGroups: []
   InitialEnemies: []
   SpawnedEnemies: []
+  SpawnedHarvestables: []
   _terrain: {fileID: 0}
 --- !u!1 &802126870
 GameObject:

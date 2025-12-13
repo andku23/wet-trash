@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public abstract class BaseEnemy : NetworkBehaviour
+public abstract class BaseEnemy : NetworkBehaviour, IDamagable
 {
     [SerializeField] protected Animator _animator;
     [SerializeField] protected PlayerAudioSource _audioSource;
@@ -63,6 +63,11 @@ public abstract class BaseEnemy : NetworkBehaviour
     public virtual void OnNetworkStateUpdated(int prev, int next)
     {
         _stateMachine.ChangeState(next);
+    }
+    
+    public void DoDamage(ItemInteractionType interactionType, int amount)
+    {
+        ReceiveDamage_ServerRpc(amount);
     }
 
     [ServerRpc(RequireOwnership = false)]

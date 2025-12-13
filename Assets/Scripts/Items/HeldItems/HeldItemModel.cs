@@ -5,8 +5,6 @@ public abstract class HeldItemModel : MonoBehaviour
     public GameObject CraneAttachPoint;
     public GameObject HoldAttachPoint;
 
-    public ItemInteractionType[] HarvestingTypes;
-
     public virtual void OnEquip(InteractionController interactionController, PlayerState playerState)
     {
         

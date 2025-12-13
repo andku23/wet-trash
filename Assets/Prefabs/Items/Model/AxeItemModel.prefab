@@ -116,9 +116,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponItemModel
   CraneAttachPoint: {fileID: 1827100686189157481}
   HoldAttachPoint: {fileID: 0}
-  HarvestingTypes: 
-  itemInteractionType: 1
-  damage: 5
+  interactionData:
+    interactionType: 1
+    damage: 4
+    range: 7
 --- !u!1 &8257947030282296124
 GameObject:
   m_ObjectHideFlags: 0

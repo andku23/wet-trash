@@ -8,8 +8,8 @@ public abstract class BaseHarvestableObject : NetworkBehaviour, IDamagable
     [SerializeField] protected List<int> _lootDroppedOnDeath = new List<int>();
     [SerializeField] protected ItemInteractionType[] interactableTypes;
     
+    [SerializeField] protected NetworkVariable<int> _health = new NetworkVariable<int>(0);
     protected NetworkVariable<int> _networkState = new NetworkVariable<int>(0);
-    protected NetworkVariable<int> _health = new NetworkVariable<int>(0);
     protected ClientStateMachine _stateMachine;
     
     public int Health { get { return _health.Value; } }
@@ -55,11 +55,9 @@ public abstract class BaseHarvestableObject : NetworkBehaviour, IDamagable
         }
     }
     
-    public void DoDamage(ItemInteractionType interactionType, int amount)
+    public virtual void DoDamage(ItemInteractionType interactionType, int amount)
     {
-        Debug.Log("do damage");
         if (!ContainsInteractableType(interactionType)) return;
-        Debug.Log("do damage 1");
         DoDamage_ServerRpc(interactionType, amount);
     }
     
@@ -107,6 +105,14 @@ public abstract class BaseHarvestableObject : NetworkBehaviour, IDamagable
         }
         return hasType;
     }
+}
+
+[System.Serializable]
+public struct ItemInteractionData
+{
+    public ItemInteractionType interactionType;
+    public int damage;
+    public int range;
 }
 
 public enum ItemInteractionType

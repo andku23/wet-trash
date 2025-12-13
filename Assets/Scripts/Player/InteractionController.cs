@@ -99,12 +99,12 @@ public class InteractionController : NetworkBehaviour
     // or sometimes just other functions
     #region External Calls
 
-    public void UseHeldItem(ItemInteractionType itemInteractionType, int damage)
+    public void UseHeldItem(ItemInteractionData interactionData)
     {
         playerController.DoHit();
         if (Physics.Raycast(playerController.MainCamera.transform.position, 
                 playerController.MainCamera.transform.forward,
-                out RaycastHit raycastHit, playerState.MAX_ATTACK_DISTANCE, attackingLayerMask))
+                out RaycastHit raycastHit, interactionData.range, attackingLayerMask))
         {
             ColliderReference colliderRef = raycastHit.collider.gameObject.GetComponent<ColliderReference>();
             if (colliderRef != null)
@@ -112,7 +112,7 @@ public class InteractionController : NetworkBehaviour
                 IDamagable damagable = colliderRef.reference.GetComponent<IDamagable>();
                 if (damagable != null)
                 {
-                    damagable.DoDamage(itemInteractionType, damage);
+                    damagable.DoDamage(interactionData.interactionType, interactionData.damage);
                 }
             }
         }

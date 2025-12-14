@@ -112,7 +112,7 @@ public class InteractionController : NetworkBehaviour
                 IDamagable damagable = colliderRef.reference.GetComponent<IDamagable>();
                 if (damagable != null)
                 {
-                    damagable.DoDamage(interactionData.interactionType, interactionData.damage);
+                    damagable.DoDamage(interactionData);
                 }
             }
         }
@@ -451,10 +451,15 @@ public class InteractionController : NetworkBehaviour
 
     private void QueryInteractableTypes(IInteractable interactable)
     {
-        if (interactable != null)
+        if (interactable != null && interactable.gameObject != null)
         {
             _currentInteractableTypes.loot = interactable.gameObject.GetComponent<NetworkLoot>();
             _currentInteractableTypes.deposit = interactable.gameObject.GetComponent<LootDeposit>();
+        }
+        else
+        {
+            _currentInteractableTypes.loot = null;
+            _currentInteractableTypes.deposit = null;
         }
     }
     
@@ -472,8 +477,10 @@ public class InteractionController : NetworkBehaviour
         {
             //Turn it off immediately so we don't get double events
             _input.interact = false;
+
             
             QueryInteractableTypes(lastClosestInteractable);
+            
             
             if (_currentInteractableTypes.loot != null)
             {
@@ -624,6 +631,7 @@ public class InteractionController : NetworkBehaviour
             //Turn it off immediately so we don't get double events
             _input.interact = false;
             
+            Debug.Log(lastClosestInteractable);
             QueryInteractableTypes(lastClosestInteractable);
             
             heldObject.HeldPlayerID = 0;

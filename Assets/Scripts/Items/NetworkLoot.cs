@@ -6,17 +6,15 @@ using UnityEngine.Serialization;
 
 public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
 {
-    [SerializeField] private GameObject instructions;
-    [SerializeField] private TextMeshProUGUI priceText;
-    [SerializeField] private GameObject dropInstructions;
-    [SerializeField] private GameObject heavyInstructions;
-    [SerializeField] private GameObject craneHookInstructions;
+    [SerializeField] private WorldspaceInstruction instruction;
     
     public NetworkVariable<int> lootIndex;
     public NetworkVariable<bool> isInteractionLocked;
     private ClientStateMachine _stateMachine;
 
     [HideInInspector] public ItemInstance itemInstance;
+
+    private string priceText;
     
     public bool IsInteractionLocked
     {
@@ -80,11 +78,12 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
         itemInstance = GetComponent<ItemInstance>();
         itemInstance.LoadNetwork(lootIndex.Value);
         var itemData = LootManager.Instance.ItemList.itemData[lootIndex.Value];
-        priceText.text = "";
+        string text = "E to Pickup\n";
         foreach (var valueType in itemData.valueRange)
         {
-            priceText.text += valueType.CurrencyType.ToString() + ": " + valueType.MaxValue + "\n";
+            text += valueType.CurrencyType.ToString() + ": " + valueType.MaxValue + "\n";
         }
+        priceText = text;
     }
 
     public bool EnableInteractable(IHoldable heldObject)
@@ -121,49 +120,48 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
 
     private void OnDefaultStateEnter()
     {
-        instructions.SetActive(false);
-        dropInstructions.SetActive(false);
-        dropInstructions.SetActive(false);
+        instruction.SetVisible(false);
     }
     
     private void OnClosestItemStateEnter()
     {
-        instructions.SetActive(true);
+        instruction.SetText(priceText);
+        instruction.SetVisible(true);
     }
     
     private void OnClosestItemStateExit()
     {
-        instructions.SetActive(false);
+        instruction.SetVisible(false);
     }
     
     private void OnPickedUpStateEnter()
     {
-        dropInstructions.SetActive(true);
     }
     
     private void OnPickedUpStateExit()
     {
-        dropInstructions.SetActive(false);
     }
     
     private void OnHeavyStateEnter()
     {
-        heavyInstructions.SetActive(true);
+        instruction.SetText("Too Heavy");
+        instruction.SetVisible(true);
     }
     
     private void OnHeavyStateExit()
     {
-        heavyInstructions.SetActive(false);
+        instruction.SetVisible(false);
     }
     
     private void OnCranePickupStateEnter()
     {
-        craneHookInstructions.SetActive(true);
+        instruction.SetText("E to attach crane");
+        instruction.SetVisible(true);
     }
     
     private void OnCranePickupStateExit()
     {
-        craneHookInstructions.SetActive(false);
+        instruction.SetVisible(false);
     }
     
     #endregion

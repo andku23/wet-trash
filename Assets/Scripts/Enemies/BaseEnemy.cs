@@ -13,9 +13,11 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
     protected Vector3 lastPosition;
     protected Vector3 initialPosition;
     protected Quaternion nextRotation;
+    protected NetworkVariable<int> _health = new NetworkVariable<int>(0);
+    
     
     protected NetworkVariable<int> _networkState = new NetworkVariable<int>(0);
-    public NetworkVariable<int> Health = new NetworkVariable<int>(0);
+    public int Health => _health.Value;
     protected ClientStateMachine _stateMachine;
     
     public override void OnNetworkSpawn()
@@ -28,7 +30,7 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         }
 
         _networkState.OnValueChanged += OnNetworkStateUpdated;
-        Health.OnValueChanged += OnHealthUpdated;
+        _health.OnValueChanged += OnHealthUpdated;
         
         //Sync network state to whatever server is on
         OnNetworkStateUpdated(0, _networkState.Value);
@@ -36,7 +38,7 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
 
     protected virtual void OnHealthUpdated(int prev, int next)
     {
-        if (Health.Value <= 0)
+        if (Health <= 0)
         {
             StartCoroutine(DoDeath());
         }
@@ -65,15 +67,15 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         _stateMachine.ChangeState(next);
     }
     
-    public void DoDamage(ItemInteractionType interactionType, int amount)
+    public void DoDamage(ItemInteractionData interactionData)
     {
-        ReceiveDamage_ServerRpc(amount);
+        ReceiveDamage_ServerRpc(interactionData.damage);
     }
 
     [ServerRpc(RequireOwnership = false)]
     public virtual void ReceiveDamage_ServerRpc(int damage)
     {
-        Health.Value -= damage;
+        _health.Value -= damage;
     }
     
     public virtual void InitializeStateMachine()

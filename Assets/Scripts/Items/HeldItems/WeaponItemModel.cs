@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class WeaponItemModel : HeldItemModel
@@ -6,6 +7,7 @@ public class WeaponItemModel : HeldItemModel
     
     public override void UseItem(InteractionController interactionController, PlayerState playerState)
     {
+        interactionData.networkPlayerID = NetworkManager.Singleton.LocalClientId;
         interactionController.UseHeldItem(interactionData);
     }
 }

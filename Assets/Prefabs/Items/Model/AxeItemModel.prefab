@@ -117,9 +117,10 @@ MonoBehaviour:
   CraneAttachPoint: {fileID: 1827100686189157481}
   HoldAttachPoint: {fileID: 0}
   interactionData:
-    interactionType: 1
+    interactionType: 0
     damage: 4
     range: 7
+    networkPlayerID: 0
 --- !u!1 &8257947030282296124
 GameObject:
   m_ObjectHideFlags: 0

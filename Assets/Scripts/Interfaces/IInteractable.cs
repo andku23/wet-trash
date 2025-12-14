@@ -10,9 +10,7 @@ public interface IInteractable
       return true;
    }
    
-   public void DisableInteractable()
-   {
-   }
+   public void DisableInteractable() {}
    
    // If the interactor is something that takes over player control for a bit
    public bool IsPersistentInteractable
@@ -31,3 +29,4 @@ public interface IInteractable
    
    GameObject gameObject { get ; } 
 }
+

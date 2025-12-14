@@ -2,10 +2,11 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public class MiningHarvestable : BaseHarvestableObject
+public class StandardHarvestable : BaseHarvestableObject, IInteractable
 {
     [SerializeField] private PlayerAudioSource _audioSource;
     [SerializeField] private Animator _animator;
+    [SerializeField] private WorldspaceInstruction interactionInstruction;
     
     private int _animID_Hit;
     private int _animID_Die;
@@ -30,12 +31,30 @@ public class MiningHarvestable : BaseHarvestableObject
         _stateMachine.AddState((int)ServerStates.Die, die);
     }
     
-    public override void DoDamage(ItemInteractionType interactionType, int amount)
+    public override void DoDamage(ItemInteractionData interactionData)
     {
-        if (!ContainsInteractableType(interactionType)) return;
+        if (!ContainsInteractableType(interactionData.interactionType)) return;
         _animator.SetTrigger(_animID_Hit);
         _audioSource.PlaySound(PlayerAudioSource.SoundType.RockHit);
-        DoDamage_ServerRpc(interactionType, amount);
+        DoDamage_ServerRpc(interactionData.interactionType, interactionData.damage);
+    }
+    
+    public bool EnableInteractable(IHoldable heldObject)
+    {
+        string instructionText = "Use: ";
+        Sprite[] sprites = new Sprite[interactableTypes.Length];
+        for (int i = 0; i < interactableTypes.Length; i++)
+        {
+            sprites[i] = EnumAssetManager.Instance.itemInteractionLookup[interactableTypes[i]];
+        }
+        interactionInstruction.SetSpriteList(instructionText, sprites);
+        interactionInstruction.SetVisible(true);
+        return true;
+    }
+    
+    public void DisableInteractable()
+    {
+        interactionInstruction.SetVisible(false);
     }
     
     protected override async Awaitable DoDeath()

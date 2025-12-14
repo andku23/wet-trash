@@ -55,10 +55,10 @@ public abstract class BaseHarvestableObject : NetworkBehaviour, IDamagable
         }
     }
     
-    public virtual void DoDamage(ItemInteractionType interactionType, int amount)
+    public virtual void DoDamage(ItemInteractionData interactionData)
     {
-        if (!ContainsInteractableType(interactionType)) return;
-        DoDamage_ServerRpc(interactionType, amount);
+        if (!ContainsInteractableType(interactionData.interactionType)) return;
+        DoDamage_ServerRpc(interactionData.interactionType, interactionData.damage);
     }
     
     protected virtual void OnNetworkStateUpdated(int prev, int next)
@@ -107,17 +107,3 @@ public abstract class BaseHarvestableObject : NetworkBehaviour, IDamagable
     }
 }
 
-[System.Serializable]
-public struct ItemInteractionData
-{
-    public ItemInteractionType interactionType;
-    public int damage;
-    public int range;
-}
-
-public enum ItemInteractionType
-{
-    Mining,
-    Attacking,
-    Breaking
-}

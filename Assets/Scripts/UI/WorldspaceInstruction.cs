@@ -14,7 +14,6 @@ public class WorldspaceInstruction : MonoBehaviour
     private void Start()
     {
         icons = new List<GameObject>();
-        gameObject.SetActive(false);
     }
     
     public void SetVisible(bool visible)

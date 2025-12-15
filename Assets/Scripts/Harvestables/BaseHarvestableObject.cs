@@ -41,6 +41,7 @@ public abstract class BaseHarvestableObject : NetworkBehaviour, IDamagable
     
     protected virtual void OnHealthUpdated(int prev, int next)
     {
+        if(prev <= 0 && next <= 0) return;
         if (_health.Value <= 0)
         {
             DoDeath();
@@ -83,6 +84,7 @@ public abstract class BaseHarvestableObject : NetworkBehaviour, IDamagable
     [ServerRpc(RequireOwnership = false)]
     protected void DoDamage_ServerRpc(ItemInteractionType interactionType, int amount)
     {
+        if (_health.Value <= 0) return;
         _health.Value -= amount;
     }
     

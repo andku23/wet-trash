@@ -20,7 +20,8 @@ public class PlayerAudioSource : MonoBehaviour
         EnemyTakeDamage,
         EnemyDie,
         RockHit,
-        RockBreak
+        RockBreak,
+        ItemPickup
     }
 
     public void PlaySound(int index)

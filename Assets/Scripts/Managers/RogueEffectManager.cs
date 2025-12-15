@@ -25,6 +25,12 @@ public class RogueEffectManager : NetworkBehaviour
         CreateLookupTables();
     }
 
+    public override void OnNetworkSpawn()
+    {
+        if(IsServer)
+            playerCardVote_s = new Dictionary<ulong, int>();
+    }
+
     private void CreateLookupTables()
     {
         _rogueCardsEffectsLookup = new Dictionary<RogueCardEffectID, RogueCardEffectData>();
@@ -52,7 +58,7 @@ public class RogueEffectManager : NetworkBehaviour
     public async Awaitable WaitForCardVote_S(RogueCardPacketData[] cardDatas, Action onComplete)
     {
         float checkInterval = 0.1f;
-        playerCardVote_s = new Dictionary<ulong, int>();
+        playerCardVote_s.Clear();
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
         foreach (var client in connectedClients)
         {
@@ -83,11 +89,16 @@ public class RogueEffectManager : NetworkBehaviour
             Debug.Log(debugWaitMessage);
         }
         
-        int[] tally = new int[playerCardVote_s.Count];
+        
+        
+        int[] tally = new int[cardDatas.Length];
+        
+        List<int> votes = new List<int>(playerCardVote_s.Values);
+        
         // Calculate vote
-        foreach (var player in playerCardVote_s)
+        foreach (int vote in votes)
         {
-            tally[player.Value]++;
+            tally[vote]++;
         }
 
         int winner = 0;

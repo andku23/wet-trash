@@ -19,6 +19,7 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private NetworkObject networkObject;
     [SerializeField] private PlayerController playerController;
     [SerializeField] private PlayerState playerState;
+    [SerializeField] private PlayerAudioSource audioSource;
     
     private GameUI _gameUI;
 
@@ -116,9 +117,6 @@ public class InteractionController : NetworkBehaviour
                 }
             }
         }
-        
-        
-        
     }
     
     public GameObject PickupTemporaryItemNetwork(GameObject item, ulong heldPlayerID)
@@ -160,6 +158,7 @@ public class InteractionController : NetworkBehaviour
                 playerState.WeightCarried += inventorableItem.GetWeight();
                 GameUI.Instance.AddHotbarItem(_currentInventoryIndex, lootIndex);
             }
+            audioSource.PlaySound(PlayerAudioSource.SoundType.ItemPickup);
         }
         
         return heldObject.gameObject;

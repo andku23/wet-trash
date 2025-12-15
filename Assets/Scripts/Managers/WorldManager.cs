@@ -461,9 +461,17 @@ public class WorldManager : NetworkBehaviour
 
     #region Biome Height Functions
     // Initial Height Map
-    private float CreateInitialHeight(int x, int z, int nativeArrayIndex)
+    private float CreateInitialHeight(int x, int z, int nativeArrayIndex, int resolution)
     {
-        float height = noiseMaps[NoiseMapType.TerrainHeightMap][nativeArrayIndex];
+        float normalizedX = (float) x / resolution;
+        float normalizedZ = (float) z / resolution;
+        float heightShapeX = 1 - Math.Abs(2 * normalizedX - 1);
+        float heightShapeZ = 1 - Math.Abs(2 * normalizedZ - 1);
+        float distanceFromCenter = 0.5f*(Math.Abs(2 *normalizedX-1f) + Math.Abs(2 *normalizedZ-1f));
+        float heightCenter = 0.4f * (heightShapeX + heightShapeZ);
+        float heightDistance = noiseMaps[NoiseMapType.TerrainHeightMap][nativeArrayIndex];
+        float height =  (1- distanceFromCenter) * heightCenter + distanceFromCenter * heightDistance;
+            //noiseMaps[NoiseMapType.TerrainHeightMap][nativeArrayIndex];
         return height;
     }
 
@@ -532,7 +540,7 @@ public class WorldManager : NetworkBehaviour
                 float th2 = CreateTerrainType2(i, j, nativeArrayIndex);
                 float th3 = CreateTerrainType3(i, j, nativeArrayIndex);
 
-                height = CreateInitialHeight(i, j, nativeArrayIndex);
+                height = CreateInitialHeight(i, j, nativeArrayIndex, resolution);
                 if (height >= 0.8f)
                 {
                     height += CreateTerrainType0(i, j, nativeArrayIndex);

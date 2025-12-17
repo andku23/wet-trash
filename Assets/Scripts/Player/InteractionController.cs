@@ -651,9 +651,9 @@ public class InteractionController : NetworkBehaviour
             }
         }
 
-        if (_input.useItem)
+        if (_input.leftclick)
         {
-            _input.useItem = false;
+            _input.leftclick = false;
             heldObject.UseItem(this, playerState);
         }
     }

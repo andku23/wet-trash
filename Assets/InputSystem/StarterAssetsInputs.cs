@@ -19,7 +19,7 @@ namespace StarterAssets
 		public bool inventory;
 		public float scroll;
 		public bool debug;
-		public bool useItem;
+		public bool leftclick;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -136,7 +136,7 @@ namespace StarterAssets
 		
 		public void UseItemInput(bool newState)
 		{
-			useItem = newState;
+			leftclick = newState;
 		}
 
 		public void ScrollInput(float newState)

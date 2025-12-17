@@ -9,13 +9,8 @@ public class WorldspaceInstruction : MonoBehaviour
     [SerializeField] private Transform contentContainer;
     [SerializeField] private GameObject iconPrefab;
 
-    private List<GameObject> icons;
+    private List<GameObject> icons = new List<GameObject>();
 
-    private void Start()
-    {
-        icons = new List<GameObject>();
-    }
-    
     public void SetVisible(bool visible)
     {
         gameObject.SetActive(visible);

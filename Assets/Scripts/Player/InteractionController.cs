@@ -10,7 +10,7 @@ using UnityEngine.Serialization;
 public class InteractionController : NetworkBehaviour
 {
     public static InteractionController Instance;
-    
+
     [SerializeField] private LayerMask interactableLayerMask;
     [SerializeField] private LayerMask buildingLayerMask;
     [SerializeField] private LayerMask attachmentLayerMask;
@@ -20,13 +20,13 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private PlayerState playerState;
     [SerializeField] private PlayerAudioSource audioSource;
-    
+
     private GameUI _gameUI;
 
     private const int INVENTORY_SIZE = 4;
     private int[] _inventory = new int[INVENTORY_SIZE];
     private int _currentInventoryIndex = 0;
-    
+
     private float rotationPlaceOffset;
 
     public enum InteractionStates
@@ -38,11 +38,11 @@ public class InteractionController : NetworkBehaviour
         HoldingTemporaryObject = 4,
         BoatAttachment = 5,
     }
-    
-#if ENABLE_INPUT_SYSTEM 
+
+#if ENABLE_INPUT_SYSTEM
     private PlayerInput _playerInput;
 #endif
-    
+
     private StarterAssetsInputs _input;
     private IInteractable lastClosestInteractable;
     private IInteractable persistentInteractable;
@@ -55,39 +55,40 @@ public class InteractionController : NetworkBehaviour
     private TagHandle _attachmentTag;
     private ClientStateMachine _stateMachine;
     private InteractableTypes _currentInteractableTypes;
-    
+    private bool _hotbarScrollLocked = false;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
         if (!IsOwner) return;
-        if(Instance == null) Instance = this;
+        if (Instance == null) Instance = this;
         _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
         _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
-        
+
         _interactableTag = TagHandle.GetExistingTag("Untagged");
         _buildingTag = TagHandle.GetExistingTag("Boat");
         _attachmentTag = TagHandle.GetExistingTag("AttachmentPoint");
-        
+
         _stateMachine = new ClientStateMachine();
-        
-        _stateMachine.AddState((int)InteractionStates.Standard, 
+
+        _stateMachine.AddState((int)InteractionStates.Standard,
             new BaseState(null, OnStandardUpdate, null));
-        
-        _stateMachine.AddState((int)InteractionStates.BoatAttachment, 
+
+        _stateMachine.AddState((int)InteractionStates.BoatAttachment,
             new BaseState(null, OnBoatAttachmentUpdate, null));
-        
-        _stateMachine.AddState((int)InteractionStates.BoatBuilding, 
+
+        _stateMachine.AddState((int)InteractionStates.BoatBuilding,
             new BaseState(null, OnBoatBuildingUpdate, null));
-        
-        _stateMachine.AddState((int)InteractionStates.PersistentInteractable, 
+
+        _stateMachine.AddState((int)InteractionStates.PersistentInteractable,
             new BaseState(null, OnPersistentInteractableUpdate, null));
-        
-        _stateMachine.AddState((int)InteractionStates.HoldingInventoryObject, 
+
+        _stateMachine.AddState((int)InteractionStates.HoldingInventoryObject,
             new BaseState(null, OnHeldInventoryItemUpdate, null));
-        
-        _stateMachine.AddState((int)InteractionStates.HoldingTemporaryObject, 
+
+        _stateMachine.AddState((int)InteractionStates.HoldingTemporaryObject,
             new BaseState(null, OnHeldTemporaryItemUpdate, null));
-        
+
         _stateMachine.ChangeState((int)InteractionStates.Standard);
 
         for (int i = 0; i < _inventory.Length; i++)
@@ -95,15 +96,16 @@ public class InteractionController : NetworkBehaviour
             _inventory[i] = -1;
         }
     }
-    
+
     // functions that are called from other players or the server
     // or sometimes just other functions
+
     #region External Calls
 
     public void UseHeldItem(ItemInteractionData interactionData)
     {
         playerController.DoHit();
-        if (Physics.Raycast(playerController.MainCamera.transform.position, 
+        if (Physics.Raycast(playerController.MainCamera.transform.position,
                 playerController.MainCamera.transform.forward,
                 out RaycastHit raycastHit, interactionData.range, attackingLayerMask))
         {
@@ -118,7 +120,7 @@ public class InteractionController : NetworkBehaviour
             }
         }
     }
-    
+
     public GameObject PickupTemporaryItemNetwork(GameObject item, ulong heldPlayerID)
     {
         ControlModeData controlModeData = playerController.CameraControl.gameObject.GetComponent<ControlModeData>();
@@ -134,6 +136,7 @@ public class InteractionController : NetworkBehaviour
             go.transform.localPosition = new Vector3(0, -0.3f, -0.1f);
             go.transform.localScale = Vector3.one * 0.6f;
         }
+
         heldObject = go.GetComponent<IHoldable>();
         heldObject.HeldPlayerID = heldPlayerID;
         playerController.ToggleCarrying(true);
@@ -142,13 +145,14 @@ public class InteractionController : NetworkBehaviour
             _stateMachine.ChangeState((int)InteractionStates.HoldingTemporaryObject);
             DisableCurrentInteractable();
         }
+
         return go;
     }
 
     public GameObject PickupItemNetwork(int lootIndex, ulong heldPlayerID)
     {
         ChangeHeldObjectLocal(lootIndex, heldPlayerID);
-        
+
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
         {
             IInventorable inventorableItem = heldObject.gameObject.GetComponent<IInventorable>();
@@ -158,18 +162,19 @@ public class InteractionController : NetworkBehaviour
                 playerState.WeightCarried += inventorableItem.GetWeight();
                 GameUI.Instance.AddHotbarItem(_currentInventoryIndex, lootIndex);
             }
+
             audioSource.PlaySound(PlayerAudioSource.SoundType.ItemPickup);
         }
-        
+
         return heldObject.gameObject;
     }
-    
+
     public void DropTemporaryItemNetwork(ulong heldPlayerID)
     {
         ChangeHeldObjectLocal(_inventory[_currentInventoryIndex], heldPlayerID);
         //RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex]);
     }
-    
+
     public void DropItemNetwork(ulong heldPlayerID)
     {
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
@@ -183,7 +188,7 @@ public class InteractionController : NetworkBehaviour
                 playerState.WeightCarried = Mathf.Clamp(playerState.WeightCarried, 0f, float.MaxValue);
             }
         }
-        
+
         ChangeHeldObjectLocal(-1, heldPlayerID);
     }
 
@@ -195,7 +200,7 @@ public class InteractionController : NetworkBehaviour
         {
             DestroyHeldObject();
         }
-        
+
         if (lootIndex != -1)
         {
             ControlsUI.Instance.SetControlUIState(ControlUIGroupType.HoldingUsable);
@@ -216,13 +221,15 @@ public class InteractionController : NetworkBehaviour
                 _stateMachine.ChangeState((int)InteractionStates.Standard);
                 ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Default, true);
             }
+
             playerController.ToggleCarrying(false);
         }
-        if(GameUI.Instance != null)
+
+        if (GameUI.Instance != null)
             GameUI.Instance.SetActiveHotbarItem(_currentInventoryIndex);
-        
+
     }
-    
+
     public void ChangeHeldObjectNetwork(int lootIndex, ulong heldPlayerID)
     {
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId) return;
@@ -231,7 +238,7 @@ public class InteractionController : NetworkBehaviour
         {
             DestroyHeldObject();
         }
-        
+
         if (lootIndex != -1)
         {
             LoadAndAttachHeldObject(lootIndex, heldPlayerID);
@@ -242,13 +249,14 @@ public class InteractionController : NetworkBehaviour
             playerController.ToggleCarrying(false);
         }
     }
-    
+
     public void ChangeToAttachmentMode(int shopItemIndex)
     {
         ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Building);
         _stateMachine.ChangeState((int)InteractionStates.BoatAttachment);
         _shopItemIndex = shopItemIndex;
-        placingBoatAttachment = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab).GetComponent<BoatAttachment>();
+        placingBoatAttachment = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab)
+            .GetComponent<BoatAttachment>();
         placingBoatAttachment.gameObject.SetActive(false);
         rotationPlaceOffset = 0.0f;
     }
@@ -258,13 +266,15 @@ public class InteractionController : NetworkBehaviour
         _stateMachine.ChangeState((int)InteractionStates.BoatBuilding);
         ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Building);
         _shopItemIndex = shopItemIndex;
-        placingBoatPart = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab).GetComponent<BoatPart>();
+        placingBoatPart = Instantiate(ShopManager.Instance.shopList.items[_shopItemIndex].placePrefab)
+            .GetComponent<BoatPart>();
         placingBoatPart.gameObject.SetActive(false);
         Collider[] allColliders = placingBoatPart.gameObject.GetComponentsInChildren<Collider>();
         for (int i = 0; i < allColliders.Length; i++)
         {
             allColliders[i].enabled = false;
         }
+
         rotationPlaceOffset = 0.0f;
     }
 
@@ -273,13 +283,23 @@ public class InteractionController : NetworkBehaviour
         Destroy(heldObject.gameObject);
         heldObject = null;
         playerController.ToggleCarrying(false);
-        
+
         //Might have to figure these out again when doing crane
         //_stateMachine.ChangeState((int)InteractionStates.Standard);
         //DisableCurrentInteractable();
     }
-    
-    #endregion
+
+    public void DisconnectFromPersistentInteractable()
+    {
+        persistentInteractable = null;
+        _hotbarScrollLocked = false;
+        _stateMachine.ChangeState((int)InteractionStates.Standard);
+        ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Default, true);
+        DisableCurrentInteractable();
+    }
+
+
+#endregion
     
     #region Networked Functions
 
@@ -302,6 +322,11 @@ public class InteractionController : NetworkBehaviour
 
     private void CheckItemScroll()
     {
+        if (_hotbarScrollLocked)
+        {
+            _input.scroll = 0;
+            return;
+        }
         if (_input.scroll != 0)
         {
             if (_input.scroll > 0)
@@ -480,7 +505,6 @@ public class InteractionController : NetworkBehaviour
             
             QueryInteractableTypes(lastClosestInteractable);
             
-            
             if (_currentInteractableTypes.loot != null)
             {
                 ItemData data = LootManager.Instance.LootIndextoData(_currentInteractableTypes.loot.lootIndex.Value);
@@ -496,6 +520,7 @@ public class InteractionController : NetworkBehaviour
                     {
                         persistentInteractable = lastClosestInteractable;
                         isPersistentInteractable = true;
+                        _hotbarScrollLocked = true;
                     }
                     
                     lastClosestInteractable.Interact(NetworkManager.Singleton.LocalClientId);
@@ -688,6 +713,7 @@ public class InteractionController : NetworkBehaviour
     
     private void OnPersistentInteractableUpdate()
     {
+        CheckItemScroll();
         if (_input.interact)
         {
             _input.interact = false;
@@ -695,10 +721,7 @@ public class InteractionController : NetworkBehaviour
             if (persistentInteractable != null)
             {
                 persistentInteractable.Interact(NetworkManager.Singleton.LocalClientId);
-                persistentInteractable = null;
-                _stateMachine.ChangeState((int)InteractionStates.Standard);
-                ControlsUI.Instance.SetControlUIState(ControlUIGroupType.Default, true);
-                DisableCurrentInteractable();
+                //DisconnectFromPersistentInteractable();
             }
         }
     }

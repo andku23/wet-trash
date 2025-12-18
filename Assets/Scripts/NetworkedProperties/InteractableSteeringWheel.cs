@@ -19,6 +19,7 @@ public class InteractableSteeringWheel : MonoBehaviour, IInteractable
             if (BoatManager.Instance.Boat.DriverID == networkPlayerId)
             {
                 BoatManager.Instance.Boat.RequestToDrive(false);
+                InteractionController.Instance.DisconnectFromPersistentInteractable();
             }
         }
         else

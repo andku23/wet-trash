@@ -141,7 +141,7 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         foreach (var client in connectedClients)
         {
             var player = client.Value.PlayerObject;
-            PlayerState playerState  = player.GetComponent<PlayerState>();
+            PlayerStateData playerState  = player.GetComponent<PlayerStateData>();
             //Debug.Log(playerState.Velocity);
             if (playerState == null) continue;
             if (playerState.Velocity <= maxSafeSpeed) continue;
@@ -162,7 +162,7 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         foreach (var client in connectedClients)
         {
             var player = client.Value.PlayerObject;
-            var playerState = player.GetComponent<PlayerState>();
+            var playerState = player.GetComponent<PlayerStateData>();
             if (playerState == null || !playerState.DisplayingHeldObject) continue;
             float currentDistance = Vector3.Distance(client.Value.PlayerObject.transform.position, transform.position);
             if (currentDistance < closestDistance)

@@ -41,7 +41,7 @@ public class InteractableSwitch : MonoBehaviour, IInteractable
         _animIDIsToggled = Animator.StringToHash("IsToggled");
     }
 
-    public void Interact(ulong networkPlayerId)
+    public void Interact(ulong networkPlayerId, InteractionButtonType buttonType)
     {
         if (isToggleButton)
         {

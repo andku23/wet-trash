@@ -5,7 +5,7 @@ public class WeaponItemModel : HeldItemModel
 {
     [SerializeField] protected ItemInteractionData interactionData;
     
-    public override void UseItem(InteractionController interactionController, PlayerState playerState)
+    public override void UseItem(InteractionController interactionController, PlayerStateData playerState)
     {
         interactionData.networkPlayerID = NetworkManager.Singleton.LocalClientId;
         interactionController.UseHeldItem(interactionData);

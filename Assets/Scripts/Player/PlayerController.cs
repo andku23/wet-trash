@@ -15,7 +15,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : NetworkBehaviour
 {
-    public PlayerState playerState;
+    public PlayerStateData playerState;
     
 
     [Tooltip("The character uses its own gravity value. The engine default is -9.81f")]
@@ -192,7 +192,7 @@ public class PlayerController : NetworkBehaviour
         }
         
         OwnerNetworkAnimator.Animator = _selectedControlMode.GetComponent<Animator>();
-        GetComponent<PlayerDeath>().Animator = _selectedControlMode.GetComponent<Animator>();
+        GetComponent<PlayerStateController>().Animator = _selectedControlMode.GetComponent<Animator>();
         _animator = _selectedControlMode.GetComponent<Animator>();
         _cameraControl = _selectedControlMode.GetComponent<ICameraControl>();
 

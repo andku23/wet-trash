@@ -2,7 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class PlayerState : NetworkBehaviour
+public class PlayerStateData : NetworkBehaviour
 {
     [Header("Network Variables")]
     public NetworkVariable<float> Health = new NetworkVariable<float>(10);

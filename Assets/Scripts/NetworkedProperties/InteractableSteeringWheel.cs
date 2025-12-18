@@ -12,7 +12,7 @@ public class InteractableSteeringWheel : MonoBehaviour, IInteractable
         instructions.SetActive(false);
     }
     
-    public void Interact(ulong networkPlayerId)
+    public void Interact(ulong networkPlayerId, InteractionButtonType buttonType)
     {
         if (BoatManager.Instance.Boat.HasDriver)
         {

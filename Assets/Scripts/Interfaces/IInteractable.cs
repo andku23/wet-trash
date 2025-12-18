@@ -3,7 +3,7 @@ using UnityEngine;
 
 public interface IInteractable
 {
-   public void Interact(ulong networkPlayerID){}
+   public void Interact(ulong networkPlayerID, InteractionButtonType buttonType){}
 
    public bool EnableInteractable(IHoldable heldObject)
    {
@@ -28,5 +28,12 @@ public interface IInteractable
    }
    
    GameObject gameObject { get ; } 
+}
+
+public enum InteractionButtonType
+{
+   Interact, //E
+   Use, //Left Click
+   Back // ESC or something, but not implemented yet
 }
 

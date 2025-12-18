@@ -52,17 +52,17 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
         return LootManager.Instance.LootIndextoData(ItemIndex).weight;
     }
 
-    public void OnEquip(InteractionController interactionController, PlayerState playerState)
+    public void OnEquip(InteractionController interactionController, PlayerStateData playerState)
     {
         Model.OnEquip(interactionController, playerState);
     }
 
-    public void UseItem(InteractionController interactionController, PlayerState playerState)
+    public void UseItem(InteractionController interactionController, PlayerStateData playerState)
     {
         Model.UseItem(interactionController, playerState);
     }
     
-    public void OnUnequip(InteractionController interactionController, PlayerState playerState)
+    public void OnUnequip(InteractionController interactionController, PlayerStateData playerState)
     {
         Model.OnUnequip(interactionController, playerState);
     }

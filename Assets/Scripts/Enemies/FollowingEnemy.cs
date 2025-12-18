@@ -5,7 +5,7 @@ using UnityEngine;
 public class FollowingEnemy : BaseEnemy
 {
     private NetworkClient _closestPlayer;
-    private PlayerState _closestPlayerState;
+    private PlayerStateData _closestPlayerState;
     private float startTime;
     
     [SerializeField] private float travelTime = 2.0f;
@@ -80,7 +80,7 @@ public class FollowingEnemy : BaseEnemy
         if (!IsServer) return;
         SetClosestPlayer(out var closestPlayer, out var closestDistance);
         _closestPlayer = closestPlayer;
-        _closestPlayerState = _closestPlayer.PlayerObject.GetComponent<PlayerState>();
+        _closestPlayerState = _closestPlayer.PlayerObject.GetComponent<PlayerStateData>();
 
         if (_closestPlayer != null && closestDistance < minimumFollowDistance && 
             _closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&
@@ -202,7 +202,7 @@ public class FollowingEnemy : BaseEnemy
     private IEnumerator InflictDamage(int damage)
     {
         yield return new WaitForSeconds(1.5f);
-        var playerState = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerState>();
+        var playerState = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerStateData>();
         GameManager.Instance.ChangeHealth(NetworkManager.Singleton.LocalClientId, playerState.Health.Value - damage);
     }
     

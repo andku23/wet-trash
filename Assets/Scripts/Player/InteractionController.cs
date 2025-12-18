@@ -18,7 +18,7 @@ public class InteractionController : NetworkBehaviour
     [SerializeField] private Transform grabbedLootConnectPoint;
     [SerializeField] private NetworkObject networkObject;
     [SerializeField] private PlayerController playerController;
-    [SerializeField] private PlayerState playerState;
+    [SerializeField] private PlayerStateData playerState;
     [SerializeField] private PlayerAudioSource audioSource;
 
     private GameUI _gameUI;
@@ -523,7 +523,7 @@ public class InteractionController : NetworkBehaviour
                         _hotbarScrollLocked = true;
                     }
                     
-                    lastClosestInteractable.Interact(NetworkManager.Singleton.LocalClientId);
+                    lastClosestInteractable.Interact(NetworkManager.Singleton.LocalClientId, InteractionButtonType.Interact);
                     
                     // Have to set this after because sometimes interacting will make it forget about itself
                     if(isPersistentInteractable) _stateMachine.ChangeState((int)InteractionStates.PersistentInteractable);
@@ -714,16 +714,21 @@ public class InteractionController : NetworkBehaviour
     private void OnPersistentInteractableUpdate()
     {
         CheckItemScroll();
+        // Dont think this will ever happen, but just in case
+        if (persistentInteractable == null)
+        {
+            DisconnectFromPersistentInteractable();
+            return;
+        }
         if (_input.interact)
         {
-            _input.interact = false;
-
-            if (persistentInteractable != null)
-            {
-                persistentInteractable.Interact(NetworkManager.Singleton.LocalClientId);
-                //DisconnectFromPersistentInteractable();
-            }
+            persistentInteractable.Interact(NetworkManager.Singleton.LocalClientId, InteractionButtonType.Interact);
+        } else if (_input.leftclick)
+        {
+            persistentInteractable.Interact(NetworkManager.Singleton.LocalClientId, InteractionButtonType.Use);
         }
+        _input.interact = false;
+        _input.leftclick = false;
     }
     #endregion
     

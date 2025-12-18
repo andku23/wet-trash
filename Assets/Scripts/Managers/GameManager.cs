@@ -152,7 +152,7 @@ public class GameManager : NetworkBehaviour
     public void ChangeHealth_ServerRpc(ulong targetPlayerNetworkObjectId, float newHealth)
     {
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];
-        pickupPlayerClient.PlayerObject.GetComponent<PlayerState>().Health.Value = newHealth;
+        pickupPlayerClient.PlayerObject.GetComponent<PlayerStateData>().Health.Value = newHealth;
     }
     
     [ServerRpc(RequireOwnership = false)]
@@ -161,7 +161,7 @@ public class GameManager : NetworkBehaviour
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
         foreach (var connectedClient in connectedClients)
         {
-            var playerState = connectedClient.Value.PlayerObject.GetComponent<PlayerState>();
+            var playerState = connectedClient.Value.PlayerObject.GetComponent<PlayerStateData>();
             playerState.Health.Value = playerState.MAX_HEALTH;
         }
     }

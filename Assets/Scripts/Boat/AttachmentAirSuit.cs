@@ -4,14 +4,20 @@ using UnityEngine;
 public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
 {
     [SerializeField] private WorldspaceInstruction worldspaceInstruction;
+    [SerializeField] private float breathPerPump = 1;
     
     private ClientStateMachine _stateMachine;
     private NetworkVariable<int> _networkedState = new NetworkVariable<int>(0);
     
-    private bool isPlayerWearing_S;
-    private bool isPlayerPumping_S;
-    private ulong playerWearing_S;
-    private ulong playerPumping_S;
+    private NetworkVariable<bool> isPlayerWearing = new NetworkVariable<bool>();
+    private NetworkVariable<bool> isPlayerPumping = new NetworkVariable<bool>();
+    private NetworkVariable<ulong> playerWearing = new NetworkVariable<ulong>();
+    private NetworkVariable<ulong> playerPumping = new NetworkVariable<ulong>();
+
+    public bool IsPlayerWearing { get => isPlayerWearing.Value; private set => isPlayerWearing.Value = value; }
+    public bool IsPlayerPumping { get => isPlayerPumping.Value; private set => isPlayerPumping.Value = value; }
+    public ulong PlayerWearing { get => playerWearing.Value; private set => playerWearing.Value = value; }
+    public ulong PlayerPumping { get => playerPumping.Value; private set => playerPumping.Value = value; }
     
     public int State {get {return _networkedState.Value;}}
     
@@ -49,38 +55,68 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     }
     
     #region Interactable
-    public bool IsPersistentInteractable { get => false; set {} }
-    public void Interact(ulong networkPlayerID)
+
+    public bool IsPersistentInteractable
     {
-        Debug.Log("intearcting");
+        get
+        {
+            return State == (int) States.Wearing;
+        }
+        set
+        {
+        }
+    }
+
+    public void Interact(ulong networkPlayerID, InteractionButtonType buttonType)
+    {
         if (State == (int)States.Default)
         {
-            MountSuit_ServerRpc(NetworkManager.LocalClientId);
+            if (buttonType == InteractionButtonType.Interact)
+            {
+                MountSuit_ServerRpc(NetworkManager.LocalClientId);
+            }
         }
         else if(State == (int)States.Wearing)
         {
-            InteractWearing_ServerRpc(NetworkManager.LocalClientId);
+            if (buttonType == InteractionButtonType.Interact)
+            {
+                InteractWearing_ServerRpc(NetworkManager.LocalClientId);
+            }
         }
         else if(State == (int)States.Pumping)
         {
-            InteractPumping_ServerRpc(NetworkManager.LocalClientId);
+            if (buttonType == InteractionButtonType.Interact)
+            {
+                InteractPumping(NetworkManager.LocalClientId);
+            } else if (buttonType == InteractionButtonType.Use)
+            {
+                PumpAir_ServerRpc(NetworkManager.LocalClientId);
+            }
         }
     }
     
     public bool EnableInteractable(IHoldable heldObject)
     {
-        if (State == (int)States.Pumping)
+        switch ((States)State)
         {
-            worldspaceInstruction.SetVisible(false);
-            return false;
+            case States.Pumping:
+                worldspaceInstruction.SetVisible(false);
+                return false;
+            case States.Wearing:
+                if (NetworkManager.LocalClientId != PlayerWearing)
+                {
+                    worldspaceInstruction.SetVisible(true);
+                    return true;
+                }
+                else
+                {
+                    worldspaceInstruction.SetVisible(false);
+                    return false;
+                }
+            default:
+                worldspaceInstruction.SetVisible(true);
+                return true;
         }
-        else
-        {
-            worldspaceInstruction.SetVisible(true);
-        }
-
-       
-        return true;
     }
     
     public void DisableInteractable()
@@ -95,7 +131,7 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     [ServerRpc(RequireOwnership = false)]
     public void InteractWearing_ServerRpc(ulong networkPlayerID)
     {
-        if (networkPlayerID == playerWearing_S)
+        if (networkPlayerID == PlayerWearing)
         {
             UnmountSuit_ServerRpc(networkPlayerID);
         }
@@ -105,14 +141,13 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
         }
     }
     
-    [ServerRpc(RequireOwnership = false)]
-    public void InteractPumping_ServerRpc(ulong networkPlayerID)
+    public void InteractPumping(ulong networkPlayerID)
     {
-        if (networkPlayerID == playerWearing_S)
+        if (networkPlayerID == PlayerWearing)
         {
             UnmountSuit_ServerRpc(networkPlayerID);
         }
-        else if (networkPlayerID == playerPumping_S)
+        else if (networkPlayerID == PlayerPumping)
         {
             UnmountPump_ServerRpc(networkPlayerID);
         }
@@ -122,21 +157,21 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     public void MountSuit_ServerRpc(ulong networkPlayerID)
     {
         if (State != (int)States.Default) return;
-        playerWearing_S = networkPlayerID;
-        isPlayerWearing_S = true;
+        PlayerWearing = networkPlayerID;
+        IsPlayerWearing = true;
         _networkedState.Value = (int)States.Wearing;
     }
     
     [ServerRpc(RequireOwnership = false)]
     public void UnmountSuit_ServerRpc(ulong networkPlayerID)
     {
-        if (isPlayerWearing_S)
+        if (IsPlayerWearing)
         {
-            isPlayerWearing_S = false;
+            IsPlayerWearing = false;
         }
         
-        if(isPlayerPumping_S)
-            UnmountPump_ServerRpc(playerPumping_S);
+        if(IsPlayerPumping)
+            UnmountPump_ServerRpc(PlayerPumping);
         
         _networkedState.Value = (int)States.Default;
     }
@@ -145,8 +180,8 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     public void MountPump_ServerRpc(ulong networkPlayerID)
     {
         if (State != (int)States.Wearing) return;
-        playerPumping_S = networkPlayerID;
-        isPlayerPumping_S = true;
+        PlayerPumping = networkPlayerID;
+        IsPlayerPumping = true;
         _networkedState.Value = (int)States.Pumping;
     }
     
@@ -154,10 +189,31 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     public void UnmountPump_ServerRpc(ulong networkPlayerID)
     {
         if (State != (int)States.Pumping) return;
-        if(playerPumping_S != networkPlayerID) return;
-        isPlayerPumping_S = false;
+        if(PlayerPumping != networkPlayerID) return;
+        IsPlayerPumping = false;
         _networkedState.Value = (int)States.Wearing;
         //TODO disconnect logic here
+        UnmountPump_ClientRpc(PlayerPumping);
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void UnmountPump_ClientRpc(ulong targetPlayerID)
+    {
+        if(NetworkManager.LocalClientId != targetPlayerID) return;
+        InteractionController.Instance.DisconnectFromPersistentInteractable();
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void PumpAir_ServerRpc(ulong networkPlayerID)
+    {
+        PumpAir_ClientRpc(PlayerWearing);
+    }
+    
+    [ClientRpc]
+    public void PumpAir_ClientRpc(ulong targetPlayer)
+    {
+        if(targetPlayer != NetworkManager.LocalClientId) return;
+        NetworkManager.LocalClient.PlayerObject.GetComponent<PlayerStateController>().ChangeBreathByAmount(breathPerPump);
     }
     
     #endregion
@@ -166,17 +222,27 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
 
     private void OnDefaultState_Enter()
     {
+        worldspaceInstruction.SetVisible(true);
         worldspaceInstruction.SetText("'E' to wear");
     }
     
     private void OnWearingState_Enter()
     {
-        worldspaceInstruction.SetText("'E' to start pumping");
+        if (PlayerWearing == NetworkManager.LocalClientId)
+        {
+            worldspaceInstruction.SetVisible(false);
+        }
+        else
+        {
+            worldspaceInstruction.SetVisible(true);
+            worldspaceInstruction.SetText("'E' to start pumping");
+        }
+        
     }
     
     private void OnPumpingState_Enter()
     {
-        
+        worldspaceInstruction.SetVisible(false);
     }
     
     #endregion

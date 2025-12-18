@@ -4,10 +4,10 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
 
-public class PlayerDeath : NetworkBehaviour
+public class PlayerStateController : NetworkBehaviour
 {
     private int _animIDIsDead;
-    [SerializeField] private PlayerState playerState;
+    [SerializeField] private PlayerStateData playerState;
     public Animator Animator;
     
     private float _breath;
@@ -78,6 +78,11 @@ public class PlayerDeath : NetworkBehaviour
         Animator.SetBool(_animIDIsDead, true);
         playerState.IsDead = true;
         GameUI.Instance.ShowDeadPanel(true);
+    }
+
+    public void ChangeBreathByAmount(float amount)
+    {
+        _breath += amount;
     }
     
     // Client Rpc Callback

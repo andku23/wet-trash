@@ -80,7 +80,7 @@ public class AttachmentCrane : NetworkBehaviour, IInteractable, IAttachment
         }
     }
 
-    public void Interact(ulong networkPlayerID)
+    public void Interact(ulong networkPlayerID, InteractionButtonType buttonType)
     {
         if (_stateMachine.currentStateEnum == (int)LocalStates.ClosestItem)
         {

@@ -7,7 +7,7 @@ public class ChargingEnemy : BaseEnemy
     [SerializeField] private Rigidbody _rigidbody;
     
     private NetworkClient _targetPlayer;
-    private PlayerState _closestPlayerState;
+    private PlayerStateData _closestPlayerState;
     private Collider _currentWaterBody;
     private float startTime;
     private float idleDistance;
@@ -78,9 +78,9 @@ public class ChargingEnemy : BaseEnemy
         {
             if (hitCollider.gameObject == NetworkManager.Singleton.LocalClient.PlayerObject.gameObject)
             {
-                PlayerDeath playerDeath = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerDeath>();
+                PlayerStateController playerStateController = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerStateController>();
                 hasDoneDamage = true;
-                playerDeath.DoDamage_ServerRpc(DAMAGE);
+                playerStateController.DoDamage_ServerRpc(DAMAGE);
                 _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
             }
         }
@@ -104,7 +104,7 @@ public class ChargingEnemy : BaseEnemy
 
         if (_targetPlayer != null && closestDistance < AGRO_RANGE)
         {
-            _closestPlayerState = _targetPlayer.PlayerObject.GetComponent<PlayerState>();
+            _closestPlayerState = _targetPlayer.PlayerObject.GetComponent<PlayerStateData>();
             if (_closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&
                 _currentWaterBody.bounds.Contains(_targetPlayer.PlayerObject.transform.position))
             {

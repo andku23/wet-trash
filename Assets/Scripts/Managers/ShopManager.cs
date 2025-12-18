@@ -78,7 +78,7 @@ public class ShopManager : NetworkBehaviour
 
     private void ApplyPlayerPowerUp(ShopItem shopItem)
     {
-        PlayerState playerState = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerState>();
+        PlayerStateData playerState = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerStateData>();
         
         if (shopItem.id == "run-speed-up")
         {

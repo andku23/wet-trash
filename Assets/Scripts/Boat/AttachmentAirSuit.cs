@@ -6,6 +6,7 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     [SerializeField] private WorldspaceInstruction worldspaceInstruction;
     [SerializeField] private float breathPerPump = 1;
     [SerializeField] private Transform pumpPlayerAttachPoint;
+    [SerializeField] private GameObject maskModel;
     
     private ClientStateMachine _stateMachine;
     private NetworkVariable<int> _networkedState = new NetworkVariable<int>(0);
@@ -36,7 +37,7 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     {
         _stateMachine = new ClientStateMachine();
         
-        BaseState defaultState = new BaseState(OnDefaultState_Enter, null, null);
+        BaseState defaultState = new BaseState(OnDefaultState_Enter, null, OnDefaultState_Exit);
         _stateMachine.AddState((int)States.Default, defaultState);
         
         BaseState equippedState = new BaseState(OnWearingState_Enter, null, null);
@@ -246,9 +247,14 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
 
     private void OnDefaultState_Enter()
     {
-        //worldspaceInstruction.SetVisible(true);
+        maskModel.SetActive(true);
         worldspaceInstruction.SetText("'E' to wear");
         _isPersistentInteractable = false;
+    }
+    
+    private void OnDefaultState_Exit()
+    {
+        maskModel.SetActive(false);
     }
     
     private void OnWearingState_Enter()

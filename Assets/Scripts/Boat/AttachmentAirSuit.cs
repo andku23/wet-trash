@@ -7,6 +7,7 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     [SerializeField] private float breathPerPump = 1;
     [SerializeField] private Transform pumpPlayerAttachPoint;
     [SerializeField] private GameObject maskModel;
+    [SerializeField] private LineRenderer lineRenderer;
     
     private ClientStateMachine _stateMachine;
     private NetworkVariable<int> _networkedState = new NetworkVariable<int>(0);
@@ -22,6 +23,8 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     public bool IsPlayerPumping { get => isPlayerPumping.Value; private set => isPlayerPumping.Value = value; }
     public ulong PlayerWearing { get => playerWearing.Value; private set => playerWearing.Value = value; }
     public ulong PlayerPumping { get => playerPumping.Value; private set => playerPumping.Value = value; }
+    
+    public bool IsLineRendererActive { get => (State == (int)States.Pumping || State == (int)States.Wearing); }
     
     public int State {get {return _networkedState.Value;}}
     
@@ -48,6 +51,9 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
         
         _stateMachine.ChangeState(_networkedState.Value);
         _networkedState.OnValueChanged += OnNetworkStateUpdated;
+        
+        lineRenderer.SetPosition(0, transform.position);
+        lineRenderer.SetPosition(1, transform.position);
     }
     
     public void OnNetworkStateUpdated(int prev, int next)
@@ -250,6 +256,7 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
         maskModel.SetActive(true);
         worldspaceInstruction.SetText("'E' to wear");
         _isPersistentInteractable = false;
+        lineRenderer.SetPosition(1, transform.position);
     }
     
     private void OnDefaultState_Exit()
@@ -292,5 +299,12 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     private void Update()
     {
         _stateMachine.Update();
+
+        if (IsLineRendererActive)
+        {
+            NetworkObject no = NetworkManager.Singleton.ConnectedClients[PlayerWearing].PlayerObject;
+            lineRenderer.SetPosition(0, transform.position);
+            lineRenderer.SetPosition(1, no.transform.position);
+        }
     }
 }

@@ -3804,6 +3804,7 @@ MonoBehaviour:
   NetworkHandleParenting: {fileID: 8149868342962994308}
   _animator: {fileID: 3938184501639273155}
   _playerAudioSource: {fileID: 3052905424457444265}
+  _copyTransform: {fileID: -5723443840750851045}
   MainCamera: {fileID: 0}
 --- !u!114 &3817229071060700491
 MonoBehaviour:

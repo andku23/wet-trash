@@ -163,9 +163,7 @@ public class NetworkedBoat : NetworkBehaviour
         // }
         
         NetworkClient requestedDrivePlayer = NetworkManager.Singleton.ConnectedClients[playerNetworkObjectId];
-        requestedDrivePlayer.PlayerObject.SynchronizeTransform = false;
-        requestedDrivePlayer.PlayerObject.GetComponent<PlayerController>().ToggleDriving(true);
-        requestedDrivePlayer.PlayerObject.GetComponent<CopyTransform>().target = DriverSeat.gameObject;
+        requestedDrivePlayer.PlayerObject.GetComponent<PlayerController>().AttachCopyTransformToPoint(DriverSeat.gameObject);
     }
     
     [ClientRpc(RequireOwnership = false)]
@@ -177,9 +175,7 @@ public class NetworkedBoat : NetworkBehaviour
         }
         
         NetworkClient requestedDrivePlayer = NetworkManager.Singleton.ConnectedClients[playerNetworkObjectId];
-        requestedDrivePlayer.PlayerObject.SynchronizeTransform = true;
-        requestedDrivePlayer.PlayerObject.GetComponent<PlayerController>().ToggleDriving(false);
-        requestedDrivePlayer.PlayerObject.GetComponent<CopyTransform>().target = null;
+        requestedDrivePlayer.PlayerObject.GetComponent<PlayerController>().UnattachCopyTransformToPoint();
     }
 }
 

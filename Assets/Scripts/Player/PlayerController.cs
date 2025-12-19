@@ -103,6 +103,7 @@ public class PlayerController : NetworkBehaviour
 #endif
     [SerializeField] private Animator _animator;
     [SerializeField] private PlayerAudioSource _playerAudioSource;
+    [SerializeField] private CopyTransform _copyTransform;
     private CharacterController _controller;
     private StarterAssetsInputs _input;
     public GameObject MainCamera;
@@ -165,6 +166,23 @@ public class PlayerController : NetworkBehaviour
             _animator.SetTrigger(_animIDAttacking);
         }
     }
+
+    public void AttachCopyTransformToPoint(GameObject attachPoint)
+    {
+        NetworkObject selfNO = GetComponent<NetworkObject>();
+        selfNO.SynchronizeTransform = false;
+        ToggleDriving(true);
+        _copyTransform.target = attachPoint;
+    }
+    
+    public void UnattachCopyTransformToPoint()
+    {
+        NetworkObject selfNO = GetComponent<NetworkObject>();
+        selfNO.SynchronizeTransform =true;
+        ToggleDriving(false);
+        _copyTransform.target = null;
+    }
+    
 
     public void ChangeControlMode(ControlModeEnum controlMode)
     {

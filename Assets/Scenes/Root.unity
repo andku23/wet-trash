@@ -2787,7 +2787,7 @@ MonoBehaviour:
   inventory: 0
   scroll: 0
   debug: 0
-  useItem: 0
+  leftclick: 0
   analogMovement: 0
   cursorLocked: 0
   cursorInputForLook: 1

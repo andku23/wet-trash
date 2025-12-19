@@ -5,6 +5,7 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
 {
     [SerializeField] private WorldspaceInstruction worldspaceInstruction;
     [SerializeField] private float breathPerPump = 1;
+    [SerializeField] private Transform pumpPlayerAttachPoint;
     
     private ClientStateMachine _stateMachine;
     private NetworkVariable<int> _networkedState = new NetworkVariable<int>(0);
@@ -13,6 +14,8 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     private NetworkVariable<bool> isPlayerPumping = new NetworkVariable<bool>();
     private NetworkVariable<ulong> playerWearing = new NetworkVariable<ulong>();
     private NetworkVariable<ulong> playerPumping = new NetworkVariable<ulong>();
+
+    private bool _isPersistentInteractable;
 
     public bool IsPlayerWearing { get => isPlayerWearing.Value; private set => isPlayerWearing.Value = value; }
     public bool IsPlayerPumping { get => isPlayerPumping.Value; private set => isPlayerPumping.Value = value; }
@@ -60,10 +63,11 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     {
         get
         {
-            return State == (int) States.Wearing;
+            return _isPersistentInteractable;
         }
         set
         {
+            _isPersistentInteractable = value;
         }
     }
 
@@ -100,10 +104,7 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
         switch ((States)State)
         {
             case States.Pumping:
-                worldspaceInstruction.SetVisible(false);
-                return false;
-            case States.Wearing:
-                if (NetworkManager.LocalClientId != PlayerWearing)
+                if (NetworkManager.LocalClientId == PlayerPumping)
                 {
                     worldspaceInstruction.SetVisible(true);
                     return true;
@@ -112,6 +113,17 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
                 {
                     worldspaceInstruction.SetVisible(false);
                     return false;
+                }
+            case States.Wearing:
+                if (NetworkManager.LocalClientId == PlayerWearing)
+                {
+                    worldspaceInstruction.SetVisible(true);
+                    return true;
+                }
+                else
+                {
+                    worldspaceInstruction.SetVisible(true);
+                    return true;
                 }
             default:
                 worldspaceInstruction.SetVisible(true);
@@ -183,6 +195,15 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
         PlayerPumping = networkPlayerID;
         IsPlayerPumping = true;
         _networkedState.Value = (int)States.Pumping;
+        MountPump_ClientRpc(PlayerPumping);
+    }
+    
+    [ClientRpc]
+    public void MountPump_ClientRpc(ulong networkPlayerID)
+    {
+        NetworkClient requestedDrivePlayer = NetworkManager.Singleton.ConnectedClients[networkPlayerID];
+        requestedDrivePlayer.PlayerObject.GetComponent<PlayerController>().AttachCopyTransformToPoint(pumpPlayerAttachPoint.gameObject);
+        
     }
     
     [ServerRpc(RequireOwnership = false)]
@@ -199,6 +220,9 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     [ClientRpc(RequireOwnership = false)]
     public void UnmountPump_ClientRpc(ulong targetPlayerID)
     {
+        NetworkClient requestedDrivePlayer = NetworkManager.Singleton.ConnectedClients[targetPlayerID];
+        requestedDrivePlayer.PlayerObject.GetComponent<PlayerController>().UnattachCopyTransformToPoint();
+
         if(NetworkManager.LocalClientId != targetPlayerID) return;
         InteractionController.Instance.DisconnectFromPersistentInteractable();
     }
@@ -222,19 +246,23 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
 
     private void OnDefaultState_Enter()
     {
-        worldspaceInstruction.SetVisible(true);
+        //worldspaceInstruction.SetVisible(true);
         worldspaceInstruction.SetText("'E' to wear");
+        _isPersistentInteractable = false;
     }
     
     private void OnWearingState_Enter()
     {
         if (PlayerWearing == NetworkManager.LocalClientId)
         {
-            worldspaceInstruction.SetVisible(false);
+            _isPersistentInteractable = false;
+            worldspaceInstruction.SetText("'E' to unequip");
+            //worldspaceInstruction.SetVisible(true);
         }
         else
         {
-            worldspaceInstruction.SetVisible(true);
+            //worldspaceInstruction.SetVisible(true);
+            _isPersistentInteractable = true;
             worldspaceInstruction.SetText("'E' to start pumping");
         }
         
@@ -242,7 +270,14 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
     
     private void OnPumpingState_Enter()
     {
-        worldspaceInstruction.SetVisible(false);
+        if (PlayerPumping == NetworkManager.LocalClientId)
+        {
+            worldspaceInstruction.SetText("'E' to stop pumping");
+        }
+        else
+        {
+            worldspaceInstruction.SetVisible(false);
+        }
     }
     
     #endregion

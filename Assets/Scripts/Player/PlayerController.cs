@@ -112,6 +112,10 @@ public class PlayerController : NetworkBehaviour
 
     private bool _hasAnimator;
     public ICameraControl CameraControl {get{return _cameraControl;}}
+    public ControlModeData ControlModeData
+    {
+        get => _cameraControl.gameObject.GetComponent<ControlModeData>();
+    }
 
     private bool IsCurrentDeviceMouse
     {

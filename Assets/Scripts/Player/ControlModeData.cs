@@ -3,9 +3,11 @@ using UnityEngine.Serialization;
 
 public class ControlModeData : MonoBehaviour
 {
-    public GameObject centerHoldingPoint;
-    public GameObject rightHoldingPoint;
-    public GameObject leftHoldingPoint;
+    [SerializeField] private GameObject centerHoldingPoint;
+    [SerializeField] private GameObject rightHoldingPoint;
+    [SerializeField] private GameObject leftHoldingPoint;
+
+    [SerializeField] private GameObject airAttachmentPoint;
 
     public GameObject GetConnectionPoint(HoldableHandType holdableHandType)
     {
@@ -21,5 +23,10 @@ public class ControlModeData : MonoBehaviour
                 return centerHoldingPoint;
                 break;
         }
+    }
+    
+    public GameObject GetAirAttachPoint()
+    {
+        return airAttachmentPoint;
     }
 }

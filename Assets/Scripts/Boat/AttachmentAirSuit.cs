@@ -303,8 +303,9 @@ public class AttachmentAirSuit : NetworkBehaviour, IInteractable, IAttachment
         if (IsLineRendererActive)
         {
             NetworkObject no = NetworkManager.Singleton.ConnectedClients[PlayerWearing].PlayerObject;
+            PlayerController player = no.GetComponent<PlayerController>();
             lineRenderer.SetPosition(0, transform.position);
-            lineRenderer.SetPosition(1, no.transform.position);
+            lineRenderer.SetPosition(1, player.ControlModeData.GetAirAttachPoint().transform.position);
         }
     }
 }

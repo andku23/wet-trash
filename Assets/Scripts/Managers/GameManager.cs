@@ -18,6 +18,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private BoatManager _boatManager;
     
     [SerializeField] private TextMeshProUGUI _debugText;
+    public PlayerAudioSource AudioSource;
     
     private GameUI gameUI;
     public UnityEvent<int, int> TimeUpdatedEvent;
@@ -25,7 +26,7 @@ public class GameManager : NetworkBehaviour
     public UnityEvent<int> OnDayUpdatedEvent;
     public UnityEvent<float> OnBreathUpdated;
     public UnityEvent<int[]> OnQuotaUpdated;
-
+    
     public Action OnUIOpened;
     public Action OnUIClosed;
 

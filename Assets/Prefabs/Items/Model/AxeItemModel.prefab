@@ -116,6 +116,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponItemModel
   CraneAttachPoint: {fileID: 1827100686189157481}
   HoldAttachPoint: {fileID: 0}
+  MeshModel: {fileID: 8277990513333810336}
   interactionData:
     interactionType: 0
     damage: 4
@@ -355,6 +356,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 79efdc2f693e5b14abe584536fcd9bcc, type: 3}
+--- !u!1 &8277990513333810336 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3594008506088358315, guid: 79efdc2f693e5b14abe584536fcd9bcc,
+    type: 3}
+  m_PrefabInstance: {fileID: 4828192170071667979}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8766964966254243354 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4227660817863105297, guid: 79efdc2f693e5b14abe584536fcd9bcc,

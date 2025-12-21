@@ -294,6 +294,16 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 5186c9511524e324792d7180e80e1174, type: 2}
+    - target: {fileID: 6059249582257949076, guid: c4e634d38da91a94587a113bcec7442f,
+        type: 3}
+      propertyPath: MeshModel
+      value: 
+      objectReference: {fileID: 8720261547683904964}
+    - target: {fileID: 6059249582257949076, guid: c4e634d38da91a94587a113bcec7442f,
+        type: 3}
+      propertyPath: meshModel
+      value: 
+      objectReference: {fileID: 8720261547683904964}
     - target: {fileID: 6997646298010264933, guid: c4e634d38da91a94587a113bcec7442f,
         type: 3}
       propertyPath: m_Radius
@@ -317,7 +327,7 @@ PrefabInstance:
     - target: {fileID: 8553116992996838160, guid: c4e634d38da91a94587a113bcec7442f,
         type: 3}
       propertyPath: m_Name
-      value: LargeLoot Variant
+      value: ChestLootModel
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:

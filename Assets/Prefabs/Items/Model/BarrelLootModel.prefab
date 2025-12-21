@@ -204,3 +204,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LootItemModel
   CraneAttachPoint: {fileID: 7409320288813181816}
   HoldAttachPoint: {fileID: 7409320288813181816}
+  MeshModel: {fileID: 6123280855478472573}

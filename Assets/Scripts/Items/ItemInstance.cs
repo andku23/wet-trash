@@ -8,6 +8,7 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
     public HeldItemModel Model;
     
     [SerializeField] private HeldObjectType _heldObjectType;
+    [SerializeField] private GameObject _highlight;
     
     public HeldObjectType HeldObjectType { get => _heldObjectType; }
     public GameObject ConnectedParent { get; set; }
@@ -65,5 +66,13 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
     public void OnUnequip(InteractionController interactionController, PlayerStateData playerState)
     {
         Model.OnUnequip(interactionController, playerState);
+    }
+
+    public void SetHighlight(bool isHighlighted)
+    {
+        if(_highlight != null)
+            _highlight.SetActive(isHighlighted);
+        
+        Model.SetHighlight(isHighlighted);
     }
 }

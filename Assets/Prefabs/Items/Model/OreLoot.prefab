@@ -115,6 +115,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LootItemModel
   CraneAttachPoint: {fileID: 8064892671862001538}
   HoldAttachPoint: {fileID: 8064892671862001538}
+  MeshModel: {fileID: 3515632078270243858}
 --- !u!1001 &4326658993272985923
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -198,6 +199,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0b87278d1e948ea42bbe85b2efe80621, type: 3}
+--- !u!1 &3515632078270243858 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 0b87278d1e948ea42bbe85b2efe80621,
+    type: 3}
+  m_PrefabInstance: {fileID: 4326658993272985923}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4287945897304948392 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 0b87278d1e948ea42bbe85b2efe80621,

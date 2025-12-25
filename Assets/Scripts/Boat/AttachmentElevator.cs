@@ -101,7 +101,17 @@ public class AttachmentElevator : NetworkBehaviour, IInteractable, IAttachment
 
     #endregion
     
-    #region RPC
+    #region Server
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void PlaceLoot_ServerRpc(ulong networkPlayerID, int itemIndex)
+    {
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void PlaceLoot_ClientRpc(ulong networkPlayerID, int itemIndex)
+    {
+    }
     
     [ServerRpc(RequireOwnership = false)]
     public void ChangeState_ServerRpc(ulong networkPlayerID, States state)

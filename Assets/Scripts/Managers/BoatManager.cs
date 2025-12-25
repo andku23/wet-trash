@@ -21,6 +21,7 @@ public class BoatManager : NetworkBehaviour
         foreach (BoatAttachmentPoint attachmentPoint in boatPart.AttachmentPoints)
         {
             Boat.BoatAttachmentPoints.Add(attachmentPoint);
+            attachmentPoint.index.Value = Boat.BoatAttachmentPoints.Count - 1;
         }
     }
 
@@ -70,14 +71,16 @@ public class BoatManager : NetworkBehaviour
     
     public void PlaceAttachmentPoint(int shopItemIndex, BoatAttachmentPoint boatAttachmentPoint, float rotationPlaceOffset)
     {
-        int attachmentPointIndex = -1;
-        for (int i = 0; i < Boat.BoatAttachmentPoints.Count; i++)
-        {
-            if (boatAttachmentPoint == Boat.BoatAttachmentPoints[i])
-            {
-                attachmentPointIndex = i;
-            }
-        }
+        int attachmentPointIndex = boatAttachmentPoint.index.Value;
+        //for (int i = 0; i < Boat.BoatAttachmentPoints.Count; i++)
+        //{
+        //    if (boatAttachmentPoint == Boat.BoatAttachmentPoints[i])
+        //    {
+        //        attachmentPointIndex = Boat.BoatAttachmentPoints[i].index.Value;
+        //    }
+        //}
+        
+        Debug.Log(attachmentPointIndex);
 
         if (attachmentPointIndex >= 0)
         {

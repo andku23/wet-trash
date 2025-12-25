@@ -4,7 +4,10 @@ using UnityEngine;
 public class AttachmentElevator : NetworkBehaviour, IInteractable, IAttachment
 {
     [SerializeField] private WorldspaceInstruction worldspaceInstruction;
-    [SerializeField] private AttachmentElevator_Platform platform;
+    [SerializeField] private GameObject platformPrefab;
+    [SerializeField] private Transform platformParentPosition;
+    
+    private AttachmentElevator_Platform platform;
     
     [SerializeField] private float speed;
     
@@ -40,7 +43,19 @@ public class AttachmentElevator : NetworkBehaviour, IInteractable, IAttachment
         _stateMachine.ChangeState(_networkedState.Value);
         _networkedState.OnValueChanged += OnNetworkStateUpdated;
         
-        _upHeight = platform.transform.position.y;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+        {
+            GameObject platform = Instantiate(platformPrefab);
+            NetworkObject no = platform.GetComponent<NetworkObject>();
+            no.Spawn();
+            platform.transform.parent = transform;
+            platform.transform.position = platformParentPosition.position;
+            AssignPlatform_ServerRpc(no.NetworkObjectId);
+        }
     }
     
     public void OnNetworkStateUpdated(int prev, int next)
@@ -113,13 +128,17 @@ public class AttachmentElevator : NetworkBehaviour, IInteractable, IAttachment
     #region Server
     
     [ServerRpc(RequireOwnership = false)]
-    public void PlaceLoot_ServerRpc(ulong networkPlayerID, int itemIndex)
+    public void AssignPlatform_ServerRpc(ulong platformNetworkObjectId)
     {
+        AssignPlatform_ClientRpc(platformNetworkObjectId);
     }
     
     [ClientRpc(RequireOwnership = false)]
-    public void PlaceLoot_ClientRpc(ulong networkPlayerID, int itemIndex)
+    public void AssignPlatform_ClientRpc(ulong platformNetworkObjectId)
     {
+        platform = NetworkManager.Singleton.SpawnManager.SpawnedObjects[platformNetworkObjectId].GetComponent<AttachmentElevator_Platform>();
+        platform.AssignMain(this);
+        _upHeight = platform.transform.position.y;
     }
     
     [ServerRpc(RequireOwnership = false)]

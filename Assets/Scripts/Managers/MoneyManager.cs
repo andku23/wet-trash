@@ -48,14 +48,19 @@ public class MoneyManager : NetworkBehaviour
         
         //_cash.OnValueChanged += OnCashUpdated;
         _wallet.OnListChanged += OnWalletUpdated;
+        
+        int[] generatedWallet = VarietyUtilities.GetInitializedCurrencyArray();
+        
+        foreach (int i in generatedWallet)
+        {
+            CurrentDayCash_C.Add(0);
+        }
 
         if (IsServer)
         {
-            int[] generatedWallet = VarietyUtilities.GetInitializedCurrencyArray();
             foreach (int i in generatedWallet)
             {
                 _wallet.Add(0);
-                CurrentDayCash_C.Add(0);
             }
 
             foreach (var currencyValuePair in GameManager.Instance.gameData.INITIAL_CASH)

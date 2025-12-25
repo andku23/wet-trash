@@ -4,6 +4,11 @@ public class AttachmentElevator_Platform : MonoBehaviour, IInteractable
 {
     [SerializeField] private AttachmentElevator main;
     [SerializeField] private WorldspaceInstruction worldspaceInstruction;
+
+    public void AssignMain(AttachmentElevator elevator)
+    {
+        main = elevator;
+    }
     
     public void Interact(ulong networkPlayerID, InteractionButtonType buttonType)
     {
@@ -24,6 +29,7 @@ public class AttachmentElevator_Platform : MonoBehaviour, IInteractable
 
     public bool EnableInteractable(IHoldable heldObject)
     {
+        if (heldObject == null) return false;
         worldspaceInstruction.SetText("'E' to place");
         worldspaceInstruction.SetVisible(true);
         return true;

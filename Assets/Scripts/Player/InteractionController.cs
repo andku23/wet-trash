@@ -1,4 +1,5 @@
 using System;
+using System.Net.Mail;
 using StarterAssets;
 using TMPro;
 using Unity.Netcode;
@@ -54,7 +55,7 @@ public class InteractionController : NetworkBehaviour
     private TagHandle _buildingTag;
     private TagHandle _attachmentTag;
     private ClientStateMachine _stateMachine;
-    private InteractableTypes _currentInteractableTypes;
+    private InteractableSpecialTypes _currentInteractableTypes;
     private bool _hotbarScrollLocked = false;
 
     public override void OnNetworkSpawn()
@@ -479,11 +480,13 @@ public class InteractionController : NetworkBehaviour
         {
             _currentInteractableTypes.loot = interactable.gameObject.GetComponent<NetworkLoot>();
             _currentInteractableTypes.deposit = interactable.gameObject.GetComponent<LootDeposit>();
+            _currentInteractableTypes.attachment = interactable.gameObject.GetComponent<AttachmentElevator_Platform>();
         }
         else
         {
             _currentInteractableTypes.loot = null;
             _currentInteractableTypes.deposit = null;
+            _currentInteractableTypes.attachment = null;
         }
     }
     
@@ -665,13 +668,18 @@ public class InteractionController : NetworkBehaviour
                 {
                     LootManager.Instance.RequestDeposit(_currentInteractableTypes.deposit, heldObject.gameObject);
                     _currentInteractableTypes.deposit.DisableInteractable();
+                } 
+                else if (_currentInteractableTypes.attachment != null)
+                {
+                    _currentInteractableTypes.attachment.InteractHeld(NetworkManager.LocalClientId, 
+                        InteractionButtonType.Interact, heldObject);
                 }
                 else
                 {
                     Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
                     LootManager.Instance.RequestDrop(
                         heldObject.gameObject.transform.position + transform.forward * 1.3f, 
-                        heldObject.gameObject);
+                        heldObject.gameObject, false, 0);
                 }
             }
         }
@@ -741,8 +749,9 @@ public class InteractionController : NetworkBehaviour
     }
 }
 
-public struct InteractableTypes
+public struct InteractableSpecialTypes
 {
     public NetworkLoot loot;
     public LootDeposit deposit;
+    public AttachmentElevator_Platform attachment;
 }

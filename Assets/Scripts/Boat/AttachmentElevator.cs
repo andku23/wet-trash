@@ -4,7 +4,7 @@ using UnityEngine;
 public class AttachmentElevator : NetworkBehaviour, IInteractable, IAttachment
 {
     [SerializeField] private WorldspaceInstruction worldspaceInstruction;
-    [SerializeField] private GameObject platform;
+    [SerializeField] private AttachmentElevator_Platform platform;
     
     [SerializeField] private float speed;
     
@@ -50,6 +50,15 @@ public class AttachmentElevator : NetworkBehaviour, IInteractable, IAttachment
             _stateMachine.ChangeState(next);
         }
     }
+    
+    #region External Calls
+
+    public void ParentToPlatform_S(NetworkObject no)
+    {
+        no.transform.parent = platform.transform;
+    }
+    
+    #endregion
     
     #region Interactable
     

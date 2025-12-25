@@ -14,6 +14,14 @@ public class AttachmentElevator_Platform : MonoBehaviour, IInteractable
         }
     }
 
+    public void InteractHeld(ulong networkPlayerID, InteractionButtonType buttonType, IHoldable heldObject)
+    {
+        if (buttonType == InteractionButtonType.Interact)
+        {
+            LootManager.Instance.RequestDrop(transform.position, heldObject.gameObject, true, main.NetworkObjectId);
+        }
+    }
+
     public bool EnableInteractable(IHoldable heldObject)
     {
         worldspaceInstruction.SetText("'E' to place");

@@ -171,7 +171,7 @@ public class LootManager : NetworkBehaviour
         pickupPlayerCollector.DropItemNetwork(targetPlayerNetworkObjectId);
     }
 
-    private NetworkObject SpawnItem_S(Vector3 position, int itemIndex)
+    private NetworkObject SpawnItem_S(Vector3 position, int itemIndex, bool fall = true)
     {
         GameObject go = Instantiate(itemList.networkLootPrefab, position, Quaternion.identity);
         NetworkObject networkObject = go.GetComponent<NetworkObject>();
@@ -181,7 +181,7 @@ public class LootManager : NetworkBehaviour
         networkObject.Spawn();
         
         NetworkFall networkFall = networkObject.GetComponent<NetworkFall>();
-        if (networkFall != null) networkFall.enabled = true;
+        if (networkFall != null) networkFall.enabled = fall;
         
         //_loots.Add(networkObject);
         return networkObject;
@@ -263,9 +263,16 @@ public class LootManager : NetworkBehaviour
         pickupPlayerCollector.PickupItemNetwork(lootIndex, targetPlayerNetworkObjectId);
     }
 
-    public void RequestDrop(Vector3 position, GameObject loot)
+    public void RequestDrop(Vector3 position, GameObject loot, bool hasParent, ulong dropParentID)
     {
-        Drop_ServerRpc(NetworkManager.Singleton.LocalClientId, position, LootPrefabtoIndex(loot));
+        if (hasParent)
+        {
+            DropAndParent_ServerRpc(NetworkManager.Singleton.LocalClientId, position, LootPrefabtoIndex(loot), dropParentID);
+        }
+        else
+        {
+            Drop_ServerRpc(NetworkManager.Singleton.LocalClientId, position, LootPrefabtoIndex(loot));
+        }
     }
     
     [ServerRpc(RequireOwnership = false)]
@@ -274,6 +281,24 @@ public class LootManager : NetworkBehaviour
         NetworkObject networkObject = SpawnItem_S(position, lootIndex);
         _loots_S.Add(networkObject);
         Drop_ClientRpc(targetPlayerNetworkObjectId);
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void DropAndParent_ServerRpc(ulong targetPlayerNetworkObjectId, Vector3 position, int lootIndex, ulong dropParentID)
+    {
+        NetworkObject networkObject = SpawnItem_S(position, lootIndex, false);
+        NetworkObject parentObject = NetworkManager.Singleton.SpawnManager.SpawnedObjects[dropParentID];
+        AttachmentElevator attachmentElevator = parentObject.GetComponent<AttachmentElevator>();
+
+        if (attachmentElevator != null)
+        {
+            Debug.Log(parentObject);
+            _loots_S.Add(networkObject);
+            attachmentElevator.ParentToPlatform_S(networkObject);
+            Drop_ClientRpc(targetPlayerNetworkObjectId);
+        }
+            
+        
     }
     
     [ClientRpc(RequireOwnership = false)]

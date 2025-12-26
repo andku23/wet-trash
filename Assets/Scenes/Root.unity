@@ -3099,8 +3099,7 @@ MonoBehaviour:
   - {fileID: 3050108428026251150, guid: c59acad9939c2734e9cec17f9d4a01aa, type: 3}
   harvestablePrefabs:
   - {fileID: 3289730492793508007, guid: fea7195e8aa673b41a1b897e954c5f62, type: 3}
-  NUM_OF_HOLES: 4
-  NUM_OF_LOOT_GROUPS: 10
+  NUM_OF_HOLES: 5
   NUM_BIOMES: 4
   SpawnedHoles: []
   SpawnedLootGroups: []

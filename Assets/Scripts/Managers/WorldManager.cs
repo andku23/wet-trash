@@ -15,7 +15,6 @@ public class WorldManager : NetworkBehaviour
     [SerializeField] private GameObject[] lootGroupPrefabs;
     [SerializeField] private GameObject[] harvestablePrefabs;
     public int NUM_OF_HOLES;
-    public int NUM_OF_LOOT_GROUPS;
     public int NUM_BIOMES = 4;
 
     public List<GameObject> SpawnedHoles;
@@ -25,8 +24,9 @@ public class WorldManager : NetworkBehaviour
     public List<NetworkObject> SpawnedEnemies; // Enemis that spawn as the day goes on
     public List<NetworkObject> SpawnedHarvestables; 
 
-    private Vector2[] currentHolePositions;
-    private Vector2[] currentLootGroupPositions;
+    private Vector2[] currentHolePositions_c;
+    private Vector2[] currentLootGroupPositions_c;
+    private float[] currentLootGroupRotations_c;
 
     private ClientTerrainGenerationData terrainGenerationData;
     private ClientStructureGenerationData structureGenerationData;
@@ -84,29 +84,54 @@ public class WorldManager : NetworkBehaviour
 
         return data;
     }
+    
+    public ClientTerrainGenerationData GenerateLootHotspotPositions_S()
+    {
+        int seed = Random.Range(0, 999999);
+        
+        
+        ClientTerrainGenerationData data = new ClientTerrainGenerationData();
+        data.seed = seed;
+        //data.holePositions = holePosition;
+        //data.lootGroupPositions = lootGroupPosition;
+
+        return data;
+    }
 
     public ClientStructureGenerationData GenerateClientStructureData_S()
     {   
-        Vector2[] holePosition = new Vector2[NUM_OF_HOLES];
-        Vector2[] lootGroupPosition = new Vector2[NUM_OF_LOOT_GROUPS];
+        Vector2[] holePositions = new Vector2[NUM_OF_HOLES];
+        Vector2[] lootGroupPositions = new Vector2[GameManager.Instance.gameData.NUM_OF_LOOT_GROUPS_PER_HOTSPOT * NUM_OF_HOLES];
+        float[] lootGroupRotations = new float[GameManager.Instance.gameData.NUM_OF_LOOT_GROUPS_PER_HOTSPOT * NUM_OF_HOLES];
+        float lootGroupDistributionRange = 32f;
+        
+        
+        //Holes and hotspots are the same currently
+        // it will just spawn them all around
+        
 
         for (int i = 0; i < NUM_OF_HOLES; i++)
         {
-            holePosition[i] = new Vector2(
+            holePositions[i] = new Vector2(
                 Random.Range(32, _terrain.terrainData.heightmapResolution - 32),
                 Random.Range(32, _terrain.terrainData.heightmapResolution - 32));
+            
+            for (int j = 0; j < GameManager.Instance.gameData.NUM_OF_LOOT_GROUPS_PER_HOTSPOT; j++)
+            {
+                
+                lootGroupPositions[(i*NUM_OF_HOLES)+j] = new Vector2(
+                    Math.Clamp(holePositions[i].x + Random.Range(-lootGroupDistributionRange, lootGroupDistributionRange), 0, _terrain.terrainData.heightmapResolution),
+                    Math.Clamp(holePositions[i].y + Random.Range(-lootGroupDistributionRange, lootGroupDistributionRange), 0, _terrain.terrainData.heightmapResolution));
+
+                lootGroupRotations[(i * NUM_OF_HOLES) + j] = Random.Range(0, 360);
+            }
         }
         
-        for (int i = 0; i < NUM_OF_LOOT_GROUPS; i++)
-        {
-            lootGroupPosition[i] = new Vector2(
-                Random.Range(32, _terrain.terrainData.heightmapResolution - 32),
-                Random.Range(32, _terrain.terrainData.heightmapResolution - 32));
-        }
         
         ClientStructureGenerationData data = new ClientStructureGenerationData();
-        data.holePositions = holePosition;
-        data.lootGroupPositions = lootGroupPosition;
+        data.holePositions = holePositions;
+        data.lootGroupPositions = lootGroupPositions;
+        data.lootGroupRotations = lootGroupRotations;
         return data;
     }
 
@@ -133,6 +158,17 @@ public class WorldManager : NetworkBehaviour
 
         return GetPointOnTerrain(randomX, randomZ);
     }
+    
+    public Vector3 GetRandomPointOnTerrainNearHotspot()
+    {
+        Vector3 terrainPosition = _terrain.transform.position;
+        int hotspotIndex = Mathf.FloorToInt(Random.Range(0f,currentHolePositions_c.Length));
+        Vector3 randomPointOnTerrain = GetPointOnTerrain(
+            terrainPosition.x + currentHolePositions_c[hotspotIndex].x + Random.Range(0f,20), 
+            terrainPosition.z + currentHolePositions_c[hotspotIndex].y+ Random.Range(0f,20));
+
+        return randomPointOnTerrain;
+    }
 
     // Uses terrain resolution as input
     public Vector3 GetPointOnTerrainFromResolution(int x, int z)
@@ -148,6 +184,13 @@ public class WorldManager : NetworkBehaviour
         Vector3 randomPointOnTerrain = GetRandomPointOnTerrain();
         randomPointOnTerrain.y = Random.Range(0, randomPointOnTerrain.y);
 
+        return randomPointOnTerrain;
+    }
+    
+    public Vector3 GetRandomPointNearHotspot()
+    {
+        Vector3 randomPointOnTerrain = GetRandomPointOnTerrainNearHotspot();
+        randomPointOnTerrain.y = Random.Range(0, randomPointOnTerrain.y);
         return randomPointOnTerrain;
     }
     
@@ -190,7 +233,7 @@ public class WorldManager : NetworkBehaviour
     #endregion
 
     #region Create Terrain Entities
-    private LootGroup CreateLootGroup(int xPos, int zPos)
+    private LootGroup CreateLootGroup(int xPos, int zPos, float yRot)
     {
         float[,] heights = _terrain.terrainData.GetHeights(xPos, zPos,  1, 1);
         Vector3 lowestHolePosition = new Vector3(xPos, 0, zPos);
@@ -204,6 +247,7 @@ public class WorldManager : NetworkBehaviour
         lowestHolePosition.z *=  _terrain.terrainData.size.z;
         //lowestHolePosition = Vector3.Scale(lowestHolePosition, _terrain.terrainData.size);
         lootGroup.transform.position = lowestHolePosition + _terrain.transform.position;
+        lootGroup.transform.Rotate(Vector3.up, yRot);
         
         return lootGroup.GetComponent<LootGroup>();
     }
@@ -311,7 +355,7 @@ public class WorldManager : NetworkBehaviour
 
     public void SpawnRandomEnemy_S()
     {
-        Vector3 randomPointInOcean = GetRandomPointInOcean();
+        Vector3 randomPointInOcean = GetRandomPointNearHotspot();
         var randomEnemy = enemyPrefabs[Random.Range(1, enemyPrefabs.Length)];
         NetworkObject no = Instantiate(randomEnemy,
             randomPointInOcean,
@@ -323,7 +367,7 @@ public class WorldManager : NetworkBehaviour
 
     public void SpawnRandomHarvestable_S()
     {
-        Vector3 spawnLocation = GetRandomPointOnTerrain();
+        Vector3 spawnLocation = GetRandomPointOnTerrainNearHotspot();
         var randomHarvestable = harvestablePrefabs[Random.Range(0, harvestablePrefabs.Length)];
         NetworkObject no = Instantiate(randomHarvestable,
             spawnLocation,
@@ -453,8 +497,9 @@ public class WorldManager : NetworkBehaviour
     public async Awaitable BeginStructureGeneration_C()
     {
         if (structureGenerationData == null) return;
-        currentHolePositions = structureGenerationData.holePositions; 
-        currentLootGroupPositions = structureGenerationData.lootGroupPositions;
+        currentHolePositions_c = structureGenerationData.holePositions; 
+        currentLootGroupPositions_c = structureGenerationData.lootGroupPositions;
+        currentLootGroupRotations_c = structureGenerationData.lootGroupRotations;
         CreateStructures_C();
         await Awaitable.NextFrameAsync(); //Just stops any race conditions
     }
@@ -680,10 +725,10 @@ public class WorldManager : NetworkBehaviour
         InitialEnemies = new List<NetworkObject>();
         SpawnedLootGroups = new List<GameObject>();
         
-        for (int i = 0; i < currentHolePositions.Length; i++)
+        for (int i = 0; i < currentHolePositions_c.Length; i++)
         {
-            LootGroup hole = CreateHole((int)currentHolePositions[i].x,
-                (int)currentHolePositions[i].y,
+            LootGroup hole = CreateHole((int)currentHolePositions_c[i].x,
+                (int)currentHolePositions_c[i].y,
                 32, 32);
 
             SpawnedHoles.Add(hole.gameObject);
@@ -700,11 +745,12 @@ public class WorldManager : NetworkBehaviour
             }
         }
 
-        for (int i = 0; i < currentLootGroupPositions.Length; i++)
+        for (int i = 0; i < currentLootGroupPositions_c.Length; i++)
         {
             LootGroup lootGroup = CreateLootGroup(
-                (int)currentLootGroupPositions[i].x,
-                (int)currentLootGroupPositions[i].y);
+                (int)currentLootGroupPositions_c[i].x,
+                (int)currentLootGroupPositions_c[i].y,
+                currentLootGroupRotations_c[i]);
 
             SpawnedLootGroups.Add(lootGroup.gameObject);
 
@@ -732,12 +778,14 @@ public class ClientStructureGenerationData: INetworkSerializable
 {
     public Vector2[] holePositions;
     public Vector2[] lootGroupPositions;
+    public float[] lootGroupRotations;
     
     // INetworkSerializable
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref holePositions);
         serializer.SerializeValue(ref lootGroupPositions);
+        serializer.SerializeValue(ref lootGroupRotations);
     }
 }
 

@@ -387,6 +387,14 @@ public class GameManager : NetworkBehaviour
     {
         StopCountdown();
         OnDayUpdatedEvent.Invoke(_day);
+        // Spawn Initial Monsters
+        if (IsServer)
+        {
+            for (int i = 0; i < GameManager.Instance.gameData.MONSTER_SPAWN_INITIAL; i++)
+            {
+                WorldManager.Instance.SpawnRandomEnemy_S();
+            }
+        }
         _co_TimerCountdown = StartCoroutine(Co_DayTimer());
     }
     

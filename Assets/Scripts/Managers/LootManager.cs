@@ -84,7 +84,7 @@ public class LootManager : NetworkBehaviour
         }
         
         // Spawn loot based on created loot tables
-        Vector3 spawnPosition = Vector3.zero;
+        /*Vector3 spawnPosition = Vector3.zero;
         List<Vector2> lootTerrainPosition = WorldManager.Instance.GetLootSpawnPositions();
         foreach (var terrainPosition in lootTerrainPosition)
         {
@@ -111,7 +111,7 @@ public class LootManager : NetworkBehaviour
             {
                 totalCosts[valueType.CurrencyType] += valueType.MaxValue;
             }
-        }
+        }*/
         
         //One on the surface just to debug
         var testItemData = SpawnLootFromTable(new Vector3(0,0,0), spawnProbabilityCommon);
@@ -120,9 +120,7 @@ public class LootManager : NetworkBehaviour
             totalCosts[valueType.CurrencyType] += valueType.MaxValue;
         }
 
-        int NUM_HARVESTABLES = 20;
-
-        for (int i = 0; i < NUM_HARVESTABLES; i++)
+        for (int i = 0; i < GameManager.Instance.gameData.NUM_HARVESTABLES; i++)
         {
             WorldManager.Instance.SpawnRandomHarvestable_S();
         }

@@ -3935,10 +3935,10 @@ MonoBehaviour:
   SprintSwimSpeed_UpgradeIncrement: 0.5
   JumpHeight: 1.2
   WaterSurfaceJumpHeight: 8
-  BreathFullAmount: 25
+  BreathFullAmount: 45
   BreathFullAmount_UpgradeIncrement: 5
   BreathDepleteRate: 1
-  BreathReplenishRate: 3
+  BreathReplenishRate: 5
   MAX_HEALTH: 10
   MAX_INTERACTION_DISTANCE: 5
   MAX_ATTACK_DISTANCE: 2

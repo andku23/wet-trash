@@ -12,10 +12,12 @@ public class GameData : ScriptableObject
     public CurrencyValuePair[] INITIAL_CASH;
     public float WEIGHT_MULTIPLIER = 1;
     public int NUM_ROGUE_CARDS = 2;
-    public int MAX_MONSTERS_PER_DAY = 30;
+    public int MAX_MONSTERS_PER_DAY = 40;
     public int MONSTER_SPAWN_PER_HOUR = 4;
+    public int MONSTER_SPAWN_INITIAL = 10;
     public int LOOT_PROBABILITY_DIVISOR = 400;
-    
-    
+    public int NUM_HARVESTABLES = 20;
+    public int NUM_OF_LOOT_GROUPS_PER_HOTSPOT = 10;
+
 }
 

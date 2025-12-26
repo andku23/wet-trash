@@ -115,7 +115,7 @@ public class ChargingEnemy : BaseEnemy
         else if (Vector3.Distance(gameObject.transform.position, nextPosition) <= 0.1f)
         {
             lastPosition = nextPosition;
-            nextPosition = WorldManager.Instance.GetRandomPointInOcean();
+            nextPosition = WorldManager.Instance.GetRandomPointNearHotspot();
             startTime = Time.time;
             idleDistance = Vector3.Distance(lastPosition, nextPosition);
         }

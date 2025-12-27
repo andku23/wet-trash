@@ -3721,7 +3721,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3994523073
+  GlobalObjectIdHash: 94792807
   InScenePlacedSourceGlobalObjectIdHash: 3994523073
   DeferredDespawnTick: 0
   Ownership: 1
@@ -3784,6 +3784,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   playerState: {fileID: 7303158058568402417}
+  playerStateController: {fileID: 9122417569400039749}
   Gravity: -15
   JumpTimeout: 0.3
   FallTimeout: 0.15
@@ -3935,7 +3936,7 @@ MonoBehaviour:
   SprintSwimSpeed_UpgradeIncrement: 0.5
   JumpHeight: 1.2
   WaterSurfaceJumpHeight: 8
-  BreathFullAmount: 45
+  BreathFullAmount: 3
   BreathFullAmount_UpgradeIncrement: 5
   BreathDepleteRate: 1
   BreathReplenishRate: 5
@@ -3966,6 +3967,12 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   playerState: {fileID: 7303158058568402417}
   Animator: {fileID: 3938184501639273155}
+  OnDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  OnRevive:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &-216991404366805312
 MonoBehaviour:
   m_ObjectHideFlags: 0

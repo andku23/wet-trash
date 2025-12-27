@@ -96,7 +96,38 @@ public class InteractionController : NetworkBehaviour
         {
             _inventory[i] = -1;
         }
+        
+        playerController.playerStateController.OnDeath.AddListener(OnDeath);
     }
+    
+    #region Event Listeners
+
+    private void OnDeath()
+    {
+        Debug.Log("OnDeath");
+        if (!IsOwner) return;
+        if (_inventory[_currentInventoryIndex] != -1)
+        {
+            RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, -1);
+        }
+        
+        for (int i = 0; i < _inventory.Length; i++)
+        {
+            if (_inventory[i] != -1)
+            {
+                LootManager.Instance.RequestDrop(
+                    transform.position + Vector3.forward, 
+                    _inventory[i], false, 0, true);
+                GameUI.Instance.RemoveHotbarItem(i);
+                _inventory[i] = -1;
+                
+            }
+        }
+        
+        
+    }
+    
+    #endregion
 
     // functions that are called from other players or the server
     // or sometimes just other functions
@@ -679,7 +710,8 @@ public class InteractionController : NetworkBehaviour
                     Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
                     LootManager.Instance.RequestDrop(
                         heldObject.gameObject.transform.position + transform.forward * 1.3f, 
-                        heldObject.gameObject, false, 0);
+                        LootManager.Instance.LootPrefabtoIndex(heldObject.gameObject), 
+                        false, 0);
                 }
             }
         }

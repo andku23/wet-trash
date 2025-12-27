@@ -12,6 +12,9 @@ public class PlayerStateController : NetworkBehaviour
     
     private float _breath;
     private StarterAssetsInputs _input;
+
+    public UnityEvent OnDeath;
+    public UnityEvent OnRevive;
     
     public override void OnNetworkSpawn()
     {
@@ -78,6 +81,7 @@ public class PlayerStateController : NetworkBehaviour
         Animator.SetBool(_animIDIsDead, true);
         playerState.IsDead = true;
         GameUI.Instance.ShowDeadPanel(true);
+        OnDeath?.Invoke();
     }
 
     public void ChangeBreathByAmount(float amount)
@@ -93,5 +97,6 @@ public class PlayerStateController : NetworkBehaviour
         Animator.SetBool(_animIDIsDead, false);
         playerState.IsDead = false;
         GameUI.Instance.CloseAllPanels(false);
+        OnRevive?.Invoke();
     }
 }

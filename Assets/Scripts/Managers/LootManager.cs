@@ -261,20 +261,20 @@ public class LootManager : NetworkBehaviour
         pickupPlayerCollector.PickupItemNetwork(lootIndex, targetPlayerNetworkObjectId);
     }
 
-    public void RequestDrop(Vector3 position, GameObject loot, bool hasParent, ulong dropParentID)
+    public void RequestDrop(Vector3 position, int lootIndex, bool hasParent, ulong dropParentID, bool fall = true)
     {
         if (hasParent)
         {
-            DropAndParent_ServerRpc(NetworkManager.Singleton.LocalClientId, position, LootPrefabtoIndex(loot), dropParentID);
+            DropAndParent_ServerRpc(NetworkManager.Singleton.LocalClientId, position, lootIndex, dropParentID);
         }
         else
         {
-            Drop_ServerRpc(NetworkManager.Singleton.LocalClientId, position, LootPrefabtoIndex(loot));
+            Drop_ServerRpc(NetworkManager.Singleton.LocalClientId, position, lootIndex, fall);
         }
     }
     
     [ServerRpc(RequireOwnership = false)]
-    public void Drop_ServerRpc(ulong targetPlayerNetworkObjectId, Vector3 position, int lootIndex)
+    public void Drop_ServerRpc(ulong targetPlayerNetworkObjectId, Vector3 position, int lootIndex, bool fall)
     {
         NetworkObject networkObject = SpawnItem_S(position, lootIndex);
         _loots_S.Add(networkObject);

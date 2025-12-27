@@ -16,7 +16,7 @@ using UnityEngine.InputSystem;
 public class PlayerController : NetworkBehaviour
 {
     public PlayerStateData playerState;
-    
+    public PlayerStateController playerStateController;
 
     [Tooltip("The character uses its own gravity value. The engine default is -9.81f")]
     public float Gravity = -15.0f;

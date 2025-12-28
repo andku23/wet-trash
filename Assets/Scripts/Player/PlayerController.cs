@@ -141,6 +141,9 @@ public class PlayerController : NetworkBehaviour
             ChangeControlMode(ControlModeEnum.ThirdPerson);
         }
         
+        playerStateController.OnDeath.AddListener(OnDeath);
+        playerStateController.OnRevive.AddListener(OnRevive);
+        
         // Disable whichever version isnt being used
         if (IsOwner)
         {
@@ -151,9 +154,6 @@ public class PlayerController : NetworkBehaviour
 #endif
             GameManager.Instance.OnUIOpened += LockCamera;
             GameManager.Instance.OnUIClosed += UnlockCamera;
-            
-            playerStateController.OnDeath.AddListener(OnDeath);
-            playerStateController.OnRevive.AddListener(OnRevive);
         }
     }
 

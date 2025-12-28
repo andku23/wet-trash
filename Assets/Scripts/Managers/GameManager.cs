@@ -150,6 +150,19 @@ public class GameManager : NetworkBehaviour
     }
     
     [ServerRpc(RequireOwnership = false)]
+    public void ChangePlayerPosition_ServerRpc(ulong targetPlayerNetworkObjectId, Vector3 position)
+    {
+        ChangePlayerPosition_ClientRpc(targetPlayerNetworkObjectId, position);
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void ChangePlayerPosition_ClientRpc(ulong targetPlayerNetworkObjectId, Vector3 position)
+    {
+        if (NetworkManager.LocalClientId != targetPlayerNetworkObjectId) return;
+        NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId].PlayerObject.transform.position = position;
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
     public void ChangeHealth_ServerRpc(ulong targetPlayerNetworkObjectId, float newHealth)
     {
         NetworkClient pickupPlayerClient = NetworkManager.Singleton.ConnectedClients[targetPlayerNetworkObjectId];

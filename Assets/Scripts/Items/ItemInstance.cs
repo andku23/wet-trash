@@ -26,9 +26,9 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
     
     public ulong HeldPlayerID { get; set; }
     
-    public void LoadLocal(ItemData itemData, int lootIndex)
+    public void LoadLocal(ItemData itemData, int itemIndex)
     {
-        ItemInstanceData.ItemIndex = lootIndex;
+        ItemInstanceData.ItemIndex = itemIndex;
         GameObject model = Instantiate(itemData.model, transform);
         model.GetComponent<ColliderReference>().enabled = false;
         model.GetComponent<Collider>().enabled = false;

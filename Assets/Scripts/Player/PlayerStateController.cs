@@ -25,8 +25,9 @@ public class PlayerStateController : NetworkBehaviour
         if (IsOwner)
         {
             _breath = playerState.BreathFullAmount;
-            playerState.Health.OnValueChanged += OnHealthChanged;
         }
+        
+            playerState.Health.OnValueChanged += OnHealthChanged;
     }
 
     private void OnHealthChanged(float prev, float next)
@@ -79,12 +80,12 @@ public class PlayerStateController : NetworkBehaviour
     // Client Rpc Callback
     public void KillPlayerLocal()
     {
-        Animator.SetBool(_animIDIsDead, true);
-        playerState.IsDead = true;
-        GameUI.Instance.ShowDeadPanel(true);
         OnDeath?.Invoke();
         if (IsOwner)
         {
+            Animator.SetBool(_animIDIsDead, true);
+            playerState.IsDead = true;
+            GameUI.Instance.ShowDeadPanel(true);
             LootManager.Instance.RequestSpawnItem(transform.position, LootManager.Instance.LootDataToItemInstanceData(deadPlayerItem));
         }
     }
@@ -97,11 +98,13 @@ public class PlayerStateController : NetworkBehaviour
     // Client Rpc Callback
     public void RevivePlayerLocal()
     {
-        _breath = playerState.BreathFullAmount;
-        //playerState.Health.Value = playerState.MAX_HEALTH;
-        Animator.SetBool(_animIDIsDead, false);
-        playerState.IsDead = false;
-        GameUI.Instance.CloseAllPanels(false);
         OnRevive?.Invoke();
+        if (IsOwner)
+        {
+            _breath = playerState.BreathFullAmount;
+            Animator.SetBool(_animIDIsDead, false);
+            playerState.IsDead = false;
+            GameUI.Instance.CloseAllPanels(false);
+        }
     }
 }

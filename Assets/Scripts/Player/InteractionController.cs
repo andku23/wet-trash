@@ -511,12 +511,14 @@ public class InteractionController : NetworkBehaviour
             _currentInteractableTypes.loot = interactable.gameObject.GetComponent<NetworkLoot>();
             _currentInteractableTypes.deposit = interactable.gameObject.GetComponent<LootDeposit>();
             _currentInteractableTypes.attachment = interactable.gameObject.GetComponent<AttachmentElevator_Platform>();
+            _currentInteractableTypes.playerReviver = interactable.gameObject.GetComponent<AttachmentPlayerReviver>();
         }
         else
         {
             _currentInteractableTypes.loot = null;
             _currentInteractableTypes.deposit = null;
             _currentInteractableTypes.attachment = null;
+            _currentInteractableTypes.playerReviver = null;
         }
     }
     
@@ -682,6 +684,11 @@ public class InteractionController : NetworkBehaviour
         Collider closestCollider = GetClosestCollider(interactableLayerMask, _interactableTag, out Vector3 hitPosition);
         UpdateCurrentInteractable(closestCollider);
         CheckItemScroll();
+        
+        if (_inventory[_currentInventoryIndex].ItemIndex != -1)
+        {
+            Debug.Log(_inventory[_currentInventoryIndex].SpawnedPlayerID);
+        }
 
         if (_input.interact)
         {
@@ -703,6 +710,14 @@ public class InteractionController : NetworkBehaviour
                 {
                     _currentInteractableTypes.attachment.InteractHeld(NetworkManager.LocalClientId, 
                         InteractionButtonType.Interact, heldObject);
+                }
+                else if (_currentInteractableTypes.playerReviver != null)
+                {
+                    GameManager.Instance.ChangeHealth(_inventory[_currentInventoryIndex].SpawnedPlayerID, 10);
+                    GameManager.Instance.ChangePlayerPosition_ServerRpc(
+                        _inventory[_currentInventoryIndex].SpawnedPlayerID, 
+                        _currentInteractableTypes.playerReviver.transform.position + Vector3.up);
+                    LootManager.Instance.DestroyInHand_ServerRpc(NetworkManager.LocalClientId);
                 }
                 else
                 {
@@ -785,4 +800,5 @@ public struct InteractableSpecialTypes
     public NetworkLoot loot;
     public LootDeposit deposit;
     public AttachmentElevator_Platform attachment;
+    public AttachmentPlayerReviver playerReviver;
 }

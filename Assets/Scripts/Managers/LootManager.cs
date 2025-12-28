@@ -225,6 +225,7 @@ public class LootManager : NetworkBehaviour
     {
         ItemInstanceData itemInstanceData = new ItemInstanceData();
         itemInstanceData.ItemIndex = -1;
+        itemInstanceData.SpawnedPlayerID = NetworkManager.LocalClientId;
         for (int i = 0; i < itemList.itemDatas.Length; i++)
         {
             if (itemList.itemDatas[i] == itemData)
@@ -263,7 +264,6 @@ public class LootManager : NetworkBehaviour
         
         if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject networkLootObject))
         {
-            ulong originalSpawnedPlayerID = 0;
             DespawnLoot_S(networkLootObject);
             Pickup_ClientRpc(targetPlayerNetworkObjectId, itemInstanceData);
         }
@@ -295,6 +295,12 @@ public class LootManager : NetworkBehaviour
         {
             Drop_ServerRpc(NetworkManager.Singleton.LocalClientId, position, itemInstanceData, fall);
         }
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    public void DestroyInHand_ServerRpc(ulong targetPlayerNetworkObjectId)
+    {
+        Drop_ClientRpc(targetPlayerNetworkObjectId);
     }
     
     [ServerRpc(RequireOwnership = false)]

@@ -73,7 +73,9 @@ public class ShopManager : NetworkBehaviour
         Vector3 spawnPosition = playerObject.transform.position;
         spawnPosition += new Vector3(playerObject.transform.forward.x, 0, playerObject.transform.forward.z).normalized;
         spawnPosition.y += 1.5f;
-        LootManager.Instance.RequestSpawnItem(spawnPosition, shopItem.itemListIndex);
+        ItemInstanceData tempInstanceData = new ItemInstanceData();
+        tempInstanceData.ItemIndex = shopItem.itemListIndex;
+        LootManager.Instance.RequestSpawnItem(spawnPosition, tempInstanceData);
     }
 
     private void ApplyPlayerPowerUp(ShopItem shopItem)

@@ -8,6 +8,7 @@ public class PlayerStateController : NetworkBehaviour
 {
     private int _animIDIsDead;
     [SerializeField] private PlayerStateData playerState;
+    [SerializeField] private ItemData deadPlayerItem;
     public Animator Animator;
     
     private float _breath;
@@ -82,6 +83,10 @@ public class PlayerStateController : NetworkBehaviour
         playerState.IsDead = true;
         GameUI.Instance.ShowDeadPanel(true);
         OnDeath?.Invoke();
+        if (IsOwner)
+        {
+            LootManager.Instance.RequestSpawnItem(transform.position, LootManager.Instance.LootDataToItemInstanceData(deadPlayerItem));
+        }
     }
 
     public void ChangeBreathByAmount(float amount)

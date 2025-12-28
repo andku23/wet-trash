@@ -25,7 +25,7 @@ public class InteractionController : NetworkBehaviour
     private GameUI _gameUI;
 
     private const int INVENTORY_SIZE = 4;
-    private int[] _inventory = new int[INVENTORY_SIZE];
+    private ItemInstanceData[] _inventory = new ItemInstanceData[INVENTORY_SIZE];
     private int _currentInventoryIndex = 0;
 
     private float rotationPlaceOffset;
@@ -94,7 +94,7 @@ public class InteractionController : NetworkBehaviour
 
         for (int i = 0; i < _inventory.Length; i++)
         {
-            _inventory[i] = -1;
+            _inventory[i].ItemIndex = -1;
         }
         
         playerController.playerStateController.OnDeath.AddListener(OnDeath);
@@ -104,22 +104,21 @@ public class InteractionController : NetworkBehaviour
 
     private void OnDeath()
     {
-        Debug.Log("OnDeath");
         if (!IsOwner) return;
-        if (_inventory[_currentInventoryIndex] != -1)
+        if (_inventory[_currentInventoryIndex].ItemIndex != -1)
         {
             RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, -1);
         }
         
         for (int i = 0; i < _inventory.Length; i++)
         {
-            if (_inventory[i] != -1)
+            if (_inventory[i].ItemIndex != -1)
             {
                 LootManager.Instance.RequestDrop(
                     transform.position + Vector3.forward, 
                     _inventory[i], false, 0, true);
                 GameUI.Instance.RemoveHotbarItem(i);
-                _inventory[i] = -1;
+                _inventory[i].ItemIndex = -1;
                 
             }
         }
@@ -181,18 +180,18 @@ public class InteractionController : NetworkBehaviour
         return go;
     }
 
-    public GameObject PickupItemNetwork(int lootIndex, ulong heldPlayerID)
+    public GameObject PickupItemNetwork(ItemInstanceData itemInstanceData, ulong heldPlayerID)
     {
-        ChangeHeldObjectLocal(lootIndex, heldPlayerID);
+        ChangeHeldObjectLocal(itemInstanceData.ItemIndex, heldPlayerID);
 
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
         {
             IInventorable inventorableItem = heldObject.gameObject.GetComponent<IInventorable>();
             if (inventorableItem != null)
             {
-                _inventory[_currentInventoryIndex] = lootIndex;
+                _inventory[_currentInventoryIndex] = itemInstanceData;
                 playerState.WeightCarried += inventorableItem.GetWeight();
-                GameUI.Instance.AddHotbarItem(_currentInventoryIndex, lootIndex);
+                GameUI.Instance.AddHotbarItem(_currentInventoryIndex, itemInstanceData.ItemIndex);
             }
 
             audioSource.PlaySound(PlayerAudioSource.SoundType.ItemPickup);
@@ -203,7 +202,7 @@ public class InteractionController : NetworkBehaviour
 
     public void DropTemporaryItemNetwork(ulong heldPlayerID)
     {
-        ChangeHeldObjectLocal(_inventory[_currentInventoryIndex], heldPlayerID);
+        ChangeHeldObjectLocal(_inventory[_currentInventoryIndex].ItemIndex, heldPlayerID);
         //RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex]);
     }
 
@@ -211,7 +210,7 @@ public class InteractionController : NetworkBehaviour
     {
         if (heldPlayerID == NetworkManager.Singleton.LocalClientId)
         {
-            _inventory[_currentInventoryIndex] = -1;
+            _inventory[_currentInventoryIndex].ItemIndex = -1;
             GameUI.Instance.RemoveHotbarItem(_currentInventoryIndex);
             IInventorable inventorableItem = heldObject.gameObject.GetComponent<IInventorable>();
             if (inventorableItem != null)
@@ -364,14 +363,14 @@ public class InteractionController : NetworkBehaviour
             if (_input.scroll > 0)
             {
                 IncrementInventoryIndex(1);
-                ChangeHeldObjectLocal(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
-                RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex]);
+                ChangeHeldObjectLocal(_inventory[_currentInventoryIndex].ItemIndex, NetworkManager.Singleton.LocalClientId);
+                RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex].ItemIndex);
             }
             else
             {
                 IncrementInventoryIndex(-1);
-                ChangeHeldObjectLocal(_inventory[_currentInventoryIndex], NetworkManager.Singleton.LocalClientId);
-                RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex]);
+                ChangeHeldObjectLocal(_inventory[_currentInventoryIndex].ItemIndex, NetworkManager.Singleton.LocalClientId);
+                RequestChange_ServerRpc(NetworkManager.Singleton.LocalClientId, _inventory[_currentInventoryIndex].ItemIndex);
             }
             _input.scroll = 0;
         }
@@ -710,7 +709,7 @@ public class InteractionController : NetworkBehaviour
                     Physics.Raycast(heldObject.gameObject.transform.position, -Vector3.up, out RaycastHit hit);
                     LootManager.Instance.RequestDrop(
                         heldObject.gameObject.transform.position + transform.forward * 1.3f, 
-                        LootManager.Instance.LootPrefabtoIndex(heldObject.gameObject), 
+                        LootManager.Instance.LootPrefabtoItemInstanceData(heldObject.gameObject), 
                         false, 0);
                 }
             }

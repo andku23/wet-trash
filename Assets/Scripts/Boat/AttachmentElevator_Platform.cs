@@ -23,7 +23,7 @@ public class AttachmentElevator_Platform : MonoBehaviour, IInteractable
     {
         if (buttonType == InteractionButtonType.Interact)
         {
-            LootManager.Instance.RequestDrop(transform.position, LootManager.Instance.LootPrefabtoIndex(heldObject.gameObject), 
+            LootManager.Instance.RequestDrop(transform.position, LootManager.Instance.LootPrefabtoItemInstanceData(heldObject.gameObject), 
                 true, main.NetworkObjectId);
         }
     }

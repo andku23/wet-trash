@@ -9,6 +9,7 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
     [SerializeField] private WorldspaceInstruction instruction;
     
     public NetworkVariable<int> lootIndex;
+    public NetworkVariable<ulong> spawnedPlayerID;
     public NetworkVariable<bool> isInteractionLocked;
     private ClientStateMachine _stateMachine;
 
@@ -76,8 +77,8 @@ public class NetworkLoot : NetworkBehaviour, IInteractable, ICranable
     {
         base.OnNetworkSpawn();
         itemInstance = GetComponent<ItemInstance>();
-        itemInstance.LoadNetwork(lootIndex.Value);
-        var itemData = LootManager.Instance.ItemList.itemData[lootIndex.Value];
+        itemInstance.LoadNetwork(lootIndex.Value, spawnedPlayerID.Value);
+        var itemData = LootManager.Instance.ItemList.itemDatas[lootIndex.Value];
         string text = "E to Pickup\n";
         foreach (var valueType in itemData.valueRange)
         {

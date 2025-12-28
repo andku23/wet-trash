@@ -151,6 +151,9 @@ public class PlayerController : NetworkBehaviour
 #endif
             GameManager.Instance.OnUIOpened += LockCamera;
             GameManager.Instance.OnUIClosed += UnlockCamera;
+            
+            playerStateController.OnDeath.AddListener(OnDeath);
+            playerStateController.OnRevive.AddListener(OnRevive);
         }
     }
 
@@ -231,6 +234,16 @@ public class PlayerController : NetworkBehaviour
                 _animator.SetFloat(_animIDVerticalLookAmount, 0.5f);
             }
         }
+    }
+    
+    private void OnDeath()
+    {
+        _selectedControlMode.gameObject.SetActive(false);
+    }
+    
+    private void OnRevive()
+    {
+        _selectedControlMode.gameObject.SetActive(true);
     }
 
     private void LockCamera()

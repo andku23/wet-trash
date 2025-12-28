@@ -4,7 +4,11 @@ using UnityEngine.Serialization;
 
 public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
 {
-    public int ItemIndex;
+    //public int ItemIndex;
+    //public ulong SpawnedPlayerID; // Currently only used to handle dead players as loot
+
+    public ItemInstanceData ItemInstanceData;
+    
     public HeldItemModel Model;
     
     [SerializeField] private HeldObjectType _heldObjectType;
@@ -12,6 +16,7 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
     
     public HeldObjectType HeldObjectType { get => _heldObjectType; }
     public GameObject ConnectedParent { get; set; }
+
 
     public Vector3 HoldAttachOffset()
     {
@@ -23,17 +28,18 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
     
     public void LoadLocal(ItemData itemData, int lootIndex)
     {
-        ItemIndex = lootIndex;
+        ItemInstanceData.ItemIndex = lootIndex;
         GameObject model = Instantiate(itemData.model, transform);
         model.GetComponent<ColliderReference>().enabled = false;
         model.GetComponent<Collider>().enabled = false;
         Model = model.GetComponent<HeldItemModel>();
     }
     
-    public void LoadNetwork(int lootIndex)
+    public void LoadNetwork(int lootIndex, ulong spawnedPlayerID)
     {
-        ItemIndex = lootIndex;
-        GameObject model = Instantiate(LootManager.Instance.ItemList.itemData[lootIndex].model, transform);
+        ItemInstanceData.ItemIndex = lootIndex;
+        ItemInstanceData.SpawnedPlayerID = spawnedPlayerID;
+        GameObject model = Instantiate(LootManager.Instance.ItemList.itemDatas[lootIndex].model, transform);
         model.GetComponent<ColliderReference>().reference = gameObject;
         Model = model.GetComponent<HeldItemModel>();
     }
@@ -50,7 +56,7 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
 
     public float GetWeight()
     {
-        return LootManager.Instance.LootIndextoData(ItemIndex).weight;
+        return LootManager.Instance.LootIndextoData(ItemInstanceData.ItemIndex).weight;
     }
 
     public void OnEquip(InteractionController interactionController, PlayerStateData playerState)
@@ -74,5 +80,18 @@ public class ItemInstance : MonoBehaviour, IHoldable, IInventorable
             _highlight.SetActive(isHighlighted);
         
         Model.SetHighlight(isHighlighted);
+    }
+}
+
+// All the data needed to recreate and identical item instance
+public struct ItemInstanceData: INetworkSerializable
+{
+    public int ItemIndex;
+    public ulong SpawnedPlayerID;
+    
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref ItemIndex);
+        serializer.SerializeValue(ref SpawnedPlayerID);
     }
 }

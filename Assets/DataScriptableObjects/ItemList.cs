@@ -6,7 +6,7 @@ public class ItemList : ScriptableObject
 {
     public GameObject networkLootPrefab;
     public GameObject localLootPrefab;
-    [FormerlySerializedAs("pairs")] public ItemData[] itemData;
+    [FormerlySerializedAs("itemData")] [FormerlySerializedAs("pairs")] public ItemData[] itemDatas;
     public BiomeLootSpawnProbability[] biomeLootSpawnProbability;
 }
 
@@ -22,6 +22,7 @@ public enum ItemType
     Default = 0,
     Loot = 1,
     UsableItem = 2,
+    DeadPlayer = 3
 }
 
 public enum HoldableHandType

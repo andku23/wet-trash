@@ -82,7 +82,7 @@ public class FollowingEnemy : BaseEnemy
         _closestPlayer = closestPlayer;
         _closestPlayerState = _closestPlayer.PlayerObject.GetComponent<PlayerStateData>();
 
-        if (_closestPlayer != null && closestDistance < minimumFollowDistance && 
+        if (_closestPlayer != null && closestDistance < minimumFollowDistance * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER && 
             _closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&
             _currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
         {
@@ -131,7 +131,7 @@ public class FollowingEnemy : BaseEnemy
         {
             ChangeState_ServerRpc((int)ServerStates.AttackingPlayer);
         }
-        else if (distanceToPlayer > minimumFollowDistance)
+        else if (distanceToPlayer > minimumFollowDistance * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER)
         {
             ChangeState_ServerRpc((int)ServerStates.Idle);
         }

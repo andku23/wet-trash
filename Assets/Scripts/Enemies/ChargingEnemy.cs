@@ -102,7 +102,7 @@ public class ChargingEnemy : BaseEnemy
         SetClosestHoldingPlayer(out var closestPlayer, out var closestDistance);
         _targetPlayer = closestPlayer;
 
-        if (_targetPlayer != null && closestDistance < AGRO_RANGE)
+        if (_targetPlayer != null && closestDistance < AGRO_RANGE * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER)
         {
             _closestPlayerState = _targetPlayer.PlayerObject.GetComponent<PlayerStateData>();
             if (_closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&

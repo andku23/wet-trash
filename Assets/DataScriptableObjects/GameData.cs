@@ -18,6 +18,8 @@ public class GameData : ScriptableObject
     public int LOOT_PROBABILITY_DIVISOR = 400;
     public int NUM_HARVESTABLES = 20;
     public int NUM_OF_LOOT_GROUPS_PER_HOTSPOT = 10;
+    public float MONSTER_DETECTION_RANGE_MULTIPLIER = 1;
+    public float MONSTER_DAMAGE_MULTIPLIER = 1;
 
 }
 

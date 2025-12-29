@@ -82,7 +82,7 @@ public class DeepEnemy : BaseEnemy
         SetClosestMovingPlayer(maxSafeSwimSpeed ,out var closestPlayer, out var closestDistance);
         _closestPlayer = closestPlayer;
 
-        if (_closestPlayer != null && closestDistance < minimumFollowDistance) 
+        if (_closestPlayer != null && closestDistance < minimumFollowDistance * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER) 
         {
             _closestPlayerState = _closestPlayer.PlayerObject.GetComponent<PlayerStateData>();
             if (_closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&
@@ -137,7 +137,7 @@ public class DeepEnemy : BaseEnemy
         {
             ChangeState_ServerRpc((int)ServerStates.AttackingPlayer);
         }
-        else if (distanceToPlayer > minimumFollowDistance)
+        else if (distanceToPlayer > minimumFollowDistance * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER)
         {
             ChangeState_ServerRpc((int)ServerStates.Idle);
         }

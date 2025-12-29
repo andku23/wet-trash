@@ -222,6 +222,19 @@ public class RogueEffectManager : NetworkBehaviour
     }
     
     [ServerRpc(RequireOwnership = false)]
+    public void ChangeMonsterBehavior_ServerRpc(RogueEffect_MonsterBehaviorPacket dataPacket)
+    {
+        ChangeMonsterBehavior_ClientRpc(dataPacket);
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void ChangeMonsterBehavior_ClientRpc(RogueEffect_MonsterBehaviorPacket dataPacket)
+    {
+        GameManager.Instance.gameData.MONSTER_DAMAGE_MULTIPLIER = dataPacket.DamageMultiplier;
+        GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER = dataPacket.DetectionMultiplier;
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
     public void ChangeWeightMultiplier_ServerRpc(float target)
     {
         ChangeWeightMultiplier_ClientRpc(target);

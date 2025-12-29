@@ -27,5 +27,7 @@ public enum RogueCardEffectID
     MonsterRateUp,
     MonsterRateDown,
     BreathUp,
-    BreathDown
+    BreathDown,
+    MonsterDetectionUp,
+    MonsterDetectionDown,
 }

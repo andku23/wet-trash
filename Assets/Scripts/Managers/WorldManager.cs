@@ -113,8 +113,8 @@ public class WorldManager : NetworkBehaviour
         for (int i = 0; i < NUM_OF_HOLES; i++)
         {
             holePositions[i] = new Vector2(
-                Random.Range(32, _terrain.terrainData.heightmapResolution - 32),
-                Random.Range(32, _terrain.terrainData.heightmapResolution - 32));
+                Random.Range(128, _terrain.terrainData.heightmapResolution - 128),
+                Random.Range(128, _terrain.terrainData.heightmapResolution - 128));
             
             for (int j = 0; j < GameManager.Instance.gameData.NUM_OF_LOOT_GROUPS_PER_HOTSPOT; j++)
             {
@@ -515,7 +515,7 @@ public class WorldManager : NetworkBehaviour
         float distanceFromCenter = 0.5f*(Math.Abs(2 *normalizedX-1f) + Math.Abs(2 *normalizedZ-1f));
         float heightCenter = 0.4f * (heightShapeX + heightShapeZ);
         float heightDistance = noiseMaps[NoiseMapType.TerrainHeightMap][nativeArrayIndex];
-        float height =  (1- distanceFromCenter) * heightCenter + distanceFromCenter * heightDistance;
+        float height =  Mathf.Clamp(1 - 2*distanceFromCenter, 0, 1) * heightCenter + Mathf.Clamp(2*distanceFromCenter, 0, 1) * heightDistance;
             //noiseMaps[NoiseMapType.TerrainHeightMap][nativeArrayIndex];
         return height;
     }

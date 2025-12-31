@@ -19,12 +19,12 @@ public class AttachmentElevator_Platform : MonoBehaviour, IInteractable
         }
     }
 
-    public void InteractHeld(ulong networkPlayerID, InteractionButtonType buttonType, IHoldable heldObject)
+    public void InteractHeld(ulong networkPlayerID, InteractionButtonType buttonType, IHoldable heldObject, int inventoryIndex)
     {
         if (buttonType == InteractionButtonType.Interact)
         {
             LootManager.Instance.RequestDrop(transform.position, LootManager.Instance.LootPrefabtoItemInstanceData(heldObject.gameObject), 
-                true, main.NetworkObjectId);
+                true, main.NetworkObjectId, inventoryIndex);
         }
     }
 

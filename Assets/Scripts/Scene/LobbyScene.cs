@@ -7,6 +7,9 @@ public class LobbyScene : NetworkBehaviour
     [SerializeField] private Transform[] playerPositions;
     [SerializeField] private TextMeshProUGUI joinCodeText;
     
+    [SerializeField] private GameObject startButton;
+    [SerializeField] private GameObject waitForPlayers;
+    
     private void Start()
     {
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
@@ -16,7 +19,13 @@ public class LobbyScene : NetworkBehaviour
     {
         if (IsServer)
         {
+            startButton.SetActive(true);
+            waitForPlayers.SetActive(false);
             PlaceNextPlayerServer(NetworkManager.Singleton.LocalClientId);
+        } else
+        {
+            startButton.SetActive(false);
+            waitForPlayers.SetActive(true);
         }
 
         Cursor.lockState = CursorLockMode.None;

@@ -474,13 +474,20 @@ public class GameManager : NetworkBehaviour
             NetworkManager.Singleton.SceneManager.OnUnloadEventCompleted += OnUnloadFinish;
             NetworkManager.Singleton.SceneManager.UnloadScene(SceneManager.GetSceneByBuildIndex(_currentAdditiveScene));
             _currentAdditiveScene = buildIndex;
-            
+            //SetActiveScene_ClientRpc(buildIndex);
         }
         else
         {
             _currentAdditiveScene = buildIndex;
             OnUnloadFinish("", LoadSceneMode.Additive, null, null);
+            //SetActiveScene_ClientRpc(buildIndex);
         }
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    public void SetActiveScene_ClientRpc(int buildIndex)
+    {
+        SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(buildIndex));
     }
 
     private void OnUnloadFinish(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)

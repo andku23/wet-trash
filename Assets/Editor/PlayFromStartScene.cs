@@ -17,6 +17,7 @@ public static class PlayFromStartScene
 
     private static void OnPlayModeStateChanged(PlayModeStateChange state)
     {
+        //return;
         if (state == PlayModeStateChange.ExitingEditMode)
         {
             // Save current scene changes if needed

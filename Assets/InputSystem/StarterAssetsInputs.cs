@@ -20,6 +20,7 @@ namespace StarterAssets
 		public float scroll;
 		public bool debug;
 		public bool leftclick;
+		public bool back;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -86,8 +87,13 @@ namespace StarterAssets
 		{
 			UseItemInput(value.isPressed);
 		}
+		
+		public void OnBack(InputValue value)
+		{
+			BackInput(value.isPressed);
+		}
 #endif
-
+		
 
 		public void MoveInput(Vector2 newMoveDirection)
 		{
@@ -144,6 +150,11 @@ namespace StarterAssets
 			if(newState != 0)
 				scroll = newState;
 		}
+		
+		public void BackInput(bool target)
+		{
+			back = target;
+		} 
 
 		private void OnApplicationFocus(bool hasFocus)
 		{

@@ -10,6 +10,8 @@ public class AttachmentElevator : NetworkBehaviour, IInteractable, IAttachment
     private AttachmentElevator_Platform platform;
     
     [SerializeField] private float speed;
+    [SerializeField] private float raycastCheckDistance = 0.1f;
+    [SerializeField] private LayerMask layerMask;
     
     private ClientStateMachine _stateMachine;
     private NetworkVariable<int> _networkedState = new NetworkVariable<int>(0);
@@ -187,8 +189,9 @@ public class AttachmentElevator : NetworkBehaviour, IInteractable, IAttachment
     {
         if (IsServer)
         {
-            if (platform.transform.position.y <= -10f)
+            if (Physics.Raycast(platform.transform.position, -Vector3.up, out RaycastHit raycastHit, raycastCheckDistance, layerMask))
             {
+                Debug.Log(raycastHit.transform.name);
                 _networkedState.Value = (int)States.Down;
             }
         }

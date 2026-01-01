@@ -10,4 +10,5 @@ public class ShopItem : ScriptableObject
     public CurrencyValuePair[] cost;
     public int itemListIndex;
     public GameObject placePrefab;
+    public Sprite icon;
 }

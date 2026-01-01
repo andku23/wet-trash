@@ -216,11 +216,19 @@ public class InteractionController : NetworkBehaviour
             
             playerState.WeightCarried -= weight;
             playerState.WeightCarried = Mathf.Clamp(playerState.WeightCarried, 0f, float.MaxValue);
+
+            if (dropInventoryIndex == _currentInventoryIndex)
+            {
+                ChangeHeldObjectLocal(-1, heldPlayerID);
+            }
             
             _inventory[dropInventoryIndex].ItemIndex = -1;
            
         }
-        ChangeHeldObjectLocal(-1, heldPlayerID);
+        else
+        {
+            ChangeHeldObjectLocal(-1, heldPlayerID);
+        }
     }
 
     // updateLocal flag is for if you want to ignore updating it if its your own
@@ -695,7 +703,6 @@ public class InteractionController : NetworkBehaviour
             //Turn it off immediately so we don't get double events
             _input.interact = false;
             
-            Debug.Log(lastClosestInteractable);
             QueryInteractableTypes(lastClosestInteractable);
             
             heldObject.HeldPlayerID = 0;

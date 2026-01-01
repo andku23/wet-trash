@@ -8,4 +8,5 @@ public class UIShopItem : MonoBehaviour
     public TextMeshProUGUI price;
     public Button button;
     public Image background;
+    public Image icon;
 }

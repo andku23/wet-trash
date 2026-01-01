@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using StarterAssets;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -11,6 +13,11 @@ using Random = UnityEngine.Random;
 public class GameUI : NetworkBehaviour
 {
     public static GameUI Instance;
+#if ENABLE_INPUT_SYSTEM
+    private PlayerInput _playerInput;
+#endif
+
+    private StarterAssetsInputs _input;
     
     [Space(10)]
     [Header("HUD")]
@@ -58,6 +65,8 @@ public class GameUI : NetworkBehaviour
     {
         if(Instance == null) Instance = this;
         CloseAllPanels(true, false);
+        _input = FindObjectsByType<StarterAssetsInputs>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
+        _playerInput = FindObjectsByType<PlayerInput>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0];
     }
 
     public override void OnNetworkSpawn()
@@ -190,6 +199,7 @@ public class GameUI : NetworkBehaviour
             ShopItemTypeData shopItemData = ShopManager.Instance.ShopItemTypeLookup[shopItem.type];
             uiShopItem.background.color = shopItemData.color;
             uiShopItem.name.text = shopItem.name;
+            uiShopItem.icon.sprite = shopItem.icon;
             uiShopItem.price.text = "";
             foreach (CurrencyValuePair currencyValuePair in shopItem.cost)
             {
@@ -238,6 +248,7 @@ public class GameUI : NetworkBehaviour
             uiShopItem.name.text = shopItem.name;
             uiShopItem.background.color = shopItemData.color;
             uiShopItem.price.text = "";
+            uiShopItem.icon.sprite = shopItem.icon;
             foreach (CurrencyValuePair currencyValuePair in shopItem.cost)
             {
                 uiShopItem.price.text += currencyValuePair.CurrencyType.ToString()+": "+currencyValuePair.Value+"\n";
@@ -372,6 +383,16 @@ public class GameUI : NetworkBehaviour
             Destroy(item.gameObject);
         }
         uiShopItems.Clear();
+    }
+
+    private void Update()
+    {
+        if (_input.back)
+        {
+            Debug.Log("back");
+            CloseAllPanels(false);
+            _input.back = false;
+        }
     }
     
 }

@@ -58,16 +58,18 @@ public class SkyboxController : MonoBehaviour
         
         
         timePassed += Time.deltaTime;
-        float nextAngle = timePassed * spinAnglePerSecond + (startSpinAngle - 90);
+        float angleProgress = timePassed * spinAnglePerSecond;
+        float nextAngle = angleProgress + (startSpinAngle - 90);
         float currentNormalizedProgess = nextAngle / totalSpinAngle;
+        float currentNormalizedAngleProgess = angleProgress / totalSpinAngle;
         Debug.Log(currentNormalizedProgess);
         
         SkyboxTimeSpread currentMaterial = null;
         SkyboxTimeSpread nextMaterial = null;
         for (int i = 0; i < skyboxTimes.Count; i++)
         {
-            if (currentNormalizedProgess > skyboxTimes[i].normalizedStartTime &&
-                currentNormalizedProgess <= skyboxTimes[i].normalizedEndTime)
+            if (currentNormalizedAngleProgess > skyboxTimes[i].normalizedStartTime &&
+                currentNormalizedAngleProgess <= skyboxTimes[i].normalizedEndTime)
             {
                 currentMaterial = skyboxTimes[i];
                 nextMaterial = skyboxTimes[(i + 1) % skyboxTimes.Count];
@@ -77,9 +79,9 @@ public class SkyboxController : MonoBehaviour
                     loopedNextStartTime = 1.0f - loopedNextStartTime;
                 }
 
-                if (currentNormalizedProgess > loopedNextStartTime - skyboxBlendThreshold)
+                if (currentNormalizedAngleProgess > loopedNextStartTime - skyboxBlendThreshold)
                 {
-                    float blendAmount = (loopedNextStartTime - currentNormalizedProgess)/skyboxBlendThreshold;
+                    float blendAmount = (loopedNextStartTime - currentNormalizedAngleProgess)/skyboxBlendThreshold;
                     skyboxMaterial.Lerp(currentMaterial.skyboxMaterial, nextMaterial.skyboxMaterial, 1f-blendAmount);
                     Debug.Log("blend amount " + (1f-blendAmount));
                 }

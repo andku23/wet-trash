@@ -69,12 +69,12 @@ Material:
     - _AtmosphereThickness: 0.5
     - _BumpScale: 1
     - _CloudAnisotropy: 0.541
-    - _CloudBaseHeight: 0.25
+    - _CloudBaseHeight: 0.235
     - _CloudCoverage: 1
     - _CloudLightIntensity: 4
-    - _CloudRotationY: 180
-    - _CloudScale: 2
-    - _CloudSeed: 0
+    - _CloudRotationY: 161
+    - _CloudScale: 1.464
+    - _CloudSeed: 450
     - _CloudSoftness: 0.5
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
@@ -98,9 +98,9 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _StarDensity: 200
+    - _StarDensity: 281
     - _StarIntensity: 0.25
-    - _StarSeed: 0
+    - _StarSeed: 471
     - _SunConvergence: 4.5
     - _SunFlareIntensity: 0.1
     - _SunFlareLength: 0.5

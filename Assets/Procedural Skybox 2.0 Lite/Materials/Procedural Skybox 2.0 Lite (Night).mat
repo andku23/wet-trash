@@ -14,7 +14,6 @@ Material:
   m_ValidKeywords: []
   m_InvalidKeywords:
   - _ENABLECLOUDS_ON
-  - _ENABLEMOON_ON
   - _ENABLESTARS_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -71,20 +70,20 @@ Material:
     - _AtmosphereThickness: 1
     - _BumpScale: 1
     - _CloudAnisotropy: 0.5
-    - _CloudBaseHeight: 0.15
+    - _CloudBaseHeight: 0.235
     - _CloudCoverage: 1
     - _CloudLightIntensity: 2.5
     - _CloudOffsetX: 0
     - _CloudRotationX: 0
-    - _CloudRotationY: 303
-    - _CloudScale: 1.5
-    - _CloudSeed: 83
+    - _CloudRotationY: 161
+    - _CloudScale: 1.464
+    - _CloudSeed: 450
     - _CloudSoftness: 0.5
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _EnableClouds: 1
-    - _EnableMoon: 1
+    - _EnableMoon: 0
     - _EnableStars: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
@@ -92,6 +91,7 @@ Material:
     - _GroundPower: 1
     - _HorizonCurvature: 0.1
     - _HorizonHeight: 0
+    - _HorizonSharpness: 0.5
     - _Metallic: 0
     - _Mode: 0
     - _MoonSize: 0.15
@@ -99,19 +99,20 @@ Material:
     - _Overcast: 0
     - _Parallax: 0.02
     - _SkyExposure: 1
+    - _SkySaturation: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _StarDensity: 150
+    - _StarDensity: 281
     - _StarHeight: -1
     - _StarIntensity: 0.15
-    - _StarSeed: 465
+    - _StarSeed: 471
     - _SunConvergence: 9.12
     - _SunFlareIntensity: 0.1
     - _SunFlareLength: 0
     - _SunFlareRayCount: 8
     - _SunHaze: 0
-    - _SunSize: 0
+    - _SunSize: 0.05
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
@@ -122,3 +123,4 @@ Material:
     - _HorizonColor: {r: 0.012682444, g: 0.04976902, b: 0.14150941, a: 1}
     - _ZenithColor: {r: 0.041295845, g: 0.11700601, b: 0.3018868, a: 1}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1

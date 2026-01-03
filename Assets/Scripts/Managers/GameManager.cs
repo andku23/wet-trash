@@ -48,6 +48,8 @@ public class GameManager : NetworkBehaviour
     {
         get { return gameData.DAY_END_HOUR - gameData.DAY_START_HOUR; }
     }
+    
+    public TimeState GetTimeState {get { return _timeState; }}
 
     public enum TimeState
     {

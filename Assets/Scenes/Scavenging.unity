@@ -442,7 +442,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 130242604}
   m_HandleRect: {fileID: 130242603}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -4536,7 +4536,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1156373937}
   m_HandleRect: {fileID: 1156373936}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -7493,19 +7493,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9fecf75acd4eb346bbd9adb52765c1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkyboxController
-  day: {fileID: 2100000, guid: cb879a436a7692845a0f2ed7883aa098, type: 2}
-  twilight: {fileID: 2100000, guid: 19cd9dafe0dfb49489cd72d9d3870b4d, type: 2}
-  night: {fileID: 2100000, guid: aba2d0ab67d2a18428ff0a4efe5bfc6e, type: 2}
   skyboxMaterial: {fileID: 2100000, guid: 952a963e19e6c844f97501bfa299dd94, type: 2}
   sunLight: {fileID: 2028215876}
   skyboxTimes:
   - normalizedStartTime: 0
-    normalizedEndTime: 0.2
+    normalizedEndTime: 0.07
     skyboxMaterial: {fileID: 2100000, guid: aba2d0ab67d2a18428ff0a4efe5bfc6e, type: 2}
-  - normalizedStartTime: 0.2
-    normalizedEndTime: 0.25
+  - normalizedStartTime: 0.07
+    normalizedEndTime: 0.15
     skyboxMaterial: {fileID: 2100000, guid: 19cd9dafe0dfb49489cd72d9d3870b4d, type: 2}
-  - normalizedStartTime: 0.25
+  - normalizedStartTime: 0.15
     normalizedEndTime: 0.7
     skyboxMaterial: {fileID: 2100000, guid: cb879a436a7692845a0f2ed7883aa098, type: 2}
   - normalizedStartTime: 0.7
@@ -7514,6 +7511,7 @@ MonoBehaviour:
   - normalizedStartTime: 0.75
     normalizedEndTime: 1
     skyboxMaterial: {fileID: 2100000, guid: aba2d0ab67d2a18428ff0a4efe5bfc6e, type: 2}
+  skyboxBlendThreshold: 0.04
 --- !u!4 &1654301727
 Transform:
   m_ObjectHideFlags: 0

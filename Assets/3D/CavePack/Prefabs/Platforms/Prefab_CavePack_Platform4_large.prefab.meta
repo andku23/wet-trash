@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c4c258f1b298f2049b243f50383a3891
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 146549
+  packageName: Modular cave kit
+  packageVersion: 1.1
+  assetPath: Assets/CavePack/Prefabs/Platforms/Prefab_CavePack_Platform4_large.prefab
+  uploadId: 321839

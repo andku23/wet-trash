@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 078dc2e5dcc78f0468ac94659d67c9f4
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 146549
+  packageName: Modular cave kit
+  packageVersion: 1.1
+  assetPath: Assets/CavePack/Prefabs/Rooms/Prefab_CavePack_Room_3way.prefab
+  uploadId: 321839

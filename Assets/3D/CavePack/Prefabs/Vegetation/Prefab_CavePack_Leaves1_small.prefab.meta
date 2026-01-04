@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0d92f68cfd47937498638d98431e81e6
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 146549
+  packageName: Modular cave kit
+  packageVersion: 1.1
+  assetPath: Assets/CavePack/Prefabs/Vegetation/Prefab_CavePack_Leaves1_small.prefab
+  uploadId: 321839

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: fdf3532cefae5e74487885dd3f83f650
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 146549
+  packageName: Modular cave kit
+  packageVersion: 1.1
+  assetPath: Assets/CavePack/Prefabs/Rooms/Prefab_CavePack_Room_Split.prefab
+  uploadId: 321839

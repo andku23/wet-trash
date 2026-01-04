@@ -373,6 +373,7 @@ public class GameManager : NetworkBehaviour
     {
         await GameUI.Instance.ShowDayStartPanel(StartDayPanel.Mode.Loading);
         await WorldManager.Instance.BeginStructureGeneration_C();
+        WorldManager.Instance.CreateDungeons_C();
         Debug.Log("Generating structures finished");
         PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
     }

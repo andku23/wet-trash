@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 9397e05d923033d408220f6e3ff7f2d9
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 146549
+  packageName: Modular cave kit
+  packageVersion: 1.1
+  assetPath: Assets/CavePack/Source files/Texture/Materials/Tex_CavePack_Fern.mat
+  uploadId: 321839

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: def5b53db11349e448b76e880c12af3e
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 146549
+  packageName: Modular cave kit
+  packageVersion: 1.1
+  assetPath: Assets/CavePack/Prefabs/Rocks/Prefab_CavePack_Rock1_large.prefab
+  uploadId: 321839

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: cbf8dd032d6a76649a1f1896d15f5379
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 146549
+  packageName: Modular cave kit
+  packageVersion: 1.1
+  assetPath: Assets/CavePack/Source files/Mesh/Mesh_CavePack_Door.mtl
+  uploadId: 321839

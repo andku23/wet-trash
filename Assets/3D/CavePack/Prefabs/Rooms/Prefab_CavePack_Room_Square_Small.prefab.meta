@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 261b998007e2bd64581be6ceda105370
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 146549
+  packageName: Modular cave kit
+  packageVersion: 1.1
+  assetPath: Assets/CavePack/Prefabs/Rooms/Prefab_CavePack_Room_Square_Small.prefab
+  uploadId: 321839

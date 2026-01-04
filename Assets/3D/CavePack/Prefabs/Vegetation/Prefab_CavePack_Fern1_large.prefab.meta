@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b44a799d58d7c6545bd8d0e3c1889db4
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 146549
+  packageName: Modular cave kit
+  packageVersion: 1.1
+  assetPath: Assets/CavePack/Prefabs/Vegetation/Prefab_CavePack_Fern1_large.prefab
+  uploadId: 321839

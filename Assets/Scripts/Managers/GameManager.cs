@@ -242,7 +242,9 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.LoadingTerrainStructures:
                 var clientStructureGenData = WorldManager.Instance.GenerateClientStructureData_S();
+                var dungeonGenData = DungeonManager.Instance.GenerateDungeonAndCreateSteps_S();
                 WorldManager.Instance.AssignStructureGenerationData_ClientRpc(clientStructureGenData);
+                DungeonManager.Instance.AssignDungeonGenData_ClientRpc(dungeonGenData);
                 WaitForPlayerResponse_S(ToNextGameState_ServerRpc);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quotas_sc);
                 break;
@@ -373,7 +375,8 @@ public class GameManager : NetworkBehaviour
     {
         await GameUI.Instance.ShowDayStartPanel(StartDayPanel.Mode.Loading);
         await WorldManager.Instance.BeginStructureGeneration_C();
-        WorldManager.Instance.CreateDungeons_C();
+        await DungeonManager.Instance.BeginDungeonGeneration_C();
+        
         Debug.Log("Generating structures finished");
         PlayerWaitResponse_ServerRpc(NetworkManager.Singleton.LocalClientId);
     }

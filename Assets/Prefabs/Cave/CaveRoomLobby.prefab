@@ -52,6 +52,10 @@ MonoBehaviour:
   - {fileID: 3838588445999740265}
   - {fileID: 5909340759897875041}
   - {fileID: 2745985364976061788}
+  caveDoorPossibleLocations: []
+  PoolID: 0
+  SpawnID: 0
+  RoomType: 0
 --- !u!1001 &2399868535702729689
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -232,6 +236,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7178581679318962469}
     m_Modifications:
+    - target: {fileID: 1445808152077048, guid: 078dc2e5dcc78f0468ac94659d67c9f4, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1793894450317604, guid: 078dc2e5dcc78f0468ac94659d67c9f4, type: 3}
       propertyPath: m_Name
       value: Prefab_CavePack_Room_3way

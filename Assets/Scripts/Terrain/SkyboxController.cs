@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.Search;
 using UnityEngine;
 
 public class SkyboxController : MonoBehaviour
@@ -62,7 +61,6 @@ public class SkyboxController : MonoBehaviour
         float nextAngle = angleProgress + (startSpinAngle - 90);
         float currentNormalizedProgess = nextAngle / totalSpinAngle;
         float currentNormalizedAngleProgess = angleProgress / totalSpinAngle;
-        Debug.Log(currentNormalizedProgess);
         
         SkyboxTimeSpread currentMaterial = null;
         SkyboxTimeSpread nextMaterial = null;
@@ -83,7 +81,6 @@ public class SkyboxController : MonoBehaviour
                 {
                     float blendAmount = (loopedNextStartTime - currentNormalizedAngleProgess)/skyboxBlendThreshold;
                     skyboxMaterial.Lerp(currentMaterial.skyboxMaterial, nextMaterial.skyboxMaterial, 1f-blendAmount);
-                    Debug.Log("blend amount " + (1f-blendAmount));
                 }
                 else
                 {

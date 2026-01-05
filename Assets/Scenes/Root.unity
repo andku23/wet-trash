@@ -2049,6 +2049,7 @@ Transform:
   - {fileID: 1039453471}
   - {fileID: 1047716996}
   - {fileID: 1369926940}
+  - {fileID: 1928414952}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &490838885
@@ -3056,7 +3057,7 @@ GameObject:
   - component: {fileID: 775486259}
   - component: {fileID: 775486260}
   m_Layer: 0
-  m_Name: TerrainManager
+  m_Name: WorldManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3092,12 +3093,6 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   caveRoomEnds:
   - {fileID: 6761049422850096718, guid: 282d08b761b871d4f8d2de506e6a8eab, type: 3}
-  caveDungeonStartRooms:
-  - {fileID: 7794863710378003833, guid: 97961d1870558224689cfc07225814c0, type: 3}
-  caveDungeonHallRooms:
-  - {fileID: 2743131862253507975, guid: 9973f8853f4cae44b818b97ba8d2175b, type: 3}
-  caveDungeonLeafRooms:
-  - {fileID: 5492588092537151620, guid: bb278fa23dc12e34d84b35118918dcc4, type: 3}
   enemyPrefabs:
   - {fileID: 4819457247987509043, guid: 7500bbb7360b2b9429f36a861a60d432, type: 3}
   - {fileID: 8443838413313330062, guid: 5c8e1d25e38efe24ca7805711a2daa23, type: 3}
@@ -6506,6 +6501,59 @@ MonoBehaviour:
   blendDistance: 0
   weight: 0
   priority: 0
+--- !u!1 &1928414951
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1928414952}
+  - component: {fileID: 1928414953}
+  m_Layer: 0
+  m_Name: DungeonManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1928414952
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1928414951}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 477171340}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1928414953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1928414951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 567e54c70dcd5f8479d08c0628029064, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonManager
+  ShowTopMostFoldoutHeaderGroup: 1
+  caveDungeonStartRooms:
+  - {fileID: 7794863710378003833, guid: 97961d1870558224689cfc07225814c0, type: 3}
+  caveDungeonHallRooms:
+  - {fileID: 2743131862253507975, guid: 9973f8853f4cae44b818b97ba8d2175b, type: 3}
+  caveDungeonLeafRooms:
+  - {fileID: 5492588092537151620, guid: bb278fa23dc12e34d84b35118918dcc4, type: 3}
+  caveDoorPrefab: {fileID: 6927480872262509269, guid: 7bb56fd70db413d49935ebe1bf22582b,
+    type: 3}
 --- !u!1 &1995911252
 GameObject:
   m_ObjectHideFlags: 0

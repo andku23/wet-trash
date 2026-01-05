@@ -11,10 +11,6 @@ public class WorldManager : NetworkBehaviour
 {
     public static WorldManager Instance;
     [SerializeField] private GameObject[] caveRoomEnds;
-
-    [SerializeField] private CaveRoom[] caveDungeonStartRooms;
-    [SerializeField] private CaveRoom[] caveDungeonHallRooms;
-    [SerializeField] private CaveRoom[] caveDungeonLeafRooms;
     
     [SerializeField] private GameObject[] enemyPrefabs;
     [SerializeField] private GameObject[] lootGroupPrefabs;
@@ -765,56 +761,7 @@ public class WorldManager : NetworkBehaviour
             }
         }
     }
-
-    public void CreateDungeons_C()
-    {
-        Vector3 dungeonPosition = Vector3.zero;
-        dungeonPosition.y = -1000f;
-        int dungeonDepth = 1;
-        List<CaveRoomConnectPoint> leafNodes = new List<CaveRoomConnectPoint>();
-        List<CaveRoomConnectPoint> nextLeafNodes = new List<CaveRoomConnectPoint>();
-
-        var startRoom = Instantiate(caveDungeonStartRooms[0]);
-        startRoom.transform.position = dungeonPosition;
-
-        for (int i = 0; i < startRoom.caveRoomConnectPoints.Length; i++)
-        {
-            leafNodes.Add(startRoom.caveRoomConnectPoints[i]);
-        }
-        
-        for (int i = 0; i < leafNodes.Count; i++)
-        {
-            AttachDungeonRoom(leafNodes[i], nextLeafNodes, caveDungeonHallRooms);
-        }
-
-        leafNodes.Clear();
-        leafNodes = nextLeafNodes;
-        nextLeafNodes = new List<CaveRoomConnectPoint>();
-        
-        for (int i = 0; i < leafNodes.Count; i++)
-        {
-            AttachDungeonRoom(leafNodes[i], nextLeafNodes, caveDungeonLeafRooms);
-        }
-    }
-
-    private void AttachDungeonRoom(CaveRoomConnectPoint attachPoint, List<CaveRoomConnectPoint> leafNodes, CaveRoom[] roomPool)
-    {
-        var room = Instantiate(roomPool[0]);
-        CaveRoomConnectPoint nextPoint = room.caveRoomConnectPoints[Random.Range(0, room.caveRoomConnectPoints.Length)];
-        Vector3 positionOffset = room.transform.position - nextPoint.transform.position;
-        float rotationOffset = attachPoint.transform.rotation.eulerAngles.y - nextPoint.transform.rotation.eulerAngles.y - 180;
-            
-        room.transform.position = attachPoint.transform.position + positionOffset;
-        room.transform.RotateAround(attachPoint.transform.position, Vector3.up, rotationOffset);
-        
-        for (int i = 0; i < room.caveRoomConnectPoints.Length; i++)
-        {
-            if (room.caveRoomConnectPoints[i] != nextPoint)
-            {
-                leafNodes.Add(room.caveRoomConnectPoints[i]);
-            }
-        }
-    }
+    
 }
 
 

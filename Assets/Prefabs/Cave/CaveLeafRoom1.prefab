@@ -48,6 +48,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CaveRoom
   caveRoomConnectPoints:
   - {fileID: 3750254632151851457}
+  caveDoorPossibleLocations: []
+  PoolID: 0
+  SpawnID: 0
+  RoomType: 0
 --- !u!1001 &3701444476763365188
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -196,6 +200,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4229634970262476, guid: d5521568bf96a3342be884887041dc63, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 64882202099221084, guid: d5521568bf96a3342be884887041dc63,
+        type: 3}
+      propertyPath: m_ProvidesContacts
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:

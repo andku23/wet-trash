@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CaveRoom : MonoBehaviour
+public class CaveRoom : LootGroup
 {
     public CaveRoomConnectPoint[] caveRoomConnectPoints;
     public Transform[] caveDoorPossibleLocations;

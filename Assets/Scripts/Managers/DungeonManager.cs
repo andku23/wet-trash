@@ -128,6 +128,7 @@ public class DungeonManager : NetworkBehaviour
                     dungeonRoomIDs.Add(addedRoom.PoolID);
                     dungeonRoomTypes.Add((int)addedRoom.RoomType);
                     attachmentSteps.Add(instructionStep);
+                    LootManager.Instance.RegisterLootGroupServer(addedRoom);
                     for (int j = 0; j < addedRoom.caveDoorPossibleLocations.Length; j++)
                     {
                         possibleDoorLocations_s.Add(addedRoom.caveDoorPossibleLocations[j]);

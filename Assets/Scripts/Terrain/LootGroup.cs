@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class LootGroup : MonoBehaviour
 {
-    public int id;
+    [HideInInspector] public int id;
     [SerializeField] public Transform[] lootSpawnLocations;
     
 }

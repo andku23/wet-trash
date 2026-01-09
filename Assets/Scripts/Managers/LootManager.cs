@@ -351,11 +351,11 @@ public class LootManager : NetworkBehaviour
         _lootGroups.Clear();
     }
     
-    public void RegisterLootGroupServer(LootGroup hole)
+    public void RegisterLootGroupServer(LootGroup lootGroup)
     {
-        _lootGroups.Add(hole);
+        _lootGroups.Add(lootGroup);
         int id = _lootGroups.Count - 1;
-        hole.id = id;
+        lootGroup.id = id;
     }
     
     public void RegisterDepositServer(LootDeposit deposit)

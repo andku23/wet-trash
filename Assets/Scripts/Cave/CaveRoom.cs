@@ -5,7 +5,7 @@ public class CaveRoom : MonoBehaviour
     public CaveRoomConnectPoint[] caveRoomConnectPoints;
     public Transform[] caveDoorPossibleLocations;
 
-    public int PoolID;
-    public int SpawnID;
-    public DungeonManager.CaveRoomType RoomType;
+    [HideInInspector] public int PoolID;
+    [HideInInspector] public int SpawnID;
+    [HideInInspector] public DungeonManager.CaveRoomType RoomType;
 }

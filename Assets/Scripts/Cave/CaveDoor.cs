@@ -18,7 +18,6 @@ public class CaveDoor : NetworkBehaviour, IInteractable
     {
         if (buttonType == InteractionButtonType.Interact)
         {
-            Debug.Log("going to door: " + DestinationDoorID.Value);
             ulong destinationDoorNetworkID = DungeonManager.Instance.spawnedDoors[DestinationDoorID.Value];
             NetworkObject no = NetworkManager.Singleton.SpawnManager.SpawnedObjects[destinationDoorNetworkID];
             CaveDoor destinationDoor = no.GetComponent<CaveDoor>();
@@ -26,6 +25,9 @@ public class CaveDoor : NetworkBehaviour, IInteractable
             if (destinationDoor != null)
             {
                 NetworkManager.Singleton.LocalClient.PlayerObject.transform.position = destinationDoor.transform.position;
+                NetworkManager.Singleton.LocalClient.PlayerObject.transform.position += destinationDoor.transform.forward;
+                NetworkManager.Singleton.LocalClient.PlayerObject.transform.rotation = destinationDoor.transform.rotation;
+                NetworkManager.Singleton.LocalClient.PlayerObject.transform.Rotate(destinationDoor.transform.up, -90f);
             }
         }
     }

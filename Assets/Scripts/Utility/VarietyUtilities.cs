@@ -51,4 +51,15 @@ public class VarietyUtilities
         string[] PieceTypeNames = System.Enum.GetNames(typeof(CurrencyType));
         return PieceTypeNames.Length;
     }
+    
+    public static void Shuffle<T>(List<T> ts, int startIndex) {
+        var count = ts.Count;
+        var last = count - 1;
+        for (var i = startIndex; i < last; ++i) {
+            var r = UnityEngine.Random.Range(i, count);
+            var tmp = ts[i];
+            ts[i] = ts[r];
+            ts[r] = tmp;
+        }
+    }
 }

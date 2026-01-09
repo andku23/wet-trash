@@ -241,15 +241,17 @@ public class GameManager : NetworkBehaviour
                 UpdateTimeState_ClientRpc(_timeState, _day, _quotas_sc);
                 break;
             case TimeState.LoadingTerrainStructures:
-                var clientStructureGenData = WorldManager.Instance.GenerateClientStructureData_S();
                 var dungeonGenData = DungeonManager.Instance.GenerateDungeonAndCreateSteps_S();
-                WorldManager.Instance.AssignStructureGenerationData_ClientRpc(clientStructureGenData);
                 DungeonManager.Instance.AssignDungeonGenData_ClientRpc(dungeonGenData);
+                
+                var clientStructureGenData = WorldManager.Instance.GenerateClientStructureData_S(dungeonGenData.DoorPositions.Length);
+                WorldManager.Instance.AssignStructureGenerationData_ClientRpc(clientStructureGenData);
                 WaitForPlayerResponse_S(ToNextGameState_ServerRpc);
                 UpdateTimeState_ClientRpc(_timeState, _day, _quotas_sc);
                 break;
             case TimeState.DayActive:
-                _lootManager.DeleteAllLoot_S();
+                DungeonManager.Instance.GenerateSurfaceDoors_S();
+                
                 var lootValue = _lootManager.SpawnLoot_S();
                 foreach (var item in lootValue)
                 {

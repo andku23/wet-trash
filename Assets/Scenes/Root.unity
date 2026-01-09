@@ -6550,9 +6550,14 @@ MonoBehaviour:
   - {fileID: 7794863710378003833, guid: 97961d1870558224689cfc07225814c0, type: 3}
   caveDungeonHallRooms:
   - {fileID: 2743131862253507975, guid: 9973f8853f4cae44b818b97ba8d2175b, type: 3}
+  - {fileID: 3197966781661544578, guid: 4a6b704e430745a4383cc94fb6862f25, type: 3}
+  - {fileID: 1898045368504977314, guid: c738b4fa5c363ba46bdedfd1e7144f6d, type: 3}
   caveDungeonLeafRooms:
   - {fileID: 5492588092537151620, guid: bb278fa23dc12e34d84b35118918dcc4, type: 3}
+  - {fileID: 4251553570617377905, guid: 14f5aaae86a2f5d4da39f4eb6e6aaafc, type: 3}
   caveDoorPrefab: {fileID: 6927480872262509269, guid: 7bb56fd70db413d49935ebe1bf22582b,
+    type: 3}
+  surfaceDoorPrefab: {fileID: 6927480872262509269, guid: 55d3733f1f362714b88be5ed7b017080,
     type: 3}
 --- !u!1 &1995911252
 GameObject:

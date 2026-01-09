@@ -99,8 +99,9 @@ public class WorldManager : NetworkBehaviour
         return data;
     }
 
-    public ClientStructureGenerationData GenerateClientStructureData_S()
-    {   
+    public ClientStructureGenerationData GenerateClientStructureData_S(int numDoorLocations)
+    {
+        NUM_OF_HOLES = numDoorLocations;
         Vector2[] holePositions = new Vector2[NUM_OF_HOLES];
         Vector2[] lootGroupPositions = new Vector2[GameManager.Instance.gameData.NUM_OF_LOOT_GROUPS_PER_HOTSPOT * NUM_OF_HOLES];
         float[] lootGroupRotations = new float[GameManager.Instance.gameData.NUM_OF_LOOT_GROUPS_PER_HOTSPOT * NUM_OF_HOLES];

@@ -12,14 +12,16 @@ public class DungeonManager : NetworkBehaviour
     [SerializeField] private CaveRoom[] caveDungeonHallRooms;
     [SerializeField] private CaveRoom[] caveDungeonLeafRooms;
     [SerializeField] private CaveDoor caveDoorPrefab;
+    [SerializeField] private CaveDoor surfaceDoorPrefab;
     
-    private int DUNGEON_DEPTH = 1;
+    private int DUNGEON_DEPTH = 3;
 
     private List<CaveRoom> spawnedRooms_c = new List<CaveRoom>();
     private DungeonGenerationInstructions dungeonGenData_c;
+    
+    private List<Transform> possibleDoorLocations_s = new List<Transform>();
 
     public NetworkList<ulong> spawnedDoors;
-
     public enum CaveRoomType
     {
         Entrance,
@@ -56,6 +58,15 @@ public class DungeonManager : NetworkBehaviour
         }
         spawnedRooms_c.Clear();
     }
+
+    public void GenerateSurfaceDoors_S()
+    {
+        for (int i = 0; i < WorldManager.Instance.SpawnedHoles.Count; i++)
+        {
+            Transform entranceTransform = WorldManager.Instance.SpawnedHoles[i].transform;
+            SpawnLinkedDungeonDoor_S(surfaceDoorPrefab, entranceTransform.position, entranceTransform.rotation, i);
+        }
+    }
     
     // Just straight up creates the dungeon on the server (so we can check collisions and stuff)
     // then spits out instructions to hand to clients for them to generate too
@@ -69,9 +80,12 @@ public class DungeonManager : NetworkBehaviour
         }
         spawnedDoors.Clear();
         
+        possibleDoorLocations_s.Clear();
+        
         // Data so I can create the instructions at the end
         List<int> dungeonRoomIDs = new List<int>();
         List<int> dungeonRoomTypes = new List<int>();
+        List<Vector3> doorLocations = new List<Vector3>();
         List<DungeonAttachmentInstructionStep> attachmentSteps = new List<DungeonAttachmentInstructionStep>();
         
         // Lists for tracking outermost attachment points
@@ -87,60 +101,61 @@ public class DungeonManager : NetworkBehaviour
         startRoom.RoomType = CaveRoomType.Entrance;
         startRoom.transform.position = dungeonPosition;
         spawnedRooms_c.Add(startRoom);
-        
-        CaveDoor caveDoor = Instantiate(caveDoorPrefab, startRoom.caveDoorPossibleLocations[0].position, startRoom.caveDoorPossibleLocations[0].rotation);
-        NetworkObject no = caveDoor.GetComponent<NetworkObject>();
-        no.Spawn();
-        caveDoor.DestinationDoorID.Value = 1;
-        spawnedDoors.Add(no.NetworkObjectId);
-        
-        CaveDoor caveDoorStart = Instantiate(caveDoorPrefab, new Vector3(-0.96f, 0.65f, -1.7f), Quaternion.identity);
-        NetworkObject no2 = caveDoorStart.GetComponent<NetworkObject>();
-        no2.Spawn();
-        caveDoorStart.DestinationDoorID.Value = 0;
-        spawnedDoors.Add(no2.NetworkObjectId);
+
+        for (int i = 0; i < startRoom.caveDoorPossibleLocations.Length; i++)
+        {
+            possibleDoorLocations_s.Add(startRoom.caveDoorPossibleLocations[i]);
+        }
         
         dungeonRoomIDs.Add(entrancePoolIndex);
         dungeonRoomTypes.Add((int)CaveRoomType.Entrance);
         
         leafNodes.Add(startRoom);
-        
-        for (int i = 0; i < leafNodes.Count; i++)
+
+        for (int depth = 0; depth < DUNGEON_DEPTH; depth++)
         {
-            for (int j = 0; j < leafNodes[i].caveRoomConnectPoints.Length; j++)
+            for (int leafNodeIndex = 0; leafNodeIndex < leafNodes.Count; leafNodeIndex++)
             {
-                if (leafNodes[i].caveRoomConnectPoints[j].IsConnected) continue;
-                var instructionStep 
-                    = AttachDungeonRoomAndCreateStep(leafNodes[i].SpawnID, j, nextLeafNodes, CaveRoomType.Hall);
-                CaveRoom addedRoom = spawnedRooms_c[spawnedRooms_c.Count - 1];
-                dungeonRoomIDs.Add(addedRoom.PoolID);
-                dungeonRoomTypes.Add((int)addedRoom.RoomType);
-                attachmentSteps.Add(instructionStep);
+                CaveRoomType roomType = (depth == DUNGEON_DEPTH - 1) ? CaveRoomType.Leaf : CaveRoomType.Hall;
+                
+                for (int connectPointIdx = 0; connectPointIdx < leafNodes[leafNodeIndex].caveRoomConnectPoints.Length; connectPointIdx++)
+                {
+                    if (leafNodes[leafNodeIndex].caveRoomConnectPoints[connectPointIdx].IsConnected) continue;
+                    var instructionStep 
+                        = AttachDungeonRoomAndCreateStep(leafNodes[leafNodeIndex].SpawnID, connectPointIdx, nextLeafNodes, roomType);
+                    CaveRoom addedRoom = spawnedRooms_c[spawnedRooms_c.Count - 1];
+                    dungeonRoomIDs.Add(addedRoom.PoolID);
+                    dungeonRoomTypes.Add((int)addedRoom.RoomType);
+                    attachmentSteps.Add(instructionStep);
+                    for (int j = 0; j < addedRoom.caveDoorPossibleLocations.Length; j++)
+                    {
+                        possibleDoorLocations_s.Add(addedRoom.caveDoorPossibleLocations[j]);
+                    }
+                }
             }
+
+            leafNodes.Clear();
+            leafNodes = nextLeafNodes;
+            nextLeafNodes = new List<CaveRoom>();
+        }
+        
+        int numDoors = Random.Range(1, possibleDoorLocations_s.Count);
+        VarietyUtilities.Shuffle(possibleDoorLocations_s, 1);
+        for (int i = 0; i < numDoors; i++)
+        {
+            doorLocations.Add(possibleDoorLocations_s[i].position);
         }
 
-        leafNodes.Clear();
-        leafNodes = nextLeafNodes;
-        nextLeafNodes = new List<CaveRoom>();
-        
-        for (int i = 0; i < leafNodes.Count; i++)
+        for (int i = 0; i < doorLocations.Count; i++)
         {
-            for (int j = 0; j < leafNodes[i].caveRoomConnectPoints.Length; j++)
-            {
-                if (leafNodes[i].caveRoomConnectPoints[j].IsConnected) continue;
-                var instructionStep 
-                    = AttachDungeonRoomAndCreateStep(leafNodes[i].SpawnID, j, nextLeafNodes, CaveRoomType.Leaf);
-                attachmentSteps.Add(instructionStep);
-                CaveRoom addedRoom = spawnedRooms_c[spawnedRooms_c.Count - 1];
-                dungeonRoomIDs.Add(addedRoom.PoolID);
-                dungeonRoomTypes.Add((int)addedRoom.RoomType);
-                attachmentSteps.Add(instructionStep);
-            }
+            SpawnDungeonDoor_S(caveDoorPrefab, doorLocations[i],
+                Quaternion.identity, 0);
         }
-        
+       
         DungeonGenerationInstructions instructions = new DungeonGenerationInstructions();
         instructions.DungeonRoomIDs = dungeonRoomIDs.ToArray();
         instructions.DungeonRoomTypes = dungeonRoomTypes.ToArray();
+        instructions.DoorPositions = doorLocations.ToArray();
         instructions.AttachmentSteps = attachmentSteps.ToArray();
         return instructions;
     }
@@ -221,6 +236,23 @@ public class DungeonManager : NetworkBehaviour
         
         return instructionStep;
     }
+
+    private void SpawnDungeonDoor_S(CaveDoor prefab, Vector3 position, Quaternion rotation, int linkIndex)
+    {
+        CaveDoor caveDoor = Instantiate(prefab, position, rotation);
+        NetworkObject no2 = caveDoor.GetComponent<NetworkObject>();
+        no2.Spawn();
+        caveDoor.DestinationDoorID.Value = linkIndex;
+        spawnedDoors.Add(no2.NetworkObjectId);
+    }
+    
+    private void SpawnLinkedDungeonDoor_S(CaveDoor prefab, Vector3 position, Quaternion rotation, int linkIndex)
+    {
+        SpawnDungeonDoor_S(prefab, position, rotation, linkIndex);
+        CaveDoor dungeonDoor = NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedDoors[linkIndex]]
+            .GetComponent<CaveDoor>();
+        dungeonDoor.DestinationDoorID.Value = spawnedDoors.Count - 1;
+    }
 }
 
 public class DungeonGenerationInstructions : INetworkSerializable
@@ -230,12 +262,15 @@ public class DungeonGenerationInstructions : INetworkSerializable
     public int[] DungeonRoomIDs;
     public int[] DungeonRoomTypes;
 
+    public Vector3[] DoorPositions;
+
     public DungeonAttachmentInstructionStep[] AttachmentSteps;
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref DungeonRoomIDs);
         serializer.SerializeValue(ref DungeonRoomTypes);
+        serializer.SerializeValue(ref DoorPositions);
         serializer.SerializeValue(ref AttachmentSteps);
     }
 }

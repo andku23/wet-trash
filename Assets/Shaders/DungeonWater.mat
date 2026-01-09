@@ -1,5 +1,18 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5666143785276425717
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Editor::UnityEditor.Rendering.Universal.AssetVersion
+  version: 10
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -7,18 +20,17 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Skybox
-  m_Shader: {fileID: 4800000, guid: bea2917b14b4f8f4f94359360c380e8d, type: 3}
+  m_Name: DungeonWater
+  m_Shader: {fileID: -6465566751694194690, guid: f6d8430285755f446b6d6d74775803e1,
+    type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
-  m_InvalidKeywords:
-  - _ENABLECLOUDS_ON
-  - _ENABLESTARS_ON
+  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
@@ -50,6 +62,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Intersection_Foam_Texture:
+        m_Texture: {fileID: 2800000, guid: 716010ae70e1b4e84ba6baf439991fae, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -58,8 +74,8 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _MoonTex:
-        m_Texture: {fileID: 2800000, guid: 16ef5f435c3ec004ab32a8a2cefb19ed, type: 3}
+    - _Normals_Texture:
+        m_Texture: {fileID: 2800000, guid: ead3be67941d84de8806e2bdbc4a2d24, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -72,6 +88,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Surface_Foam_Texture:
+        m_Texture: {fileID: 2800000, guid: 756d6724924f2448ab273c1be1db34c8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -91,75 +111,78 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _AtmosphereThickness: 1
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
-    - _CloudBaseHeight: 0.235
-    - _CloudCoverage: 1
-    - _CloudRotationY: 161
-    - _CloudScale: 1.464
-    - _CloudSeed: 450
-    - _CloudSoftness: 0.5
     - _Cull: 2
     - _Cutoff: 0.5
+    - _Depth_Fade_Distance: 27.93
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
-    - _DstBlend: 0
-    - _DstBlendAlpha: 0
-    - _EnableMoon: 0
-    - _EnableStars: 1
+    - _Direction: 0
+    - _Distortion_Speed: 0.2
+    - _DstBlend: 10
+    - _DstBlendAlpha: 10
     - _EnvironmentReflections: 1
+    - _Foam_Blend: 0.9
+    - _Foam_Fade_Distance: 5.13
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _HorizonHeight: 0
-    - _HorizonSharpness: 0.5
+    - _Horizon_Distance: 10
+    - _Intersection_Foam_Cutoff: 1.14
+    - _Intersection_Foam_Depth: 3.2
+    - _Intersection_Foam_Direction: 36.8
+    - _Intersection_Foam_Fade: 1
+    - _Intersection_Foam_Tiling: 28.71
+    - _Intersection_Foam_speed: 0.15
+    - _Lighting_Hardness: 0.81
+    - _Lighting_Smoothness: -0.04
     - _Metallic: 0
-    - _MoonSize: 0.15
+    - _Mode: 3
+    - _Normals_Scale: 0.1
+    - _Normals_Speed: 0.01
+    - _Normals_Strength: 4.04
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _QueueControl: 1
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _SkyExposure: 1
-    - _SkySaturation: 1
-    - _Smoothness: 0.5
+    - _Refraction_Distance: 300
+    - _Refraction_Scale: 0.01
+    - _Refraction_Speed: 2
+    - _Refraction_Strength: 0.01
+    - _Smoothness: 0.718
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _StarDensity: 281
-    - _StarIntensity: 0.15
-    - _StarSeed: 471
-    - _SunHaze: 0
-    - _SunSize: 0.05
-    - _Surface: 0
+    - _Steps: 20
+    - _Surface: 1
+    - _Surface_Foam_Direction: 0
+    - _Surface_Foam_Distortion: 0.3
+    - _Surface_Foam_Speed: 0.1
+    - _Surface_Foam_Tiling: 120
+    - _Tiling: 0
+    - _UVSec: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
-    - _ZWrite: 1
+    - _ZWrite: 0
+    - _speed: 0
     m_Colors:
-    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _CloudTint: {r: 0.2830189, g: 0.27572215, b: 0.25765398, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _BaseColor: {r: 0.35978103, g: 0.5692379, b: 0.990566, a: 0.5254902}
+    - _Color: {r: 0.35978103, g: 0.5692379, b: 0.990566, a: 0.5254902}
+    - _Deep_Color: {r: 0.13955145, g: 0.24520203, b: 0.6037736, a: 0.6392157}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _GroundColor: {r: 0.011764707, g: 0.050980397, b: 0.14117648, a: 1}
-    - _HorizonColor: {r: 0.012682444, g: 0.04976902, b: 0.14150941, a: 1}
+    - _Foam_Color: {r: 0, g: 0, b: 0, a: 1}
+    - _Horizon_Color: {r: 0.07742971, g: 0.33493942, b: 0.5660378, a: 0.44705883}
+    - _Intersection_Foam_Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Offset: {r: 0, g: 0, b: 0, a: 0}
+    - _Shallow_Color: {r: 0.1967782, g: 0.3994586, b: 0.6226415, a: 0.42745098}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
-    - _ZenithColor: {r: 0.041295845, g: 0.11700601, b: 0.3018868, a: 1}
+    - _Specular_Color: {r: 1, g: 1, b: 1, a: 0.078431375}
+    - _UV: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &8714281041022587196
-MonoBehaviour:
-  m_ObjectHideFlags: 11
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Editor::UnityEditor.Rendering.Universal.AssetVersion
-  version: 10

@@ -20,6 +20,7 @@ public class GameData : ScriptableObject
     public int NUM_OF_LOOT_GROUPS_PER_HOTSPOT = 10;
     public float MONSTER_DETECTION_RANGE_MULTIPLIER = 1;
     public float MONSTER_DAMAGE_MULTIPLIER = 1;
+    public int NUM_DOORS = 4;
 
 }
 

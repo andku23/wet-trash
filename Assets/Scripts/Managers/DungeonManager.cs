@@ -86,6 +86,7 @@ public class DungeonManager : NetworkBehaviour
         List<int> dungeonRoomIDs = new List<int>();
         List<int> dungeonRoomTypes = new List<int>();
         List<Vector3> doorLocations = new List<Vector3>();
+        List<Quaternion> doorRotation = new List<Quaternion>();
         List<DungeonAttachmentInstructionStep> attachmentSteps = new List<DungeonAttachmentInstructionStep>();
         
         // Lists for tracking outermost attachment points
@@ -138,24 +139,32 @@ public class DungeonManager : NetworkBehaviour
             leafNodes = nextLeafNodes;
             nextLeafNodes = new List<CaveRoom>();
         }
+
+        int numDoors = possibleDoorLocations_s.Count;
         
-        int numDoors = Random.Range(1, possibleDoorLocations_s.Count);
+        if (possibleDoorLocations_s.Count > GameManager.Instance.gameData.NUM_DOORS)
+        {
+            numDoors = Random.Range(GameManager.Instance.gameData.NUM_DOORS, possibleDoorLocations_s.Count);
+        }
+            
         VarietyUtilities.Shuffle(possibleDoorLocations_s, 1);
         for (int i = 0; i < numDoors; i++)
         {
             doorLocations.Add(possibleDoorLocations_s[i].position);
+            doorRotation.Add(possibleDoorLocations_s[i].rotation);
         }
 
         for (int i = 0; i < doorLocations.Count; i++)
         {
             SpawnDungeonDoor_S(caveDoorPrefab, doorLocations[i],
-                Quaternion.identity, 0);
+                doorRotation[i], 0);
         }
        
         DungeonGenerationInstructions instructions = new DungeonGenerationInstructions();
         instructions.DungeonRoomIDs = dungeonRoomIDs.ToArray();
         instructions.DungeonRoomTypes = dungeonRoomTypes.ToArray();
         instructions.DoorPositions = doorLocations.ToArray();
+        instructions.DoorRotations = doorRotation.ToArray();
         instructions.AttachmentSteps = attachmentSteps.ToArray();
         return instructions;
     }
@@ -263,6 +272,7 @@ public class DungeonGenerationInstructions : INetworkSerializable
     public int[] DungeonRoomTypes;
 
     public Vector3[] DoorPositions;
+    public Quaternion[] DoorRotations;
 
     public DungeonAttachmentInstructionStep[] AttachmentSteps;
     
@@ -271,6 +281,7 @@ public class DungeonGenerationInstructions : INetworkSerializable
         serializer.SerializeValue(ref DungeonRoomIDs);
         serializer.SerializeValue(ref DungeonRoomTypes);
         serializer.SerializeValue(ref DoorPositions);
+        serializer.SerializeValue(ref DoorRotations);
         serializer.SerializeValue(ref AttachmentSteps);
     }
 }

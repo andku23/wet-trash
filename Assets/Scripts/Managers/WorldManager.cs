@@ -737,12 +737,6 @@ public class WorldManager : NetworkBehaviour
 
             if (IsServer)
             {
-                NetworkObject no = Instantiate(enemyPrefabs[0],
-                    hole.transform.position,
-                    Quaternion.identity
-                ).GetComponent<NetworkObject>();
-                no.Spawn();
-                InitialEnemies.Add(no);
                 LootManager.Instance.RegisterLootGroupServer(hole);
             }
         }

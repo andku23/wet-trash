@@ -129,6 +129,8 @@ public class LootManager : NetworkBehaviour
         {
             for (int j = 0; j < _lootGroups[i].lootSpawnLocations.Length; j++)
             {
+                bool spawnLoot = Random.Range(0f, 1f) > GameManager.Instance.gameData.LOOT_GROUP_SPAWN_PROBABILITY;
+                if (!spawnLoot) continue;
                 var groupItemData =
                     SpawnLootFromTable(_lootGroups[i].lootSpawnLocations[j].position, spawnProbabilityRare);
                 foreach (var valueType in groupItemData.valueRange)

@@ -22,7 +22,8 @@ public class PlayerAudioSource : MonoBehaviour
         RockHit,
         RockBreak,
         ItemPickup,
-        RadarPing
+        RadarPing,
+        Drowning
     }
 
     public void PlaySound(int index)

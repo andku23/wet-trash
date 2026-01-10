@@ -23,7 +23,7 @@ RenderSettings:
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
-  m_AmbientIntensity: 1
+  m_AmbientIntensity: 0.7
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 2100000, guid: 952a963e19e6c844f97501bfa299dd94, type: 2}
@@ -5602,6 +5602,11 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 00a3d7c364e6244449079710d506d093, type: 3}
     volume: 1
+    isInstantiatedAudio: 0
+  - soundType: 13
+    clips:
+    - {fileID: 8300000, guid: 1cf09994464270940b8f9de900c7850b, type: 3}
+    volume: 0.5
     isInstantiatedAudio: 0
   audioSource: {fileID: 1559103421}
   instantiatedAudioPrefab: {fileID: 2009001621130955767, guid: bd1dad8641735d644a22ba5210f94d32,

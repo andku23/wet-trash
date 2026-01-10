@@ -16,6 +16,7 @@ public class GameData : ScriptableObject
     public int MONSTER_SPAWN_PER_HOUR = 4;
     public int MONSTER_SPAWN_INITIAL = 10;
     public int LOOT_PROBABILITY_DIVISOR = 400;
+    public float LOOT_GROUP_SPAWN_PROBABILITY = 0.5f;
     public int NUM_HARVESTABLES = 20;
     public int NUM_OF_LOOT_GROUPS_PER_HOTSPOT = 10;
     public float MONSTER_DETECTION_RANGE_MULTIPLIER = 1;

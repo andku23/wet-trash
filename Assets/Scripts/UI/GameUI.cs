@@ -28,6 +28,9 @@ public class GameUI : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI quotaText;
     [SerializeField] private RectTransform breathParent;
     [SerializeField] private Image breathFill;
+    [SerializeField] private Color breathColorGood;
+    [SerializeField] private Color breathColorMid;
+    [SerializeField] private Color breathColorBad;
     [SerializeField] private HotbarItem[] hotbarItems;
     
     [Space(10)]
@@ -368,7 +371,24 @@ public class GameUI : NetworkBehaviour
     
     public void UpdateBreathBar(float percentage)
     {
+        if (breathFill.fillAmount >= 0.3f && percentage <= 0.3f)
+        {
+            GameManager.Instance.AudioSource.PlaySound(PlayerAudioSource.SoundType.Drowning);
+        }
+        
         breathFill.fillAmount = percentage;
+
+        if (percentage >= 0.6f)
+        {
+            breathFill.color = breathColorGood;
+        } else if (percentage >= 0.3f)
+        {
+            breathFill.color = breathColorMid;
+        }
+        else
+        {
+            breathFill.color = breathColorBad;
+        }
     }
     
     #endregion

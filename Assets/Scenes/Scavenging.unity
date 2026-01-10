@@ -23,7 +23,7 @@ RenderSettings:
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
-  m_AmbientIntensity: 1
+  m_AmbientIntensity: 0.8
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.33641866, g: 0.43344498, b: 0.6792453, a: 1}
   m_SkyboxMaterial: {fileID: 2100000, guid: 952a963e19e6c844f97501bfa299dd94, type: 2}
@@ -442,7 +442,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 130242604}
   m_HandleRect: {fileID: 130242603}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -4568,7 +4568,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1156373937}
   m_HandleRect: {fileID: 1156373936}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -6614,6 +6614,9 @@ MonoBehaviour:
   quotaText: {fileID: 647400948}
   breathParent: {fileID: 443616730}
   breathFill: {fileID: 242119474}
+  breathColorGood: {r: 0.4009434, g: 1, b: 0.4816325, a: 1}
+  breathColorMid: {r: 1, g: 0.83151, b: 0.3537736, a: 1}
+  breathColorBad: {r: 0.6698113, g: 0, b: 0, a: 1}
   hotbarItems:
   - {fileID: 6938487910987288255}
   - {fileID: 367374518}
@@ -7618,9 +7621,9 @@ MonoBehaviour:
   sunLight: {fileID: 2028215876}
   skyboxTimes:
   - normalizedStartTime: 0
-    normalizedEndTime: 0.07
+    normalizedEndTime: 0.01
     skyboxMaterial: {fileID: 2100000, guid: aba2d0ab67d2a18428ff0a4efe5bfc6e, type: 2}
-  - normalizedStartTime: 0.07
+  - normalizedStartTime: 0.01
     normalizedEndTime: 0.15
     skyboxMaterial: {fileID: 2100000, guid: 19cd9dafe0dfb49489cd72d9d3870b4d, type: 2}
   - normalizedStartTime: 0.15

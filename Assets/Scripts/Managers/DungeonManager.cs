@@ -15,6 +15,11 @@ public class DungeonManager : NetworkBehaviour
     [SerializeField] private CaveDoor surfaceDoorPrefab;
     
     private int DUNGEON_DEPTH = 3;
+    private int DUNGEON_SPACING = 200;
+    private int MAX_NUM_DUNGEONS = 3;
+    
+    
+    private int numDungeons;
 
     private List<CaveRoom> spawnedRooms_c = new List<CaveRoom>();
     private DungeonGenerationInstructions dungeonGenData_c;
@@ -79,68 +84,79 @@ public class DungeonManager : NetworkBehaviour
             NetworkManager.Singleton.SpawnManager.SpawnedObjects[spawnedDoors[i]].Despawn(true);
         }
         spawnedDoors.Clear();
-        
         possibleDoorLocations_s.Clear();
+        
+        // numDungeons = Random.Range(1, MAX_NUM_DUNGEONS + 1);
+        numDungeons = MAX_NUM_DUNGEONS;
         
         // Data so I can create the instructions at the end
         List<int> dungeonRoomIDs = new List<int>();
         List<int> dungeonRoomTypes = new List<int>();
         List<Vector3> doorLocations = new List<Vector3>();
         List<Quaternion> doorRotation = new List<Quaternion>();
+        List<int> startingRooms = new List<int>();
         List<DungeonAttachmentInstructionStep> attachmentSteps = new List<DungeonAttachmentInstructionStep>();
-        
-        // Lists for tracking outermost attachment points
-        List<CaveRoom> leafNodes = new List<CaveRoom>();
-        List<CaveRoom> nextLeafNodes = new List<CaveRoom>();
-        
-        Vector3 dungeonPosition = new Vector3(0, -1000, 0);
 
-        int entrancePoolIndex = 0;
-        var startRoom = Instantiate(caveDungeonStartRooms[entrancePoolIndex]);
-        startRoom.SpawnID = 0;
-        startRoom.PoolID = entrancePoolIndex;
-        startRoom.RoomType = CaveRoomType.Entrance;
-        startRoom.transform.position = dungeonPosition;
-        spawnedRooms_c.Add(startRoom);
-
-        for (int i = 0; i < startRoom.caveDoorPossibleLocations.Length; i++)
+        for (int dungeonIndex = 0; dungeonIndex < numDungeons; dungeonIndex++)
         {
-            possibleDoorLocations_s.Add(startRoom.caveDoorPossibleLocations[i]);
-        }
+            
+            // Lists for tracking outermost attachment points
+            List<CaveRoom> leafNodes = new List<CaveRoom>();
+            List<CaveRoom> nextLeafNodes = new List<CaveRoom>();
         
-        dungeonRoomIDs.Add(entrancePoolIndex);
-        dungeonRoomTypes.Add((int)CaveRoomType.Entrance);
-        
-        leafNodes.Add(startRoom);
-
-        for (int depth = 0; depth < DUNGEON_DEPTH; depth++)
-        {
-            for (int leafNodeIndex = 0; leafNodeIndex < leafNodes.Count; leafNodeIndex++)
+            // Position of initial room, slightly different for each room
+            Vector3 dungeonPosition = new Vector3(dungeonIndex * DUNGEON_SPACING, -1000, 0);
+            
+            // Instantiate an entrance room and set all of it's values
+            int entrancePoolIndex = 0;
+            var startRoom = Instantiate(caveDungeonStartRooms[entrancePoolIndex]);
+            startRoom.SpawnID = spawnedRooms_c.Count;
+            startRoom.PoolID = entrancePoolIndex;
+            startRoom.RoomType = CaveRoomType.Entrance;
+            startRoom.transform.position = dungeonPosition;
+            spawnedRooms_c.Add(startRoom);
+            startingRooms.Add(startRoom.SpawnID);
+            
+            for (int i = 0; i < startRoom.caveDoorPossibleLocations.Length; i++)
             {
-                CaveRoomType roomType = (depth == DUNGEON_DEPTH - 1) ? CaveRoomType.Leaf : CaveRoomType.Hall;
-                
-                for (int connectPointIdx = 0; connectPointIdx < leafNodes[leafNodeIndex].caveRoomConnectPoints.Length; connectPointIdx++)
+                possibleDoorLocations_s.Add(startRoom.caveDoorPossibleLocations[i]);
+            }
+        
+            dungeonRoomIDs.Add(entrancePoolIndex);
+            dungeonRoomTypes.Add((int)CaveRoomType.Entrance);
+            leafNodes.Add(startRoom);
+            
+            // Loop through each of the leaf nodes and add rooms until  we
+            // get to the total depth
+            for (int depth = 0; depth < DUNGEON_DEPTH; depth++)
+            {
+                for (int leafNodeIndex = 0; leafNodeIndex < leafNodes.Count; leafNodeIndex++)
                 {
-                    if (leafNodes[leafNodeIndex].caveRoomConnectPoints[connectPointIdx].IsConnected) continue;
-                    var instructionStep 
-                        = AttachDungeonRoomAndCreateStep(leafNodes[leafNodeIndex].SpawnID, connectPointIdx, nextLeafNodes, roomType);
-                    CaveRoom addedRoom = spawnedRooms_c[spawnedRooms_c.Count - 1];
-                    dungeonRoomIDs.Add(addedRoom.PoolID);
-                    dungeonRoomTypes.Add((int)addedRoom.RoomType);
-                    attachmentSteps.Add(instructionStep);
-                    LootManager.Instance.RegisterLootGroupServer(addedRoom);
-                    for (int j = 0; j < addedRoom.caveDoorPossibleLocations.Length; j++)
+                    CaveRoomType roomType = (depth == DUNGEON_DEPTH - 1) ? CaveRoomType.Leaf : CaveRoomType.Hall;
+                
+                    for (int connectPointIdx = 0; connectPointIdx < leafNodes[leafNodeIndex].caveRoomConnectPoints.Length; connectPointIdx++)
                     {
-                        possibleDoorLocations_s.Add(addedRoom.caveDoorPossibleLocations[j]);
+                        if (leafNodes[leafNodeIndex].caveRoomConnectPoints[connectPointIdx].IsConnected) continue;
+                        var instructionStep 
+                            = AttachDungeonRoomAndCreateStep(leafNodes[leafNodeIndex].SpawnID, connectPointIdx, nextLeafNodes, roomType);
+                        CaveRoom addedRoom = spawnedRooms_c[spawnedRooms_c.Count - 1];
+                        dungeonRoomIDs.Add(addedRoom.PoolID);
+                        dungeonRoomTypes.Add((int)addedRoom.RoomType);
+                        attachmentSteps.Add(instructionStep);
+                        LootManager.Instance.RegisterLootGroupServer(addedRoom);
+                        for (int j = 0; j < addedRoom.caveDoorPossibleLocations.Length; j++)
+                        {
+                            possibleDoorLocations_s.Add(addedRoom.caveDoorPossibleLocations[j]);
+                        }
                     }
                 }
+
+                leafNodes.Clear();
+                leafNodes = nextLeafNodes;
+                nextLeafNodes = new List<CaveRoom>();
             }
-
-            leafNodes.Clear();
-            leafNodes = nextLeafNodes;
-            nextLeafNodes = new List<CaveRoom>();
         }
-
+        
         int numDoors = possibleDoorLocations_s.Count;
         
         if (possibleDoorLocations_s.Count > GameManager.Instance.gameData.NUM_DOORS)
@@ -166,6 +182,7 @@ public class DungeonManager : NetworkBehaviour
         instructions.DungeonRoomTypes = dungeonRoomTypes.ToArray();
         instructions.DoorPositions = doorLocations.ToArray();
         instructions.DoorRotations = doorRotation.ToArray();
+        instructions.StartingRoomIndexes = startingRooms.ToArray();
         instructions.AttachmentSteps = attachmentSteps.ToArray();
         return instructions;
     }
@@ -185,18 +202,22 @@ public class DungeonManager : NetworkBehaviour
         if (IsServer) return; // Already generated on server
         ClearDungeon_C();
         
-        Vector3 dungeonPosition = new Vector3(0, -1000, 0);
-        
-        CaveRoom[] roomPoolEntrance = GetRoomPoolFromType((CaveRoomType)dungeonGenData_c.DungeonRoomTypes[0]);
-        spawnedRooms_c.Add(Instantiate(roomPoolEntrance[dungeonGenData_c.DungeonRoomIDs[0]]));
-        spawnedRooms_c[0].transform.position = dungeonPosition;
-        
-        for (int i = 1; i < dungeonGenData_c.DungeonRoomIDs.Length; i++)
+        // Fully populate array of all the rooms
+        for (int i = 0; i < dungeonGenData_c.DungeonRoomIDs.Length; i++)
         {
             CaveRoom[] roomPool = GetRoomPoolFromType((CaveRoomType)dungeonGenData_c.DungeonRoomTypes[i]);
             spawnedRooms_c.Add(Instantiate(roomPool[dungeonGenData_c.DungeonRoomIDs[i]]));
         }
         
+        // Place all the starting rooms in  different locations
+        for (int dungeonIndex = 0; dungeonIndex < dungeonGenData_c.StartingRoomIndexes.Length; dungeonIndex++)
+        {
+            int startRoomIndex = dungeonGenData_c.StartingRoomIndexes[dungeonIndex];
+            Vector3 dungeonPosition = new Vector3(dungeonIndex * DUNGEON_SPACING, -1000, 0);
+            spawnedRooms_c[startRoomIndex].transform.position = dungeonPosition;
+        }
+        
+        // Attach all the rooms together accordingly
         for (int i = 0; i < dungeonGenData_c.AttachmentSteps.Length; i++)
         {
             var attachStep = dungeonGenData_c.AttachmentSteps[i];
@@ -276,6 +297,7 @@ public class DungeonGenerationInstructions : INetworkSerializable
     public Quaternion[] DoorRotations;
 
     public DungeonAttachmentInstructionStep[] AttachmentSteps;
+    public int[] StartingRoomIndexes; // array of all the indexes that have starting rooms, array size equal to how many starting rooms
     
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
@@ -284,6 +306,7 @@ public class DungeonGenerationInstructions : INetworkSerializable
         serializer.SerializeValue(ref DoorPositions);
         serializer.SerializeValue(ref DoorRotations);
         serializer.SerializeValue(ref AttachmentSteps);
+        serializer.SerializeValue(ref StartingRoomIndexes);
     }
 }
 

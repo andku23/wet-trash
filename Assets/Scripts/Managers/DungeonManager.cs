@@ -18,13 +18,14 @@ public class DungeonManager : NetworkBehaviour
     private int DUNGEON_SPACING = 200;
     private int MAX_NUM_DUNGEONS = 3;
     
-    
     private int numDungeons;
 
     private List<CaveRoom> spawnedRooms_c = new List<CaveRoom>();
     private DungeonGenerationInstructions dungeonGenData_c;
     
     private List<Transform> possibleDoorLocations_s = new List<Transform>();
+    
+    public CaveRoom RandomCaveRoom => spawnedRooms_c[Random.Range(0, spawnedRooms_c.Count)];
 
     public NetworkList<ulong> spawnedDoors;
     public enum CaveRoomType

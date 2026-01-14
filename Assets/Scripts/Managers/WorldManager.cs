@@ -370,15 +370,17 @@ public class WorldManager : NetworkBehaviour
         SpawnedEnemies_S.Add(baseEnemy);
     }
     
-    public void SpawnRandomDungeonEnemy_S()
+    public void SpawnRandomDungeonEnemy_S(CaveRoom caveRoom)
     {
-        Vector3 randomPointInOcean = GetRandomPointNearHotspot(); // TODO make this random dungeon spot
+        Vector3 spawnPoint = caveRoom.transform.position;
         var randomEnemy = enemyDungeonPrefabs[Random.Range(0, enemyDungeonPrefabs.Length)];
         BaseEnemy baseEnemy = Instantiate(randomEnemy,
-            randomPointInOcean,
+            spawnPoint,
             Quaternion.identity
         );
         baseEnemy.SpawnArea_S = BaseEnemy.SpawnAreaType.Dungeon;
+        CaveEnemy caveEnemy = baseEnemy.GetComponent<CaveEnemy>();
+        caveEnemy.CurrentRoom_S = caveRoom;
         baseEnemy.NetworkObject.Spawn();
         SpawnedEnemies_S.Add(baseEnemy);
     }

@@ -10,7 +10,7 @@ public class CaveEnemy : BaseEnemy
     private CaveRoom _currentRoom_s;
     private CaveRoom _targetRoom_s;
     
-    public CaveRoom CurrentRoom_S => _currentRoom_s;
+    public CaveRoom CurrentRoom_S {get => _currentRoom_s; set => _currentRoom_s = value; }
     
     enum ServerStates
     {

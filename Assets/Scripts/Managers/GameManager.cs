@@ -479,7 +479,8 @@ public class GameManager : NetworkBehaviour
             
             if (currentDungeonSpawnedMonsters < expectedDungeonMonstersSpawned)
             {
-                WorldManager.Instance.SpawnRandomDungeonEnemy_S();
+                CaveRoom randomRoom = DungeonManager.Instance.RandomCaveRoom;
+                WorldManager.Instance.SpawnRandomDungeonEnemy_S(randomRoom);
             }
         }
     }

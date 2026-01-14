@@ -5,6 +5,7 @@ using UnityEngine;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 public class WorldManager : NetworkBehaviour
@@ -12,7 +13,8 @@ public class WorldManager : NetworkBehaviour
     public static WorldManager Instance;
     [SerializeField] private GameObject[] caveRoomEnds;
     
-    [SerializeField] private GameObject[] enemyPrefabs;
+    [SerializeField] private BaseEnemy[] enemyOverworldPrefabs;
+    [SerializeField] private BaseEnemy[] enemyDungeonPrefabs;
     [SerializeField] private GameObject[] lootGroupPrefabs;
     [SerializeField] private GameObject[] harvestablePrefabs;
     public int NUM_OF_HOLES;
@@ -21,9 +23,9 @@ public class WorldManager : NetworkBehaviour
     public List<GameObject> SpawnedHoles;
     public List<GameObject> SpawnedLootGroups;
     
-    public List<NetworkObject> InitialEnemies; // Enemies spawned at start
-    public List<NetworkObject> SpawnedEnemies; // Enemis that spawn as the day goes on
-    public List<NetworkObject> SpawnedHarvestables; 
+    [HideInInspector] public List<NetworkObject> InitialEnemies; // Enemies spawned at start 
+    [HideInInspector] public List<BaseEnemy> SpawnedEnemies_S; // Enemis that spawn as the day goes on 
+    [HideInInspector] public List<NetworkObject> SpawnedHarvestables;  
 
     private Vector2[] currentHolePositions_c;
     private Vector2[] currentLootGroupPositions_c;
@@ -32,7 +34,7 @@ public class WorldManager : NetworkBehaviour
     private ClientTerrainGenerationData terrainGenerationData;
     private ClientStructureGenerationData structureGenerationData;
     
-    public int NumSpawnedMonsters => SpawnedEnemies.Count;
+    public int NumSpawnedMonsters => SpawnedEnemies_S.Count;
 
 
     [SerializeField] private Terrain _terrain;
@@ -326,11 +328,11 @@ public class WorldManager : NetworkBehaviour
         }
         SpawnedLootGroups.Clear();
         
-        for (int enemyIndex = 0; enemyIndex < SpawnedEnemies.Count; enemyIndex++)
+        for (int enemyIndex = 0; enemyIndex < SpawnedEnemies_S.Count; enemyIndex++)
         {
-            SpawnedEnemies[enemyIndex].Despawn(true);
+            SpawnedEnemies_S[enemyIndex].NetworkObject.Despawn(true);
         }
-        SpawnedEnemies.Clear();
+        SpawnedEnemies_S.Clear();
         
         for (int enemyIndex = 0; enemyIndex < InitialEnemies.Count; enemyIndex++)
         {
@@ -358,13 +360,27 @@ public class WorldManager : NetworkBehaviour
     public void SpawnRandomEnemy_S()
     {
         Vector3 randomPointInOcean = GetRandomPointNearHotspot();
-        var randomEnemy = enemyPrefabs[Random.Range(1, enemyPrefabs.Length)];
-        NetworkObject no = Instantiate(randomEnemy,
+        var randomEnemy = enemyOverworldPrefabs[Random.Range(0, enemyOverworldPrefabs.Length)];
+        BaseEnemy baseEnemy = Instantiate(randomEnemy,
             randomPointInOcean,
             Quaternion.identity
-        ).GetComponent<NetworkObject>();
-        no.Spawn();
-        SpawnedEnemies.Add(no);
+        );
+        baseEnemy.SpawnArea_S = BaseEnemy.SpawnAreaType.Overworld;
+        baseEnemy.NetworkObject.Spawn();
+        SpawnedEnemies_S.Add(baseEnemy);
+    }
+    
+    public void SpawnRandomDungeonEnemy_S()
+    {
+        Vector3 randomPointInOcean = GetRandomPointNearHotspot(); // TODO make this random dungeon spot
+        var randomEnemy = enemyDungeonPrefabs[Random.Range(0, enemyDungeonPrefabs.Length)];
+        BaseEnemy baseEnemy = Instantiate(randomEnemy,
+            randomPointInOcean,
+            Quaternion.identity
+        );
+        baseEnemy.SpawnArea_S = BaseEnemy.SpawnAreaType.Dungeon;
+        baseEnemy.NetworkObject.Spawn();
+        SpawnedEnemies_S.Add(baseEnemy);
     }
 
     public void SpawnRandomHarvestable_S()
@@ -723,7 +739,7 @@ public class WorldManager : NetworkBehaviour
     {
         // Spawn in loot groups, enemies and terrain features
         SpawnedHoles = new List<GameObject>();
-        SpawnedEnemies = new List<NetworkObject>();
+        SpawnedEnemies_S = new List<BaseEnemy>();
         InitialEnemies = new List<NetworkObject>();
         SpawnedLootGroups = new List<GameObject>();
         

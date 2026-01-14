@@ -112,6 +112,7 @@ public class DungeonManager : NetworkBehaviour
             var startRoom = Instantiate(caveDungeonStartRooms[entrancePoolIndex]);
             startRoom.SpawnID = spawnedRooms_c.Count;
             startRoom.PoolID = entrancePoolIndex;
+            startRoom.DungeonNum = dungeonIndex;
             startRoom.RoomType = CaveRoomType.Entrance;
             startRoom.transform.position = dungeonPosition;
             spawnedRooms_c.Add(startRoom);
@@ -252,6 +253,7 @@ public class DungeonManager : NetworkBehaviour
         spawnedRooms_c.Add(toRoom);
         nextTierLeafNodes.Add(toRoom);
         toRoom.PoolID = poolIndex;
+        toRoom.DungeonNum = fromRoom.DungeonNum;
         toRoom.RoomType = roomType;
         toRoom.SpawnID = spawnedRooms_c.Count - 1;
         int attachToIndex = Random.Range(0, toRoom.caveRoomConnectPoints.Length);

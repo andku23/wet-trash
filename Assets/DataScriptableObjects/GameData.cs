@@ -9,12 +9,17 @@ public class GameData : ScriptableObject
     public int DAY_END_HOUR = 24;
     public float QUOTA_PERCENTAGE = 0.5f; // percnetage of total loot price spawned required for quota
     //public int INITIAL_CASH = 400;
+    
     public CurrencyValuePair[] INITIAL_CASH;
     public float WEIGHT_MULTIPLIER = 1;
     public int NUM_ROGUE_CARDS = 2;
+    
     public int MAX_MONSTERS_PER_DAY = 40;
-    public int MONSTER_SPAWN_PER_HOUR = 4;
-    public int MONSTER_SPAWN_INITIAL = 10;
+    public int MONSTER_SURFACE_SPAWN_PER_HOUR = 4;
+    public int MONSTER_SURFACE_SPAWN_INITIAL = 10;
+    public float MONSTER_DUNGEON_SPAWN_PER_HOUR = 0.5f;
+    public int MONSTER_DUNGEON_SPAWN_INITIAL = 0;
+    
     public int LOOT_PROBABILITY_DIVISOR = 400;
     public float LOOT_GROUP_SPAWN_PROBABILITY = 0.5f;
     public int NUM_HARVESTABLES = 20;

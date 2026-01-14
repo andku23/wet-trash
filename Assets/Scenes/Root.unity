@@ -3093,10 +3093,12 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   caveRoomEnds:
   - {fileID: 6761049422850096718, guid: 282d08b761b871d4f8d2de506e6a8eab, type: 3}
-  enemyPrefabs:
-  - {fileID: 4819457247987509043, guid: 7500bbb7360b2b9429f36a861a60d432, type: 3}
-  - {fileID: 8443838413313330062, guid: 5c8e1d25e38efe24ca7805711a2daa23, type: 3}
-  - {fileID: 6626012648495537791, guid: b7062d4672358eb4d96da810a301a6a1, type: 3}
+  enemyOverworldPrefabs:
+  - {fileID: 1148161142998992608, guid: 7500bbb7360b2b9429f36a861a60d432, type: 3}
+  - {fileID: 2279602247484646165, guid: 5c8e1d25e38efe24ca7805711a2daa23, type: 3}
+  - {fileID: 5896221637104992699, guid: b7062d4672358eb4d96da810a301a6a1, type: 3}
+  enemyDungeonPrefabs:
+  - {fileID: 3113850177720824287, guid: 0fbec0ffbb331bf4da3c36113818ab0e, type: 3}
   lootGroupPrefabs:
   - {fileID: 3050108428026251150, guid: c59acad9939c2734e9cec17f9d4a01aa, type: 3}
   harvestablePrefabs:
@@ -3106,7 +3108,7 @@ MonoBehaviour:
   SpawnedHoles: []
   SpawnedLootGroups: []
   InitialEnemies: []
-  SpawnedEnemies: []
+  SpawnedEnemies_S: []
   SpawnedHarvestables: []
   _terrain: {fileID: 0}
 --- !u!1 &802126870

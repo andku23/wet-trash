@@ -255,7 +255,7 @@ public class RogueEffectManager : NetworkBehaviour
     [ClientRpc(RequireOwnership = false)]
     public void ChangeMonsterSpawnRate_ClientRpc(int target)
     {
-        GameManager.Instance.gameData.MONSTER_SPAWN_PER_HOUR = target;
+        GameManager.Instance.gameData.MONSTER_SURFACE_SPAWN_PER_HOUR = target;
     }
     
     #endregion

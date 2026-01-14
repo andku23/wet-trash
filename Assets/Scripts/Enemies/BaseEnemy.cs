@@ -14,11 +14,18 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
     protected Vector3 initialPosition;
     protected Quaternion nextRotation;
     protected NetworkVariable<int> _health = new NetworkVariable<int>(0);
-    
+    protected SpawnAreaType _spawnArea_s;
     
     protected NetworkVariable<int> _networkState = new NetworkVariable<int>(0);
     public int Health => _health.Value;
+    public SpawnAreaType SpawnArea_S {get => _spawnArea_s; set => _spawnArea_s = value; }
     protected ClientStateMachine _stateMachine;
+
+    public enum SpawnAreaType
+    {
+        Overworld,
+        Dungeon
+    }
     
     public override void OnNetworkSpawn()
     {

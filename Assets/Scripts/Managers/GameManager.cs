@@ -234,7 +234,8 @@ public class GameManager : NetworkBehaviour
                 break;
             case TimeState.LoadingTerrain:
                 _day++;
-                currentLevelData_s = new LevelData(gameData.MAX_MONSTERS_PER_DAY, gameData.MONSTER_SPAWN_PER_HOUR);
+                currentLevelData_s = new LevelData(gameData.MAX_MONSTERS_PER_DAY, gameData.MONSTER_SURFACE_SPAWN_PER_HOUR,
+                                                    gameData.MONSTER_DUNGEON_SPAWN_PER_HOUR);
                 var clientTerrainGenData = WorldManager.Instance.GenerateClientTerrainData_S();
                 WorldManager.Instance.AssignTerrainGenerationData_ClientRpc(clientTerrainGenData);
                 WaitForPlayerResponse_S(ToNextGameState_ServerRpc);
@@ -411,7 +412,7 @@ public class GameManager : NetworkBehaviour
         // Spawn Initial Monsters
         if (IsServer)
         {
-            for (int i = 0; i < GameManager.Instance.gameData.MONSTER_SPAWN_INITIAL; i++)
+            for (int i = 0; i < GameManager.Instance.gameData.MONSTER_SURFACE_SPAWN_INITIAL; i++)
             {
                 WorldManager.Instance.SpawnRandomEnemy_S();
             }
@@ -448,15 +449,37 @@ public class GameManager : NetworkBehaviour
 
     private void CheckMonsterSpawn_S(int realSecondsPassed, int realTotalSeconds)
     {
-        int currentSpawnedMonsters = WorldManager.Instance.NumSpawnedMonsters;
-        if (currentSpawnedMonsters < currentLevelData_s.MAX_MONSTERS_SPAWNED)
+        int currentOverworldSpawnedMonsters = 0;
+        int currentDungeonSpawnedMonsters = 0;
+
+        for (int i = 0; i < WorldManager.Instance.SpawnedEnemies_S.Count; i++)
+        {
+            switch (WorldManager.Instance.SpawnedEnemies_S[i].SpawnArea_S)
+            {
+                case BaseEnemy.SpawnAreaType.Overworld:
+                    currentOverworldSpawnedMonsters++;
+                    break;
+                case BaseEnemy.SpawnAreaType.Dungeon:
+                    currentDungeonSpawnedMonsters++;
+                    break;
+            }
+        }
+        
+        if (currentOverworldSpawnedMonsters + currentDungeonSpawnedMonsters < currentLevelData_s.MAX_MONSTERS_SPAWNED)
         {
             float pctElapsed = (float)realSecondsPassed / realTotalSeconds;
             float hoursElapsed = (pctElapsed) * GetDayLengthHours;
-            int expectedMonstersSpawned = Mathf.FloorToInt(hoursElapsed * currentLevelData_s.MONSTER_SPAWN_PER_HOUR);
-            if (currentSpawnedMonsters < expectedMonstersSpawned)
+            int expectedSurfaceMonstersSpawned = Mathf.FloorToInt(hoursElapsed * currentLevelData_s.MONSTER_OVERWORLD_SPAWN_PER_HOUR);
+            int expectedDungeonMonstersSpawned = Mathf.FloorToInt(hoursElapsed * currentLevelData_s.MONSTER_DUNGEON_SPAWN_PER_HOUR);
+            
+            if (currentOverworldSpawnedMonsters < expectedSurfaceMonstersSpawned)
             {
                 WorldManager.Instance.SpawnRandomEnemy_S();
+            }
+            
+            if (currentDungeonSpawnedMonsters < expectedDungeonMonstersSpawned)
+            {
+                WorldManager.Instance.SpawnRandomDungeonEnemy_S();
             }
         }
     }

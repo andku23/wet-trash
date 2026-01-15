@@ -104,7 +104,6 @@ public class CaveEnemy : BaseEnemy
             currentTracebackRoom = currentTracebackRoom.PF_Parent;
         }
         roomPath_s.Add(CurrentRoom_S);
-        roomPath_s.Reverse();
 
         string cavePath = "";
         foreach (CaveRoom room in roomPath_s)
@@ -125,8 +124,20 @@ public class CaveEnemy : BaseEnemy
     
     private void Idle_Update()
     {
-        
-        
+        // If we're at the destination room
+        if (CurrentRoom_S == roomPath_s[0])
+        {
+            CreateRoomPath_S(DungeonManager.Instance.GetRandomCaveRoom(_currentRoom_s.DungeonNum, CurrentRoom_S));
+        }
+        else
+        {
+            transform.position = Vector3.Lerp(transform.position, roomPath_s[roomPath_s.Count - 1].transform.position, 0.5f * Time.deltaTime);
+            if (Vector3.Distance(transform.position,roomPath_s[roomPath_s.Count - 1].transform.position) < 0.1f)
+            {
+                roomPath_s.RemoveAt(roomPath_s.Count - 1);
+                CurrentRoom_S = roomPath_s[roomPath_s.Count - 1];
+            }
+        }
     }
     
     #endregion

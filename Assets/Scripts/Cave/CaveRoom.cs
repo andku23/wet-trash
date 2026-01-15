@@ -11,4 +11,7 @@ public class CaveRoom : LootGroup
     [HideInInspector] public int SpawnID; // The spot in the total array of rooms
     [HideInInspector] public int DungeonNum; // Usually 3 dungeons spawn per day, this is which one the room belong to
     [HideInInspector] public DungeonManager.CaveRoomType RoomType;
+
+    [HideInInspector] public bool PF_Explored;
+    [HideInInspector] public CaveRoom PF_Parent;
 }

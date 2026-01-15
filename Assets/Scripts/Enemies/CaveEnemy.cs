@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ public class CaveEnemy : BaseEnemy
     private Collider _currentWaterBody_s;
     private CaveRoom _currentRoom_s;
     private CaveRoom _targetRoom_s;
+    
+    private List<CaveRoom> roomPath_s = new List<CaveRoom>();
     
     public CaveRoom CurrentRoom_S {get => _currentRoom_s; set => _currentRoom_s = value; }
     
@@ -23,6 +26,7 @@ public class CaveEnemy : BaseEnemy
     {
         base.InitializeServerValues();
         _currentWaterBody_s = base.GetCurrentWaterBody();
+
     }
     
     protected override IEnumerator DoDeath()
@@ -57,12 +61,66 @@ public class CaveEnemy : BaseEnemy
         BaseState dead = new BaseState(null, null, null);
         _stateMachine.AddState((int)ServerStates.Dead, dead);
     }
+
+    private bool CreateRoomPath_S(CaveRoom destinationRoom)
+    {
+        if(destinationRoom.DungeonNum != CurrentRoom_S.DungeonNum) return false;
+        
+        DungeonManager.Instance.ResetAllRoomSearchFlags();
+        Debug.Log("Current Room: " + CurrentRoom_S.SpawnID + " Dest Room: " + destinationRoom.SpawnID);
+        
+        Queue<CaveRoom> queue = new Queue<CaveRoom>();
+        queue.Enqueue(CurrentRoom_S);
+        bool foundPath = false;
+        
+        while (queue.Count > 0 && !foundPath)
+        {
+            CaveRoom currentSearchRoom = queue.Dequeue();
+            Debug.Log(currentSearchRoom.SpawnID);
+            if (currentSearchRoom == destinationRoom)
+            {
+                foundPath = true;
+            }
+                
+            for (int i = 0; i < currentSearchRoom.caveRoomConnectPoints.Length; i++)
+            {
+                if (!currentSearchRoom.caveRoomConnectPoints[i].ConnectedRoom.PF_Explored)
+                {
+                    currentSearchRoom.caveRoomConnectPoints[i].ConnectedRoom.PF_Explored = true;
+                    currentSearchRoom.caveRoomConnectPoints[i].ConnectedRoom.PF_Parent = currentSearchRoom;
+                    queue.Enqueue(currentSearchRoom.caveRoomConnectPoints[i].ConnectedRoom);
+                }
+                
+            }
+        }
+        
+        // Trace path back from destination room
+        roomPath_s.Clear();
+        CaveRoom currentTracebackRoom = destinationRoom;
+        roomPath_s.Add(destinationRoom);
+        while (currentTracebackRoom.PF_Parent != CurrentRoom_S)
+        {
+            roomPath_s.Add(currentTracebackRoom.PF_Parent);
+            currentTracebackRoom = currentTracebackRoom.PF_Parent;
+        }
+        roomPath_s.Add(CurrentRoom_S);
+        roomPath_s.Reverse();
+
+        string cavePath = "";
+        foreach (CaveRoom room in roomPath_s)
+        {
+            cavePath += room.SpawnID + ", ";
+        }
+        Debug.Log(cavePath);
+
+        return true;
+    }
     
     #region States
 
     private void Idle_OnEnter()
     {
-        
+        CreateRoomPath_S(DungeonManager.Instance.GetRandomCaveRoom(_currentRoom_s.DungeonNum, CurrentRoom_S));
     }
     
     private void Idle_Update()

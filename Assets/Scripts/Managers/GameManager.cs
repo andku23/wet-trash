@@ -416,6 +416,9 @@ public class GameManager : NetworkBehaviour
             {
                 WorldManager.Instance.SpawnRandomEnemy_S();
             }
+            
+            CaveRoom randomRoom = DungeonManager.Instance.GetRandomCaveRoom();
+            WorldManager.Instance.SpawnRandomDungeonEnemy_S(randomRoom);
         }
         _co_TimerCountdown = StartCoroutine(Co_DayTimer());
     }
@@ -479,7 +482,7 @@ public class GameManager : NetworkBehaviour
             
             if (currentDungeonSpawnedMonsters < expectedDungeonMonstersSpawned)
             {
-                CaveRoom randomRoom = DungeonManager.Instance.RandomCaveRoom;
+                CaveRoom randomRoom = DungeonManager.Instance.GetRandomCaveRoom();
                 WorldManager.Instance.SpawnRandomDungeonEnemy_S(randomRoom);
             }
         }

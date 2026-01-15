@@ -25,7 +25,24 @@ public class DungeonManager : NetworkBehaviour
     
     private List<Transform> possibleDoorLocations_s = new List<Transform>();
     
-    public CaveRoom RandomCaveRoom => spawnedRooms_c[Random.Range(0, spawnedRooms_c.Count)];
+    public CaveRoom GetRandomCaveRoom()
+    {
+        return spawnedRooms_c[Random.Range(0, spawnedRooms_c.Count)];
+    }
+
+    // doesnt check if dungeon is in there
+    public CaveRoom GetRandomCaveRoom(int dungeonNum, CaveRoom exclude)
+    {
+        List<CaveRoom> caveRooms = new List<CaveRoom>();
+        for (int i = 0; i < spawnedRooms_c.Count; i++)
+        {
+            if (spawnedRooms_c[i].DungeonNum == dungeonNum && spawnedRooms_c[i] != exclude)
+            {
+                caveRooms.Add(spawnedRooms_c[i]);
+            }
+        }
+        return caveRooms[Random.Range(0, caveRooms.Count)];
+    }
 
     public NetworkList<ulong> spawnedDoors;
     public enum CaveRoomType
@@ -63,6 +80,14 @@ public class DungeonManager : NetworkBehaviour
             Destroy(spawnedRooms_c[i].gameObject);
         }
         spawnedRooms_c.Clear();
+    }
+
+    public void ResetAllRoomSearchFlags()
+    {
+        for (int i = 0; i < spawnedRooms_c.Count; i++)
+        {
+            spawnedRooms_c[i].PF_Explored = false;
+        }
     }
 
     public void GenerateSurfaceDoors_S()
@@ -241,7 +266,10 @@ public class DungeonManager : NetworkBehaviour
         toRoom.transform.RotateAround(attachPoint.transform.position, Vector3.up, rotationOffset);
 
         attachPoint.IsConnected = true;
+        attachPoint.ConnectedRoom = toRoom;
+        
         nextPoint.IsConnected = true;
+        nextPoint.ConnectedRoom = fromRoom;
     }
 
     private DungeonAttachmentInstructionStep AttachDungeonRoomAndCreateStep(int fromRoomIndex, int attachPointIndex, 

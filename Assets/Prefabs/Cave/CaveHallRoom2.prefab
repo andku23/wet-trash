@@ -76,7 +76,99 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54f7c3161af7c3845acc517a2ad06367, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CaveRoomConnectPoint
-  IsConnected: 0
+  SourceRoom: {fileID: 0}
+  Name: 
+  ConnectedPoint: {fileID: 0}
+  ConnectedRoom: {fileID: 0}
+--- !u!1 &4700519211094711436
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2556272953145916438}
+  - component: {fileID: 1468065109543560203}
+  - component: {fileID: 1139384925679449774}
+  m_Layer: 0
+  m_Name: Cube
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2556272953145916438
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4700519211094711436}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.1}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7423688777562730835}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &1468065109543560203
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4700519211094711436}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &1139384925679449774
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4700519211094711436}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &5449908117479070252
 GameObject:
   m_ObjectHideFlags: 0
@@ -110,6 +202,7 @@ Transform:
   - {fileID: 2249802178049181670}
   - {fileID: 2150108800504788471}
   - {fileID: 3723525028945831917}
+  - {fileID: 7423688777562730835}
   - {fileID: 1224239623400355636}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -125,14 +218,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db781a2956e26334da6294945fe9e68c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CaveRoom
+  id: 0
+  lootSpawnLocations: []
   caveRoomConnectPoints:
   - {fileID: 8148222629603920984}
   - {fileID: 519399691696238491}
+  caveRoomCenterTraverse: {fileID: 2763891298254064}
   caveDoorPossibleLocations:
   - {fileID: 1224239623400355636}
+  navigationSpline: {fileID: 0}
   PoolID: 0
   SpawnID: 0
+  DungeonNum: 0
   RoomType: 0
+  PF_Explored: 0
+  PF_ParentConnectPoint: {fileID: 0}
 --- !u!1 &6083678777786531370
 GameObject:
   m_ObjectHideFlags: 0
@@ -311,6 +411,55 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &8913989023391300651
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7423688777562730835}
+  - component: {fileID: 2763891298254064}
+  m_Layer: 0
+  m_Name: ACaveRoomConnectPoint (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7423688777562730835
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8913989023391300651}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
+  m_LocalPosition: {x: 5.26, y: -0.1, z: -2.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2556272953145916438}
+  m_Father: {fileID: 5949409887240907734}
+  m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
+--- !u!114 &2763891298254064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8913989023391300651}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54f7c3161af7c3845acc517a2ad06367, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CaveRoomConnectPoint
+  SourceRoom: {fileID: 0}
+  Name: 
+  ConnectedPoint: {fileID: 0}
+  ConnectedRoom: {fileID: 0}
 --- !u!1 &9059983633773742763
 GameObject:
   m_ObjectHideFlags: 0
@@ -356,7 +505,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54f7c3161af7c3845acc517a2ad06367, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CaveRoomConnectPoint
-  IsConnected: 0
+  SourceRoom: {fileID: 0}
+  Name: 
+  ConnectedPoint: {fileID: 0}
+  ConnectedRoom: {fileID: 0}
 --- !u!1001 &2245495465932180864
 PrefabInstance:
   m_ObjectHideFlags: 0

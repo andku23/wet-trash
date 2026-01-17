@@ -136,7 +136,7 @@ public class DungeonManager : NetworkBehaviour
             // Instantiate an entrance room and set all of it's values
             int entrancePoolIndex = 0;
             var startRoom = Instantiate(caveDungeonStartRooms[entrancePoolIndex]);
-            startRoom.SpawnID = spawnedRooms_c.Count;
+            startRoom.SetSpawnID(spawnedRooms_c.Count);
             startRoom.PoolID = entrancePoolIndex;
             startRoom.DungeonNum = dungeonIndex;
             startRoom.RoomType = CaveRoomType.Entrance;
@@ -163,7 +163,7 @@ public class DungeonManager : NetworkBehaviour
                 
                     for (int connectPointIdx = 0; connectPointIdx < leafNodes[leafNodeIndex].caveRoomConnectPoints.Length; connectPointIdx++)
                     {
-                        if (leafNodes[leafNodeIndex].caveRoomConnectPoints[connectPointIdx].IsConnected) continue;
+                        if (leafNodes[leafNodeIndex].caveRoomConnectPoints[connectPointIdx].ConnectedPoint != null) continue;
                         var instructionStep 
                             = AttachDungeonRoomAndCreateStep(leafNodes[leafNodeIndex].SpawnID, connectPointIdx, nextLeafNodes, roomType);
                         CaveRoom addedRoom = spawnedRooms_c[spawnedRooms_c.Count - 1];
@@ -265,11 +265,13 @@ public class DungeonManager : NetworkBehaviour
         toRoom.transform.position = attachPoint.transform.position + positionOffset;
         toRoom.transform.RotateAround(attachPoint.transform.position, Vector3.up, rotationOffset);
 
-        attachPoint.IsConnected = true;
+        attachPoint.ConnectedPoint = nextPoint;
         attachPoint.ConnectedRoom = toRoom;
+        attachPoint.Name = "(Connect Node: " + fromRoom.SpawnID + " to " + toRoom.SpawnID + ")";
         
-        nextPoint.IsConnected = true;
+        nextPoint.ConnectedPoint = attachPoint;
         nextPoint.ConnectedRoom = fromRoom;
+        nextPoint.Name = "(Connect Node: " + toRoom.SpawnID + " to " + fromRoom.SpawnID + ")";
     }
 
     private DungeonAttachmentInstructionStep AttachDungeonRoomAndCreateStep(int fromRoomIndex, int attachPointIndex, 
@@ -279,12 +281,12 @@ public class DungeonManager : NetworkBehaviour
         int poolIndex = Random.Range(0, roomPool.Length);
         CaveRoom fromRoom = spawnedRooms_c[fromRoomIndex];
         CaveRoom toRoom = Instantiate(roomPool[poolIndex]);
-        spawnedRooms_c.Add(toRoom);
         nextTierLeafNodes.Add(toRoom);
         toRoom.PoolID = poolIndex;
         toRoom.DungeonNum = fromRoom.DungeonNum;
         toRoom.RoomType = roomType;
-        toRoom.SpawnID = spawnedRooms_c.Count - 1;
+        toRoom.SetSpawnID(spawnedRooms_c.Count);
+        spawnedRooms_c.Add(toRoom);
         int attachToIndex = Random.Range(0, toRoom.caveRoomConnectPoints.Length);
         
         AttachDungeonRoom(fromRoom, attachPointIndex, toRoom, attachToIndex);

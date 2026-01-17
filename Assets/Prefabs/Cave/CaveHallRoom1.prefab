@@ -95,6 +95,7 @@ Transform:
   - {fileID: 8576303337077457489}
   - {fileID: 1171626070214399321}
   - {fileID: 7231640306613336676}
+  - {fileID: 6277299800196168769}
   - {fileID: 3731417690951127378}
   - {fileID: 6306170991617395301}
   - {fileID: 3927461445129379072}
@@ -123,10 +124,15 @@ MonoBehaviour:
   - {fileID: 3838588445999740265}
   - {fileID: 5909340759897875041}
   - {fileID: 2745985364976061788}
+  caveRoomCenterTraverse: {fileID: 1539442999171664761}
   caveDoorPossibleLocations: []
+  navigationSpline: {fileID: 0}
   PoolID: 0
   SpawnID: 0
+  DungeonNum: 0
   RoomType: 0
+  PF_Explored: 0
+  PF_ParentConnectPoint: {fileID: 0}
 --- !u!1 &4354937980267614617
 GameObject:
   m_ObjectHideFlags: 0
@@ -374,6 +380,92 @@ MonoBehaviour:
       m_Data: []
   m_Knots:
     m_KnotsLink: []
+--- !u!1001 &1299442237200250364
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7178581679318962469}
+    m_Modifications:
+    - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.77
+      objectReference: {fileID: 0}
+    - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5.41
+      objectReference: {fileID: 0}
+    - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -5.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7808773652770654379, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+        type: 3}
+      propertyPath: m_Name
+      value: ACaveRoomConnectPoint (3)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3551b03cafe0aa1479c1ee00c90008c0, type: 3}
+--- !u!114 &1539442999171664761 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 528531477749792389, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1299442237200250364}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54f7c3161af7c3845acc517a2ad06367, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CaveRoomConnectPoint
+--- !u!4 &6277299800196168769 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1299442237200250364}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2399868535702729689
 PrefabInstance:
   m_ObjectHideFlags: 0

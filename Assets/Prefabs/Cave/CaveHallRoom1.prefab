@@ -128,7 +128,6 @@ MonoBehaviour:
   caveDoorPossibleLocations: []
   navigationSpline: {fileID: 0}
   PoolID: 0
-  SpawnID: 0
   DungeonNum: 0
   RoomType: 0
   PF_Explored: 0
@@ -396,7 +395,7 @@ PrefabInstance:
     - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 5.41
+      value: 3.58
       objectReference: {fileID: 0}
     - target: {fileID: 4978159001790777789, guid: 3551b03cafe0aa1479c1ee00c90008c0,
         type: 3}

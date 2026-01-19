@@ -181,30 +181,5 @@ public class FollowingEnemy : BaseEnemy
     }
     
     #endregion
-
-    [ServerRpc(RequireOwnership = false)]
-    private void DoAttack_ServerRpc(ulong networkPlayerID)
-    {
-        DoAttack_ClientRpc(networkPlayerID);
-    }
-    
-    [ClientRpc(RequireOwnership = false)]
-    private void DoAttack_ClientRpc(ulong networkPlayerID)
-    {
-        _animator.SetTrigger("Attack");
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
-        if (NetworkManager.Singleton.LocalClientId == networkPlayerID)
-        {
-            StartCoroutine(InflictDamage(2));
-        }
-    }
-
-    private IEnumerator InflictDamage(int damage)
-    {
-        yield return new WaitForSeconds(1.5f);
-        var playerState = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerStateData>();
-        GameManager.Instance.ChangeHealth(NetworkManager.Singleton.LocalClientId, playerState.Health.Value - damage);
-    }
-    
     
 }

@@ -24,6 +24,25 @@ public class DungeonManager : NetworkBehaviour
     private DungeonGenerationInstructions dungeonGenData_c;
     
     private List<Transform> possibleDoorLocations_s = new List<Transform>();
+
+    public CaveRoom[] GetCaveRoomFromEachDungeon()
+    {
+        CaveRoom[] caveRooms = new CaveRoom[numDungeons];
+            
+        for (int i = 0; i < numDungeons; i++)
+        {
+            for (int j = 0; j < spawnedRooms_c.Count; j++)
+            {
+                if (spawnedRooms_c[j].DungeonNum == i)
+                {
+                    caveRooms[i] = spawnedRooms_c[j];
+                    break;
+                }
+            }
+        }
+        
+        return caveRooms;
+    }
     
     public CaveRoom GetRandomCaveRoom()
     {

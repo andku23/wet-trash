@@ -417,8 +417,14 @@ public class GameManager : NetworkBehaviour
                 WorldManager.Instance.SpawnRandomEnemy_S();
             }
             
-            CaveRoom randomRoom = DungeonManager.Instance.GetRandomCaveRoom();
-            WorldManager.Instance.SpawnRandomDungeonEnemy_S(randomRoom);
+            // DEBUG just spawn 1 in every dungeon;
+            CaveRoom[] testRooms = DungeonManager.Instance.GetCaveRoomFromEachDungeon();
+            for (int i = 0; i < testRooms.Length; i++)
+            {
+                Debug.Log("spawning in " + testRooms[i]);
+                WorldManager.Instance.SpawnRandomDungeonEnemy_S(testRooms[i]);
+            }
+            
         }
         _co_TimerCountdown = StartCoroutine(Co_DayTimer());
     }

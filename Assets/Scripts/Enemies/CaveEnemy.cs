@@ -5,11 +5,18 @@ using UnityEngine;
 
 public class CaveEnemy : BaseEnemy
 {
-    private NetworkClient _targetPlayer_s;
+    private NetworkObject _targetPlayer_s;
     private PlayerStateData _closestPlayerState_s;
     private Collider _currentWaterBody_s;
     private CaveRoom _currentRoom_s;
     private CaveRoom _targetRoom_s;
+
+    private float TRAVERSE_HEIGHT_OFFSET = 1.2f;
+    private float SIGHT_DISTANCE = 5.0f;
+    private float SIGHT_RADIUS = 1.5f;
+
+    [SerializeField] protected Transform _raycastStartPoint;
+    [SerializeField] protected LayerMask _playerMask;
     
     private List<CaveTraverseNode> roomPath_s = new List<CaveTraverseNode>();
     
@@ -18,8 +25,9 @@ public class CaveEnemy : BaseEnemy
     enum ServerStates
     {
         Idle = 0,
-        AttackingPlayer = 1,
-        Dead = 2
+        Following = 1,
+        AttackingPlayer = 2,
+        Dead = 3
     }
 
     public override void InitializeServerValues()
@@ -55,8 +63,11 @@ public class CaveEnemy : BaseEnemy
         BaseState idle = new BaseState(Idle_OnEnter, Idle_Update, null);
         _stateMachine.AddState((int)ServerStates.Idle, idle);
         
-        BaseState attackingPlayer = new BaseState(null, null, null);
+        BaseState attackingPlayer = new BaseState(Attacking_OnEnter, Attacking_OnUpdate, null);
         _stateMachine.AddState((int)ServerStates.AttackingPlayer, attackingPlayer);
+        
+        BaseState followingPlayer = new BaseState(Following_OnEnter, Following_OnUpdate, null);
+        _stateMachine.AddState((int)ServerStates.Following, followingPlayer);
         
         BaseState dead = new BaseState(null, null, null);
         _stateMachine.AddState((int)ServerStates.Dead, dead);
@@ -119,9 +130,10 @@ public class CaveEnemy : BaseEnemy
 
     private float startTime;
     private float currentTime;
-    private float speed = 0.2f;
+    private float speed = 1.0f;
+    private float expectedTime;
     private Vector3 startPosition;
-    private CaveTraverseNode destinationNode;
+    private Vector3 destinationPosition;
 
     private void ChangeNextDestination()
     {
@@ -130,39 +142,104 @@ public class CaveEnemy : BaseEnemy
         startTime = Time.time;
         currentTime = Time.time;
         startPosition = transform.position;
-        destinationNode = roomPath_s[^1];
+        destinationPosition = roomPath_s[^1].transform.position + new Vector3(0, TRAVERSE_HEIGHT_OFFSET, 0);
+        expectedTime = Vector3.Distance(startPosition, destinationPosition) / speed;
         
         Debug.Log("changing destination to: " + roomPath_s[^1].Name);
+    }
+
+    private NetworkObject SeePlayerCheck()
+    {
+        Vector3 start = _raycastStartPoint.position;
+        Vector3 end = _raycastStartPoint.position + (transform.forward * SIGHT_DISTANCE);
+        if (Physics.SphereCast(start, SIGHT_RADIUS, transform.forward, out var hit, SIGHT_DISTANCE, _playerMask))
+        {
+            return hit.transform.gameObject.GetComponent<NetworkObject>();
+        }
+        else
+        {
+            return null;
+        }
     }
     
     private void Idle_OnEnter()
     {
-        CreateRoomPath_S(DungeonManager.Instance.GetRandomCaveRoom(CurrentRoom_S.DungeonNum, CurrentRoom_S));
-        ChangeNextDestination();
-    }
-    
-    private void Idle_Update()
-    {
-        // If we're at the destination room
-        if (roomPath_s.Count == 0)
+        if (IsServer)
         {
             CreateRoomPath_S(DungeonManager.Instance.GetRandomCaveRoom(CurrentRoom_S.DungeonNum, CurrentRoom_S));
             ChangeNextDestination();
         }
+    }
+    
+    private void Idle_Update()
+    {
+        if (IsServer)
+        {
+            NetworkObject player = SeePlayerCheck();
+            if (player != null)
+            {
+                _targetPlayer_s = player;
+                _closestPlayerState_s = player.GetComponent<PlayerStateData>();
+                ChangeState_ServerRpc((int) ServerStates.Following);
+            }
+            // If we're at the destination room
+            else if (roomPath_s.Count == 0)
+            {
+                CreateRoomPath_S(DungeonManager.Instance.GetRandomCaveRoom(CurrentRoom_S.DungeonNum, CurrentRoom_S));
+                ChangeNextDestination();
+            }
+            else
+            {
+                currentTime += Time.deltaTime;
+                transform.position = Vector3.Lerp(startPosition, destinationPosition,
+                    (currentTime - startTime)/ expectedTime);
+                transform.LookAt(destinationPosition);
+            
+                if (Vector3.Distance(transform.position, destinationPosition) < 0.1f)
+                {
+                    CurrentRoom_S = roomPath_s[^1].SourceRoom;
+                    roomPath_s.RemoveAt(roomPath_s.Count - 1);
+                    ChangeNextDestination();
+                }
+            }
+        }
+    }
+    
+    private void Following_OnEnter()
+    {
+        
+    }
+    
+    private void Following_OnUpdate()
+    {
+        float distanceToTravel = speed * Time.deltaTime;
+        float distanceTotal = Vector3.Distance(transform.position, _targetPlayer_s.transform.position);
+
+        if (distanceTotal < 1.0f)
+        {
+            ChangeState_ServerRpc((int) ServerStates.AttackingPlayer);
+        }
         else
         {
-            Vector3 endPosition = roomPath_s[^1].transform.position;
-            currentTime += Time.deltaTime;
-            float expectedTime = speed * Vector3.Distance(startPosition, destinationNode.transform.position);
-            transform.position = Vector3.Lerp(startPosition, destinationNode.transform.position,
-                (currentTime - startTime)/ expectedTime);
-            transform.LookAt(endPosition);
-            
-            if (Vector3.Distance(transform.position, destinationNode.transform.position) < 0.1f)
+            transform.position = Vector3.Lerp(transform.position, _targetPlayer_s.transform.position, distanceToTravel/distanceTotal);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(_targetPlayer_s.transform.position - transform.position), 0.3f);
+
+        }
+    }
+
+    private void Attacking_OnEnter()
+    {
+        
+    }
+    
+    private void Attacking_OnUpdate()
+    {
+        if (IsServer)
+        {
+            NetworkObject player = SeePlayerCheck();
+            if (player == null)
             {
-                CurrentRoom_S = roomPath_s[^1].SourceRoom;
-                roomPath_s.RemoveAt(roomPath_s.Count - 1);
-                ChangeNextDestination();
+                ChangeState_ServerRpc((int) ServerStates.Idle);
             }
         }
     }

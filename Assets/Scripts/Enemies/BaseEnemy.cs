@@ -101,6 +101,30 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         _networkState.Value = newState;
     }
     
+    protected IEnumerator InflictLocalPlayerDamage(int damage)
+    {
+        yield return new WaitForSeconds(1.5f);
+        var playerState = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerStateData>();
+        GameManager.Instance.ChangeHealth(NetworkManager.Singleton.LocalClientId, playerState.Health.Value - damage);
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    protected void DoAttack_ServerRpc(ulong networkPlayerID)
+    {
+        DoAttack_ClientRpc(networkPlayerID);
+    }
+    
+    [ClientRpc(RequireOwnership = false)]
+    protected void DoAttack_ClientRpc(ulong networkPlayerID)
+    {
+        _animator.SetTrigger("Attack");
+        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
+        if (NetworkManager.Singleton.LocalClientId == networkPlayerID)
+        {
+            StartCoroutine(InflictLocalPlayerDamage(2));
+        }
+    }
+    
     protected virtual void Update()
     {
         if(_stateMachine != null)

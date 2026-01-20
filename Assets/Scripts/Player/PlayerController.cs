@@ -97,6 +97,7 @@ public class PlayerController : NetworkBehaviour
 
     private float firstPersonPitch;
     private float firstPersonYaw;
+    private Vector3 groundPlaneNormal;
 
 #if ENABLE_INPUT_SYSTEM 
     private PlayerInput _playerInput;
@@ -104,6 +105,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private Animator _animator;
     [SerializeField] private PlayerAudioSource _playerAudioSource;
     [SerializeField] private CopyTransform _copyTransform;
+    
     private CharacterController _controller;
     private StarterAssetsInputs _input;
     public GameObject MainCamera;
@@ -415,16 +417,23 @@ public class PlayerController : NetworkBehaviour
         if (playerState.IsDriving) return;
         if (playerState.InWater)
         {
+            //_controller.material = _swimmingPhysicsMaterial;
             _controller.slopeLimit = 0f;
             //_controller.providesContacts = false;
             MoveWater();
         }
         else
         {
+            //_controller.material = _landPhysicsMaterial;
             _controller.slopeLimit = 90f;
             MoveLand();
         }
         _wasSprintingLastFrame = _input.sprint;
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        groundPlaneNormal = hit.normal;
     }
 
     private void MoveWater()
@@ -543,11 +552,21 @@ public class PlayerController : NetworkBehaviour
             Vector3 leftInputDirection = leftDirection.normalized * inputDirection.x;
             Vector3 upInputDirection = _verticalVelocity * Vector3.up;
 
-            Debug.Log($"forward: {targetDirection} leftDirection: {leftDirection}");
+            //if (playerState.InWaterOnSurface)
+            //{
+            //    targetInputDirection.y = (targetInputDirection.y > 0) ? 0 : targetInputDirection.y;
+            //}
 
+            Vector3 originalMagnitude = (targetInputDirection + leftInputDirection + upInputDirection).normalized;
             // move the player
-            Vector3 movementDirection = (targetInputDirection + leftInputDirection + upInputDirection).normalized *
+            Vector3 movementDirection = originalMagnitude *
                                         (_speed * Time.deltaTime);
+
+            if (_controller.isGrounded)
+            {
+                movementDirection = Vector3.ProjectOnPlane(movementDirection, groundPlaneNormal);
+                movementDirection = movementDirection.normalized * (originalMagnitude.magnitude * targetSpeed * Time.deltaTime);
+            }
 
             if (_input.jump && playerState.InWaterOnSurface)
             {
@@ -675,7 +694,17 @@ public class PlayerController : NetworkBehaviour
             
         }
     }
-    
+
+    private void VerticalMovementWater()
+    {
+        if (playerState.Grounded)
+        {
+            if (_verticalVelocity <= 0.0f)
+            {
+                _verticalVelocity = -1f;
+            }
+        }
+    }
 
     private void VerticalMovementLand()
     {

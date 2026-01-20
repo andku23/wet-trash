@@ -552,10 +552,10 @@ public class PlayerController : NetworkBehaviour
             Vector3 leftInputDirection = leftDirection.normalized * inputDirection.x;
             Vector3 upInputDirection = _verticalVelocity * Vector3.up;
 
-            //if (playerState.InWaterOnSurface)
-            //{
-            //    targetInputDirection.y = (targetInputDirection.y > 0) ? 0 : targetInputDirection.y;
-            //}
+            if (playerState.InWaterOnSurface)
+            {
+                targetInputDirection.y = (targetInputDirection.y > 0) ? 0 : targetInputDirection.y;
+            }
 
             Vector3 originalMagnitude = (targetInputDirection + leftInputDirection + upInputDirection).normalized;
             // move the player

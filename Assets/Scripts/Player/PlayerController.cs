@@ -416,6 +416,7 @@ public class PlayerController : NetworkBehaviour
         if (playerState.InWater)
         {
             _controller.slopeLimit = 0f;
+            //_controller.providesContacts = false;
             MoveWater();
         }
         else
@@ -533,12 +534,16 @@ public class PlayerController : NetworkBehaviour
             }
 
             _targetRotation = transform.rotation.eulerAngles.y;
+
+            Vector3 localForward = _cameraControl.CinemachineCameraTarget.transform.forward;
         
-            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
-            Vector3 leftDirection = Quaternion.Euler(0, _targetRotation + 90, 0) * Vector3.forward;
+            Vector3 targetDirection = localForward;
+            Vector3 leftDirection = Quaternion.Euler(0, 90, 0) * localForward;
             Vector3 targetInputDirection = targetDirection.normalized * inputDirection.z;
             Vector3 leftInputDirection = leftDirection.normalized * inputDirection.x;
             Vector3 upInputDirection = _verticalVelocity * Vector3.up;
+
+            Debug.Log($"forward: {targetDirection} leftDirection: {leftDirection}");
 
             // move the player
             Vector3 movementDirection = (targetInputDirection + leftInputDirection + upInputDirection).normalized *

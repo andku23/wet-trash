@@ -31,16 +31,16 @@ public class ChargingEnemy : BaseEnemy
         Dead = 2
     }
 
-    public override void InitializeServerValues()
+    public override void InitializeServerValues_S()
     {
-        base.InitializeServerValues();
+        base.InitializeServerValues_S();
         _currentWaterBody = base.GetCurrentWaterBody();
     }
     
     protected override IEnumerator DoDeath()
     {
-        _animator.SetBool("IsDead", true);
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+        _animator_c.SetBool("IsDead", true);
+        _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
         if (IsServer)
         {
             ChangeState_ServerRpc((int)ServerStates.Dead);
@@ -53,7 +53,7 @@ public class ChargingEnemy : BaseEnemy
     protected override void OnHealthUpdated(int prev, int next)
     {
         base.OnHealthUpdated(prev, next);
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+        _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
     }
     
     public override void InitializeStateMachine()
@@ -81,7 +81,7 @@ public class ChargingEnemy : BaseEnemy
                 PlayerStateController playerStateController = NetworkManager.Singleton.LocalClient.PlayerObject.GetComponent<PlayerStateController>();
                 hasDoneDamage = true;
                 playerStateController.DoDamage_ServerRpc(DAMAGE);
-                _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
+                _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
             }
         }
     }
@@ -91,15 +91,15 @@ public class ChargingEnemy : BaseEnemy
     private void Idle_OnEnter()
     {
         if (!IsServer) return;
-        nextPosition = transform.position;
-        lastPosition = transform.position;
-        _animator.SetTrigger("DoSwim");
+        targetPosition_s = transform.position;
+        lastPosition_s = transform.position;
+        _animator_c.SetTrigger("DoSwim");
     }
     
     private void Idle_Update()
     {
         if (!IsServer) return;
-        SetClosestHoldingPlayer(out var closestPlayer, out var closestDistance);
+        FindClosestHoldingPlayer(out var closestPlayer, out var closestDistance);
         _targetPlayer = closestPlayer;
 
         if (_targetPlayer != null && closestDistance < AGRO_RANGE * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER)
@@ -109,20 +109,20 @@ public class ChargingEnemy : BaseEnemy
                 _currentWaterBody.bounds.Contains(_targetPlayer.PlayerObject.transform.position))
             {
                 ChangeState_ServerRpc((int)ServerStates.AttackingPlayer);
-                _animator.SetTrigger("DoCharge");
+                _animator_c.SetTrigger("DoCharge");
             }
         }
-        else if (Vector3.Distance(gameObject.transform.position, nextPosition) <= 0.1f)
+        else if (Vector3.Distance(gameObject.transform.position, targetPosition_s) <= 0.1f)
         {
-            lastPosition = nextPosition;
-            nextPosition = WorldManager.Instance.GetRandomPointNearHotspot();
+            lastPosition_s = targetPosition_s;
+            targetPosition_s = WorldManager.Instance.GetRandomPointNearHotspot();
             startTime = Time.time;
-            idleDistance = Vector3.Distance(lastPosition, nextPosition);
+            idleDistance = Vector3.Distance(lastPosition_s, targetPosition_s);
         }
         else
         {
-            transform.position = Vector3.Lerp(lastPosition, nextPosition, ((Time.time - startTime)*IDLE_SPEED)/idleDistance);
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(nextPosition - transform.position), 3.0f * Time.deltaTime);
+            transform.position = Vector3.Lerp(lastPosition_s, targetPosition_s, ((Time.time - startTime)*IDLE_SPEED)/idleDistance);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(targetPosition_s - transform.position), 3.0f * Time.deltaTime);
         }
     }
     
@@ -157,7 +157,7 @@ public class ChargingEnemy : BaseEnemy
                     isChargingUp = false;
                     isDoingAttack = true;
                     hasDoneDamage = false;
-                    nextPosition = _targetPlayer.PlayerObject.transform.position;
+                    targetPosition_s = _targetPlayer.PlayerObject.transform.position;
                 }
                 else
                 {
@@ -171,7 +171,7 @@ public class ChargingEnemy : BaseEnemy
                 if (isDoingAttack)
                 {
                     _rigidbody.AddForce(transform.forward * CHARGE_FORCE, ForceMode.Impulse);
-                    _animator.SetTrigger("DoAttack");
+                    _animator_c.SetTrigger("DoAttack");
                     isDoingAttack = false;
                     hasDoneDamage = false;
                     startTime = Time.time;
@@ -181,7 +181,7 @@ public class ChargingEnemy : BaseEnemy
                     if (Time.time - startTime >= 0.3f &&
                         _rigidbody.linearVelocity.magnitude < 0.3f)
                     {
-                        _animator.SetTrigger("DoCharge");
+                        _animator_c.SetTrigger("DoCharge");
                         isChargingUp = true;
                         startTime = Time.time;
                     }

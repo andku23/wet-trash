@@ -680,13 +680,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CaveEnemy
   ShowTopMostFoldoutHeaderGroup: 1
-  _animator: {fileID: 518060268530354287}
-  _audioSource: {fileID: 3221503491539931644}
-  _lootDroppedOnDeath: 01000000
-  _raycastStartPoint: {fileID: 8008184920440141228}
+  _animator_c: {fileID: 518060268530354287}
+  _audioSource_c: {fileID: 3221503491539931644}
   _playerMask:
     serializedVersion: 2
     m_Bits: 256
+  _lootDroppedOnDeath_c: 01000000
+  _raycastStartPoint: {fileID: 8008184920440141228}
 --- !u!1 &5662832735408310904
 GameObject:
   m_ObjectHideFlags: 0

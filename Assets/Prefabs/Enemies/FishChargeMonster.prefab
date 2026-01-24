@@ -272,11 +272,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChargingEnemy
   ShowTopMostFoldoutHeaderGroup: 1
-  _animator: {fileID: 3111743482211800267}
-  _audioSource: {fileID: 1757821294390446441}
-  _lootDroppedOnDeath: 0500000005000000
-  Health:
-    m_InternalValue: 10
+  _animator_c: {fileID: 3111743482211800267}
+  _audioSource_c: {fileID: 1757821294390446441}
+  _playerMask:
+    serializedVersion: 2
+    m_Bits: 256
+  _lootDroppedOnDeath_c: 01000000
   _rigidbody: {fileID: 6404482265344338283}
   AGRO_RANGE: 20
   IDLE_SPEED: 5

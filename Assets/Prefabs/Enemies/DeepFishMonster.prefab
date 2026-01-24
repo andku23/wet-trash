@@ -209,7 +209,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2597226171
+  GlobalObjectIdHash: 408014107
   InScenePlacedSourceGlobalObjectIdHash: 2597226171
   DeferredDespawnTick: 0
   Ownership: 1
@@ -271,11 +271,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeepEnemy
   ShowTopMostFoldoutHeaderGroup: 1
-  _animator: {fileID: 5367490368920914648}
-  _audioSource: {fileID: 4821622056325235315}
-  _lootDroppedOnDeath: 05000000
-  Health:
-    m_InternalValue: 10
+  _animator_c: {fileID: 5367490368920914648}
+  _audioSource_c: {fileID: 4821622056325235315}
+  _playerMask:
+    serializedVersion: 2
+    m_Bits: 256
+  _lootDroppedOnDeath_c: 01000000
   travelTime: 2
   minimumFollowDistance: 25
   minimumAttackDistance: 1

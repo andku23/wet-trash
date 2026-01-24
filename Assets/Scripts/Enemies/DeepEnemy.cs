@@ -25,9 +25,9 @@ public class DeepEnemy : BaseEnemy
         Death = 3
     }
 
-    public override void InitializeServerValues()
+    public override void InitializeServerValues_S()
     {
-        base.InitializeServerValues();
+        base.InitializeServerValues_S();
         _currentWaterBody = base.GetCurrentWaterBody();
     }
 
@@ -50,8 +50,8 @@ public class DeepEnemy : BaseEnemy
     
     protected override IEnumerator DoDeath()
     {
-        _animator.SetBool("IsDead", true);
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+        _animator_c.SetBool("IsDead", true);
+        _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
         if (IsServer)
         {
             ChangeState_ServerRpc((int)ServerStates.Death);
@@ -64,7 +64,7 @@ public class DeepEnemy : BaseEnemy
     protected override void OnHealthUpdated(int prev, int next)
     {
         base.OnHealthUpdated(prev, next);
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+        _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
     }
     
     #region States
@@ -72,14 +72,14 @@ public class DeepEnemy : BaseEnemy
     private void Idle_OnEnter()
     {
         if (!IsServer) return;
-        nextPosition = transform.position;
-        lastPosition = transform.position;
+        targetPosition_s = transform.position;
+        lastPosition_s = transform.position;
     }
     
     private void Idle_Update()
     {
         if (!IsServer) return;
-        SetClosestMovingPlayer(maxSafeSwimSpeed ,out var closestPlayer, out var closestDistance);
+        FindClosestMovingPlayer(maxSafeSwimSpeed ,out var closestPlayer, out var closestDistance);
         _closestPlayer = closestPlayer;
 
         if (_closestPlayer != null && closestDistance < minimumFollowDistance * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER) 
@@ -91,20 +91,20 @@ public class DeepEnemy : BaseEnemy
                 ChangeState_ServerRpc((int)ServerStates.FollowingPlayer);
             }
         }
-        else if (Vector3.Distance(gameObject.transform.position, nextPosition) <= 0.1f)
+        else if (Vector3.Distance(gameObject.transform.position, targetPosition_s) <= 0.1f)
         {
-            lastPosition = nextPosition;
-            nextPosition = new Vector3(
-                Random.Range(-3, 3) + initialPosition.x,
-                Random.Range(-3, 3) + initialPosition.y,
-                Random.Range(-3, 3) + initialPosition.z
+            lastPosition_s = targetPosition_s;
+            targetPosition_s = new Vector3(
+                Random.Range(-3, 3) + initialPosition_s.x,
+                Random.Range(-3, 3) + initialPosition_s.y,
+                Random.Range(-3, 3) + initialPosition_s.z
             );
             startTime = Time.time;
         }
         else
         {
-            transform.position = Vector3.Lerp(lastPosition, nextPosition, (Time.time - startTime)/travelTime);
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(nextPosition - transform.position), 3.0f * Time.deltaTime);
+            transform.position = Vector3.Lerp(lastPosition_s, targetPosition_s, (Time.time - startTime)/travelTime);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(targetPosition_s - transform.position), 3.0f * Time.deltaTime);
         }
     }
     
@@ -201,8 +201,8 @@ public class DeepEnemy : BaseEnemy
     [ClientRpc(RequireOwnership = false)]
     private void DoAttack_ClientRpc(ulong networkPlayerID)
     {
-        _animator.SetTrigger("Attack");
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
+        _animator_c.SetTrigger("Attack");
+        _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
         if (NetworkManager.Singleton.LocalClientId == networkPlayerID)
         {
             StartCoroutine(InflictDamage(2));

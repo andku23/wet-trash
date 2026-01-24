@@ -16,7 +16,6 @@ public class CaveEnemy : BaseEnemy
     private float SIGHT_RADIUS = 1.5f;
 
     [SerializeField] protected Transform _raycastStartPoint;
-    [SerializeField] protected LayerMask _playerMask;
     
     private List<CaveTraverseNode> roomPath_s = new List<CaveTraverseNode>();
     
@@ -30,17 +29,17 @@ public class CaveEnemy : BaseEnemy
         Dead = 3
     }
 
-    public override void InitializeServerValues()
+    public override void InitializeServerValues_S()
     {
-        base.InitializeServerValues();
+        base.InitializeServerValues_S();
         _currentWaterBody_s = base.GetCurrentWaterBody();
 
     }
     
     protected override IEnumerator DoDeath()
     {
-        _animator.SetBool("IsDead", true);
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+        _animator_c.SetBool("IsDead", true);
+        _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
         if (IsServer)
         {
             ChangeState_ServerRpc((int)ServerStates.Dead);
@@ -53,7 +52,7 @@ public class CaveEnemy : BaseEnemy
     protected override void OnHealthUpdated(int prev, int next)
     {
         base.OnHealthUpdated(prev, next);
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+        _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
     }
     
     public override void InitializeStateMachine()
@@ -148,19 +147,7 @@ public class CaveEnemy : BaseEnemy
         Debug.Log("changing destination to: " + roomPath_s[^1].Name);
     }
 
-    private NetworkObject SeePlayerCheck()
-    {
-        Vector3 start = _raycastStartPoint.position;
-        Vector3 end = _raycastStartPoint.position + (transform.forward * SIGHT_DISTANCE);
-        if (Physics.SphereCast(start, SIGHT_RADIUS, transform.forward, out var hit, SIGHT_DISTANCE, _playerMask))
-        {
-            return hit.transform.gameObject.GetComponent<NetworkObject>();
-        }
-        else
-        {
-            return null;
-        }
-    }
+    
     
     private void Idle_OnEnter()
     {
@@ -175,7 +162,7 @@ public class CaveEnemy : BaseEnemy
     {
         if (IsServer)
         {
-            NetworkObject player = SeePlayerCheck();
+            NetworkObject player = FindPlayersInLOS(_raycastStartPoint.position, SIGHT_RADIUS, SIGHT_DISTANCE);
             if (player != null)
             {
                 _targetPlayer_s = player;
@@ -236,7 +223,7 @@ public class CaveEnemy : BaseEnemy
     {
         if (IsServer)
         {
-            NetworkObject player = SeePlayerCheck();
+            NetworkObject player = FindPlayersInLOS(_raycastStartPoint.position, SIGHT_RADIUS, SIGHT_DISTANCE);
             if (player == null)
             {
                 ChangeState_ServerRpc((int) ServerStates.Idle);

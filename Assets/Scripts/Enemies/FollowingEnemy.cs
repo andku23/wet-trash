@@ -24,9 +24,9 @@ public class FollowingEnemy : BaseEnemy
         Death = 3
     }
 
-    public override void InitializeServerValues()
+    public override void InitializeServerValues_S()
     {
-        base.InitializeServerValues();
+        base.InitializeServerValues_S();
         _currentWaterBody = base.GetCurrentWaterBody();
     }
 
@@ -49,8 +49,8 @@ public class FollowingEnemy : BaseEnemy
     
     protected override IEnumerator DoDeath()
     {
-        _animator.SetBool("IsDead", true);
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+        _animator_c.SetBool("IsDead", true);
+        _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
         if (IsServer)
         {
             ChangeState_ServerRpc((int)ServerStates.Death);
@@ -63,7 +63,7 @@ public class FollowingEnemy : BaseEnemy
     protected override void OnHealthUpdated(int prev, int next)
     {
         base.OnHealthUpdated(prev, next);
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
+        _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyTakeDamage);
     }
     
     #region States
@@ -71,14 +71,14 @@ public class FollowingEnemy : BaseEnemy
     private void Idle_OnEnter()
     {
         if (!IsServer) return;
-        nextPosition = transform.position;
-        lastPosition = transform.position;
+        targetPosition_s = transform.position;
+        lastPosition_s = transform.position;
     }
     
     private void Idle_Update()
     {
         if (!IsServer) return;
-        SetClosestPlayer(out var closestPlayer, out var closestDistance);
+        FindClosestPlayer(out var closestPlayer, out var closestDistance);
         _closestPlayer = closestPlayer;
         _closestPlayerState = _closestPlayer.PlayerObject.GetComponent<PlayerStateData>();
 
@@ -88,20 +88,20 @@ public class FollowingEnemy : BaseEnemy
         {
             ChangeState_ServerRpc((int)ServerStates.FollowingPlayer);
         }
-        else if (Vector3.Distance(gameObject.transform.position, nextPosition) <= 0.1f)
+        else if (Vector3.Distance(gameObject.transform.position, targetPosition_s) <= 0.1f)
         {
-            lastPosition = nextPosition;
-            nextPosition = new Vector3(
-                Random.Range(-3, 3) + initialPosition.x,
-                Random.Range(-3, 3) + initialPosition.y,
-                Random.Range(-3, 3) + initialPosition.z
+            lastPosition_s = targetPosition_s;
+            targetPosition_s = new Vector3(
+                Random.Range(-3, 3) + initialPosition_s.x,
+                Random.Range(-3, 3) + initialPosition_s.y,
+                Random.Range(-3, 3) + initialPosition_s.z
             );
             startTime = Time.time;
         }
         else
         {
-            transform.position = Vector3.Lerp(lastPosition, nextPosition, (Time.time - startTime)/travelTime);
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(nextPosition - transform.position), 3.0f * Time.deltaTime);
+            transform.position = Vector3.Lerp(lastPosition_s, targetPosition_s, (Time.time - startTime)/travelTime);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(targetPosition_s - transform.position), 3.0f * Time.deltaTime);
         }
     }
     

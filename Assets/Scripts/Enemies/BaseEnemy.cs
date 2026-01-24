@@ -2,23 +2,39 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public abstract class BaseEnemy : NetworkBehaviour, IDamagable
 {
-    [SerializeField] protected Animator _animator;
-    [SerializeField] protected PlayerAudioSource _audioSource;
-    [SerializeField] protected List<int> _lootDroppedOnDeath = new List<int>();
     
-    protected Vector3 nextPosition;
-    protected Vector3 lastPosition;
-    protected Vector3 initialPosition;
-    protected Quaternion nextRotation;
+    [Header("Internal Components")]
+    [SerializeField] protected Animator _animator_c;
+    [SerializeField] protected PlayerAudioSource _audioSource_c;
+    
+    [Space(10)]
+    [Header("Raycast Masks")]
+    [SerializeField] protected LayerMask _playerMask;
+    
+    [Space(10)]
+    [Header("Data")]
+    [SerializeField] protected List<int> _lootDroppedOnDeath_c = new List<int>();
+    
+    // Position Data
+    protected Vector3 targetPosition_s;
+    protected Vector3 lastPosition_s;
+    protected Vector3 initialPosition_s;
+    protected Quaternion nextRotation_s;
+    
+    // Health
     protected NetworkVariable<int> _health = new NetworkVariable<int>(0);
-    protected SpawnAreaType _spawnArea_s;
-    
-    protected NetworkVariable<int> _networkState = new NetworkVariable<int>(0);
     public int Health => _health.Value;
+    
+    // Spawn Area
+    protected SpawnAreaType _spawnArea_s;
     public SpawnAreaType SpawnArea_S {get => _spawnArea_s; set => _spawnArea_s = value; }
+    
+    // State Machine
+    protected NetworkVariable<int> _networkState = new NetworkVariable<int>(0);
     protected ClientStateMachine _stateMachine;
 
     public enum SpawnAreaType
@@ -33,7 +49,7 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         
         if (IsServer)
         {
-            InitializeServerValues();
+            InitializeServerValues_S();
         }
 
         _networkState.OnValueChanged += OnNetworkStateUpdated;
@@ -61,7 +77,7 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
     {
         if (IsServer)
         {
-            foreach (var loot in _lootDroppedOnDeath)
+            foreach (var loot in _lootDroppedOnDeath_c)
             {
                 LootManager.Instance.SpawnAndLoadLoot_S(transform.position, loot);
             }
@@ -90,9 +106,9 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         _stateMachine = new ClientStateMachine();
     }
     
-    public virtual void InitializeServerValues()
+    public virtual void InitializeServerValues_S()
     {
-        initialPosition = transform.position;
+        initialPosition_s = transform.position;
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -117,8 +133,8 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
     [ClientRpc(RequireOwnership = false)]
     protected void DoAttack_ClientRpc(ulong networkPlayerID)
     {
-        _animator.SetTrigger("Attack");
-        _audioSource.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
+        _animator_c.SetTrigger("Attack");
+        _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
         if (NetworkManager.Singleton.LocalClientId == networkPlayerID)
         {
             StartCoroutine(InflictLocalPlayerDamage(2));
@@ -148,7 +164,7 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         return collider;
     }
 
-    protected void SetClosestPlayer(out NetworkClient closestPlayer, out float closestDistance)
+    protected void FindClosestPlayer(out NetworkClient closestPlayer, out float closestDistance)
     {
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
         closestDistance = float.MaxValue;
@@ -164,7 +180,7 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         }
     }
     
-    protected void SetClosestMovingPlayer(float maxSafeSpeed, out NetworkClient closestPlayer, out float closestDistance)
+    protected void FindClosestMovingPlayer(float maxSafeSpeed, out NetworkClient closestPlayer, out float closestDistance)
     {
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
         closestDistance = float.MaxValue;
@@ -185,7 +201,7 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         }
     }
 
-    protected void SetClosestHoldingPlayer(out NetworkClient closestPlayer, out float closestDistance)
+    protected void FindClosestHoldingPlayer(out NetworkClient closestPlayer, out float closestDistance)
     {
         var connectedClients = NetworkManager.Singleton.ConnectedClients;
         closestDistance = float.MaxValue;
@@ -202,6 +218,17 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
                 closestPlayer = client.Value;
             }
         }
+    }
+    
+    protected NetworkObject FindPlayersInLOS(Vector3 startPoint, float radius, float distance)
+    {
+        Vector3 start = startPoint;
+        NetworkObject foundPlayer = null;
+        if (Physics.SphereCast(start, radius, transform.forward, out var hit, distance, _playerMask))
+        {
+            foundPlayer = hit.transform.gameObject.GetComponent<NetworkObject>();
+        }
+        return foundPlayer;
     }
 
     #endregion

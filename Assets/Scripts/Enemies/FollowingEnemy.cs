@@ -4,17 +4,11 @@ using UnityEngine;
 
 public class FollowingEnemy : BaseEnemy
 {
-    private NetworkClient _closestPlayer;
-    private PlayerStateData _closestPlayerState;
-    private float startTime;
-    
     [SerializeField] private float travelTime = 2.0f;
     [SerializeField] private float minimumFollowDistance = 10.0f;
     [SerializeField] private float minimumAttackDistance = 1.0f;
     [SerializeField] private float attackCooldownTime = 1.0f;
     [SerializeField] private float swimSpeed = 3.5f;
-    
-    private Collider _currentWaterBody;
     
     enum ServerStates
     {
@@ -22,12 +16,6 @@ public class FollowingEnemy : BaseEnemy
         FollowingPlayer = 1,
         AttackingPlayer = 2,
         Death = 3
-    }
-
-    public override void InitializeServerValues_S()
-    {
-        base.InitializeServerValues_S();
-        _currentWaterBody = base.GetCurrentWaterBody();
     }
 
     public override void InitializeStateMachine()
@@ -79,12 +67,12 @@ public class FollowingEnemy : BaseEnemy
     {
         if (!IsServer) return;
         FindClosestPlayer(out var closestPlayer, out var closestDistance);
-        _closestPlayer = closestPlayer;
-        _closestPlayerState = _closestPlayer.PlayerObject.GetComponent<PlayerStateData>();
+        _targetPlayer_s = closestPlayer.PlayerObject;
+        _targetPlayerState_s = _targetPlayer_s.GetComponent<PlayerStateData>();
 
-        if (_closestPlayer != null && closestDistance < minimumFollowDistance * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER && 
-            _closestPlayerState.Health.Value > 0 && _currentWaterBody != null &&
-            _currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
+        if (_targetPlayer_s != null && closestDistance < minimumFollowDistance * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER && 
+            _targetPlayerState_s.Health.Value > 0 && _currentWaterBody_s != null &&
+            _currentWaterBody_s.bounds.Contains(_targetPlayer_s.transform.position))
         {
             ChangeState_ServerRpc((int)ServerStates.FollowingPlayer);
         }
@@ -96,51 +84,40 @@ public class FollowingEnemy : BaseEnemy
                 Random.Range(-3, 3) + initialPosition_s.y,
                 Random.Range(-3, 3) + initialPosition_s.z
             );
-            startTime = Time.time;
+            startTime_s = Time.time;
         }
         else
         {
-            transform.position = Vector3.Lerp(lastPosition_s, targetPosition_s, (Time.time - startTime)/travelTime);
+            transform.position = Vector3.Lerp(lastPosition_s, targetPosition_s, (Time.time - startTime_s)/travelTime);
             transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(targetPosition_s - transform.position), 3.0f * Time.deltaTime);
         }
     }
     
     private void FollowingPlayer_OnEnter()
     {
-        
     }
     
     private void FollowingPlayer_Update()
     {
         if (!IsServer) return;
-        float distanceToPlayer = Vector3.Distance(transform.position, _closestPlayer.PlayerObject.transform.position);
+        float disengageDistance =
+            minimumFollowDistance * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER;
+        bool isPlayerUnreachable = IsTargetPlayerUnreachable(disengageDistance, out var distanceToPlayer);
 
-        if (_closestPlayer == null)
-        {
-            ChangeState_ServerRpc((int)ServerStates.Idle);
-        }
-        else if (_currentWaterBody != null && !_currentWaterBody.bounds.Contains(_closestPlayer.PlayerObject.transform.position))
-        {
-            ChangeState_ServerRpc((int)ServerStates.Idle);
-        }
-        else if (_closestPlayerState.Health.Value <= 0)
-        {
-            ChangeState_ServerRpc((int)ServerStates.Idle);
-        }
-        else if (distanceToPlayer < minimumAttackDistance)
-        {
-            ChangeState_ServerRpc((int)ServerStates.AttackingPlayer);
-        }
-        else if (distanceToPlayer > minimumFollowDistance * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER)
+        if (isPlayerUnreachable)
         {
             ChangeState_ServerRpc((int)ServerStates.Idle);
         }
         else
         {
-            float distanceToTravel = swimSpeed * Time.deltaTime;
-            float distanceTotal = Vector3.Distance(transform.position, _closestPlayer.PlayerObject.transform.position);
-            transform.position = Vector3.Lerp(transform.position, _closestPlayer.PlayerObject.transform.position, distanceToTravel/distanceTotal);
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(_closestPlayer.PlayerObject.transform.position - transform.position), 0.3f);
+            if (distanceToPlayer < minimumAttackDistance)
+            {
+                ChangeState_ServerRpc((int)ServerStates.AttackingPlayer);
+            }
+            else
+            {
+                SwimAtTargetPlayer();
+            }
         }
     }
     
@@ -154,24 +131,18 @@ public class FollowingEnemy : BaseEnemy
     private void AttackingPlayer_Update()
     {
         if (!IsServer) return;
-        float distanceToPlayer = Vector3.Distance(transform.position, _closestPlayer.PlayerObject.transform.position);
+        float disengageDistance =
+            minimumAttackDistance * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER;
+        bool isPlayerUnreachable = IsTargetPlayerUnreachable(disengageDistance, out var distanceToPlayer);
 
-        if (_closestPlayer == null)
+        if (isPlayerUnreachable)
         {
             ChangeState_ServerRpc((int)ServerStates.Idle);
-        }
-        else if (_closestPlayerState.Health.Value <= 0)
-        {
-            ChangeState_ServerRpc((int)ServerStates.Idle);
-        }
-        else if (distanceToPlayer > minimumAttackDistance)
-        {
-            ChangeState_ServerRpc((int)ServerStates.FollowingPlayer);
         }
         else if (Time.time - _lastAttackTime > attackCooldownTime)
         {
             _lastAttackTime = Time.time;
-            DoAttack_ServerRpc(_closestPlayer.ClientId);
+            DoAttack_ServerRpc(_targetPlayer_s.OwnerClientId); // Sort of a hack to find client id, but should work
         }
     }
     

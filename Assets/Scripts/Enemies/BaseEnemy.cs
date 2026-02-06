@@ -19,15 +19,34 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
     [Header("Data")]
     [SerializeField] protected List<int> _lootDroppedOnDeath_c = new List<int>();
     
-    // Position Data
+    // Position Data for next position
     protected Vector3 targetPosition_s;
     protected Vector3 lastPosition_s;
     protected Vector3 initialPosition_s;
-    protected Quaternion nextRotation_s;
+    
+    // Time Data for next position
+    protected float startTime_s;
+    protected float currentTime_s;
+    protected float speed_s = 1.0f;
+    protected float expectedTime_s;
+    
+    protected float lastAttackTime_s;
+    
+    // Current target state of enemy
+    protected NetworkObject _targetPlayer_s;
+    protected PlayerStateData _targetPlayerState_s;
+    protected Collider _currentWaterBody_s;
+    
+    protected float MAX_FOLLOW_DISTANCE = 10.0f;
+    protected float MAX_ATTACK_DISTANCE = 1.0f;
+    protected float ATTACK_COOLDOWN_TIME = 2.0f;
+    protected float SWIM_SPEED_IDLE = 3.5f;
+    protected float SWIM_SPEED_CHASING = 6.0f;
     
     // Health
     protected NetworkVariable<int> _health = new NetworkVariable<int>(0);
     public int Health => _health.Value;
+    protected Coroutine _deathCoroutine;
     
     // Spawn Area
     protected SpawnAreaType _spawnArea_s;
@@ -59,14 +78,50 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         OnNetworkStateUpdated(0, _networkState.Value);
     }
 
-    protected virtual void OnHealthUpdated(int prev, int next)
+    public virtual void OnNetworkStateUpdated(int prev, int next)
     {
-        if (Health <= 0)
-        {
-            StartCoroutine(DoDeath());
-        }
+        _stateMachine.ChangeState(next);
+    }
+    
+    public virtual void InitializeStateMachine()
+    {
+        _stateMachine = new ClientStateMachine();
+    }
+    
+    public virtual void InitializeServerValues_S()
+    {
+        initialPosition_s = transform.position;
+        _currentWaterBody_s = GetCurrentWaterBody();
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    protected void ChangeState_ServerRpc(int newState)
+    {
+        _networkState.Value = newState;
+    }
+    
+    #region Enemy Take Damage
+    
+    public void DoDamage(ItemInteractionData interactionData)
+    {
+        ReceiveDamage_ServerRpc(interactionData.damage);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public virtual void ReceiveDamage_ServerRpc(int damage)
+    {
+        _health.Value -= damage;
+    }
+    
+    protected virtual void OnHealthUpdated(int prev, int next)
+    {
+        if (_deathCoroutine != null) return;
+        if (Health <= 0)
+        {
+            _deathCoroutine = StartCoroutine(DoDeath());
+        }
+    }
+    
     protected virtual IEnumerator DoDeath()
     {
         DropLoot_S();
@@ -84,39 +139,10 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         }
         
     }
-
-    public virtual void OnNetworkStateUpdated(int prev, int next)
-    {
-        _stateMachine.ChangeState(next);
-    }
     
-    public void DoDamage(ItemInteractionData interactionData)
-    {
-        ReceiveDamage_ServerRpc(interactionData.damage);
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    public virtual void ReceiveDamage_ServerRpc(int damage)
-    {
-        _health.Value -= damage;
-    }
+    #endregion
     
-    public virtual void InitializeStateMachine()
-    {
-        _stateMachine = new ClientStateMachine();
-    }
-    
-    public virtual void InitializeServerValues_S()
-    {
-        initialPosition_s = transform.position;
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    protected void ChangeState_ServerRpc(int newState)
-    {
-        _networkState.Value = newState;
-    }
-    
+    #region Player Damage
     protected IEnumerator InflictLocalPlayerDamage(int damage)
     {
         yield return new WaitForSeconds(1.5f);
@@ -133,7 +159,7 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
     [ClientRpc(RequireOwnership = false)]
     protected void DoAttack_ClientRpc(ulong networkPlayerID)
     {
-        _animator_c.SetTrigger("Attack");
+        _animator_c.SetTrigger("DoAttack");
         _audioSource_c.PlaySound(PlayerAudioSource.SoundType.EnemyDoDamage);
         if (NetworkManager.Singleton.LocalClientId == networkPlayerID)
         {
@@ -141,11 +167,7 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
         }
     }
     
-    protected virtual void Update()
-    {
-        if(_stateMachine != null)
-            _stateMachine.Update();
-    }
+    #endregion
     
     #region Utility Functions
 
@@ -232,4 +254,78 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
     }
 
     #endregion
+    
+    #region Behaviours Functions
+
+    protected void SetNextStaticTargetPosition(Vector3 nextPosition)
+    {
+        startTime_s = Time.time;
+        currentTime_s = Time.time;
+        lastPosition_s = transform.position;
+        targetPosition_s = nextPosition;
+        expectedTime_s = Vector3.Distance(lastPosition_s, targetPosition_s) / speed_s;
+    }
+
+    protected void SetTargetPlayer(NetworkObject player)
+    {
+        _targetPlayer_s = player;
+        _targetPlayerState_s = player.GetComponent<PlayerStateData>();
+    }
+
+    protected void SwimToNextStaticTargetPosition()
+    {
+        currentTime_s += Time.deltaTime;
+        transform.position = Vector3.Lerp(lastPosition_s, targetPosition_s,
+            (currentTime_s - startTime_s)/ expectedTime_s);
+        
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(targetPosition_s - transform.position), 0.3f);
+    }
+    
+    protected void SwimAtTargetPlayer()
+    {
+        if (_targetPlayer_s == null) return;
+        
+        float distance = Vector3.Distance(transform.position, _targetPlayer_s.transform.position);
+        float expectedDistanceTraveled = Time.deltaTime * speed_s;
+        transform.position = Vector3.Lerp(transform.position, _targetPlayer_s.transform.position,
+            expectedDistanceTraveled/distance);
+        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(_targetPlayer_s.transform.position - transform.position), 0.3f);
+    }
+
+    protected bool IsTargetPlayerUnreachable(float disengageDistance, out float distanceToPlayer)
+    {
+        float distance = Vector3.Distance(transform.position, _targetPlayer_s.transform.position);
+        distanceToPlayer = distance;
+        
+        Debug.Log("distance: " + distance + " disengage: " + disengageDistance);
+        
+        if (_targetPlayer_s == null) return true;
+        if (distance > disengageDistance) return true;
+        if (_currentWaterBody_s != null &&
+            !_currentWaterBody_s.bounds.Contains(_targetPlayer_s.transform.position)) return true;
+        if (_targetPlayerState_s.Health.Value <= 0) return true;
+        
+        return false;
+    }
+    
+    #endregion
+    
+    #region Behaviour States
+
+    protected void DefaultAttackBehaviour()
+    {
+        if (Time.time - lastAttackTime_s > ATTACK_COOLDOWN_TIME)
+        {
+            Debug.Log("attack");
+            lastAttackTime_s = Time.time;
+            DoAttack_ServerRpc(_targetPlayer_s.OwnerClientId); // Sort of a hack to find client id, but should work
+        }
+    }
+    #endregion
+    
+    protected virtual void Update()
+    {
+        if(_stateMachine != null)
+            _stateMachine.Update();
+    }
 }

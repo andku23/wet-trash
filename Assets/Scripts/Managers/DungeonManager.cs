@@ -27,15 +27,18 @@ public class DungeonManager : NetworkBehaviour
 
     public CaveRoom[] GetCaveRoomFromEachDungeon()
     {
+        CaveRoom[] shufflableArray = spawnedRooms_c.ToArray();
         CaveRoom[] caveRooms = new CaveRoom[numDungeons];
+        
+        VarietyUtilities.Shuffle(shufflableArray, 0);
             
         for (int i = 0; i < numDungeons; i++)
         {
-            for (int j = 0; j < spawnedRooms_c.Count; j++)
+            for (int j = 0; j < shufflableArray.Length; j++)
             {
-                if (spawnedRooms_c[j].DungeonNum == i)
+                if (shufflableArray[j].DungeonNum == i)
                 {
-                    caveRooms[i] = spawnedRooms_c[j];
+                    caveRooms[i] = shufflableArray[j];
                     break;
                 }
             }

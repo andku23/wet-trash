@@ -62,4 +62,15 @@ public class VarietyUtilities
             ts[r] = tmp;
         }
     }
+    
+    public static void Shuffle<T>(T[] ts, int startIndex) {
+        var count = ts.Length;
+        var last = count - 1;
+        for (var i = startIndex; i < last; ++i) {
+            var r = UnityEngine.Random.Range(i, count);
+            var tmp = ts[i];
+            ts[i] = ts[r];
+            ts[r] = tmp;
+        }
+    }
 }

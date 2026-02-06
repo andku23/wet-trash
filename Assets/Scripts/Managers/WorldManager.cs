@@ -117,8 +117,8 @@ public class WorldManager : NetworkBehaviour
         for (int i = 0; i < NUM_OF_HOLES; i++)
         {
             holePositions[i] = new Vector2(
-                Random.Range(128, _terrain.terrainData.heightmapResolution - 128),
-                Random.Range(128, _terrain.terrainData.heightmapResolution - 128));
+                Random.Range(180, _terrain.terrainData.heightmapResolution - 180),
+                Random.Range(180, _terrain.terrainData.heightmapResolution - 180));
             
             for (int j = 0; j < GameManager.Instance.gameData.NUM_OF_LOOT_GROUPS_PER_HOTSPOT; j++)
             {

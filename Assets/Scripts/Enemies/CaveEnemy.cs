@@ -5,13 +5,10 @@ using UnityEngine;
 
 public class CaveEnemy : BaseEnemy
 {
-    private NetworkObject _targetPlayer_s;
-    private PlayerStateData _closestPlayerState_s;
-    private Collider _currentWaterBody_s;
     private CaveRoom _currentRoom_s;
     private CaveRoom _targetRoom_s;
 
-    private float TRAVERSE_HEIGHT_OFFSET = 1.2f;
+    private float TRAVERSE_HEIGHT_OFFSET = 3.2f;
     private float SIGHT_DISTANCE = 5.0f;
     private float SIGHT_RADIUS = 1.5f;
 
@@ -27,13 +24,6 @@ public class CaveEnemy : BaseEnemy
         Following = 1,
         AttackingPlayer = 2,
         Dead = 3
-    }
-
-    public override void InitializeServerValues_S()
-    {
-        base.InitializeServerValues_S();
-        _currentWaterBody_s = base.GetCurrentWaterBody();
-
     }
     
     protected override IEnumerator DoDeath()
@@ -77,7 +67,7 @@ public class CaveEnemy : BaseEnemy
         if(destinationRoom.DungeonNum != CurrentRoom_S.DungeonNum) return false;
         
         DungeonManager.Instance.ResetAllRoomSearchFlags();
-        Debug.Log("Current Room: " + CurrentRoom_S.SpawnID + " Dest Room: " + destinationRoom.SpawnID);
+        //Debug.Log("Current Room: " + CurrentRoom_S.SpawnID + " Dest Room: " + destinationRoom.SpawnID);
         
         Queue<CaveRoom> queue = new Queue<CaveRoom>();
         queue.Enqueue(CurrentRoom_S);
@@ -120,114 +110,107 @@ public class CaveEnemy : BaseEnemy
         {
             cavePath += connectPoint.Name + ", ";
         }
-        Debug.Log(cavePath);
+        //Debug.Log(cavePath);
 
         return true;
     }
     
     #region States
 
-    private float startTime;
-    private float currentTime;
-    private float speed = 1.0f;
-    private float expectedTime;
-    private Vector3 startPosition;
-    private Vector3 destinationPosition;
-
     private void ChangeNextDestination()
     {
         if (roomPath_s.Count <= 0) return;
         
-        startTime = Time.time;
-        currentTime = Time.time;
-        startPosition = transform.position;
-        destinationPosition = roomPath_s[^1].transform.position + new Vector3(0, TRAVERSE_HEIGHT_OFFSET, 0);
-        expectedTime = Vector3.Distance(startPosition, destinationPosition) / speed;
+        SetNextStaticTargetPosition(roomPath_s[^1].transform.position + new Vector3(0, TRAVERSE_HEIGHT_OFFSET, 0));
         
-        Debug.Log("changing destination to: " + roomPath_s[^1].Name);
+        //Debug.Log("changing destination to: " + roomPath_s[^1].Name);
     }
 
-    
-    
     private void Idle_OnEnter()
     {
         if (IsServer)
         {
             CreateRoomPath_S(DungeonManager.Instance.GetRandomCaveRoom(CurrentRoom_S.DungeonNum, CurrentRoom_S));
             ChangeNextDestination();
+            speed_s = SWIM_SPEED_IDLE;
         }
     }
     
     private void Idle_Update()
     {
-        if (IsServer)
+        if (!IsServer) return;
+        NetworkObject player = FindPlayersInLOS(_raycastStartPoint.position, SIGHT_RADIUS, SIGHT_DISTANCE);
+        if (player != null)
         {
-            NetworkObject player = FindPlayersInLOS(_raycastStartPoint.position, SIGHT_RADIUS, SIGHT_DISTANCE);
-            if (player != null)
+            Debug.Log("found player");
+            SetTargetPlayer(player);
+            ChangeState_ServerRpc((int) ServerStates.Following);
+        }
+        // If we're at the destination room
+        else if (roomPath_s.Count == 0)
+        {
+            CreateRoomPath_S(DungeonManager.Instance.GetRandomCaveRoom(CurrentRoom_S.DungeonNum, CurrentRoom_S));
+            ChangeNextDestination();
+        }
+        else
+        {
+            SwimToNextStaticTargetPosition();
+        
+            if (Vector3.Distance(transform.position, targetPosition_s) < 0.1f)
             {
-                _targetPlayer_s = player;
-                _closestPlayerState_s = player.GetComponent<PlayerStateData>();
-                ChangeState_ServerRpc((int) ServerStates.Following);
-            }
-            // If we're at the destination room
-            else if (roomPath_s.Count == 0)
-            {
-                CreateRoomPath_S(DungeonManager.Instance.GetRandomCaveRoom(CurrentRoom_S.DungeonNum, CurrentRoom_S));
+                CurrentRoom_S = roomPath_s[^1].SourceRoom;
+                roomPath_s.RemoveAt(roomPath_s.Count - 1);
                 ChangeNextDestination();
-            }
-            else
-            {
-                currentTime += Time.deltaTime;
-                transform.position = Vector3.Lerp(startPosition, destinationPosition,
-                    (currentTime - startTime)/ expectedTime);
-                transform.LookAt(destinationPosition);
-            
-                if (Vector3.Distance(transform.position, destinationPosition) < 0.1f)
-                {
-                    CurrentRoom_S = roomPath_s[^1].SourceRoom;
-                    roomPath_s.RemoveAt(roomPath_s.Count - 1);
-                    ChangeNextDestination();
-                }
             }
         }
     }
     
     private void Following_OnEnter()
     {
-        
+        if (IsServer)
+        {
+            speed_s = SWIM_SPEED_CHASING;
+        }
     }
     
     private void Following_OnUpdate()
     {
-        float distanceToTravel = speed * Time.deltaTime;
-        float distanceTotal = Vector3.Distance(transform.position, _targetPlayer_s.transform.position);
-
-        if (distanceTotal < 1.0f)
+		if (!IsServer) return;
+        float disengageDistance = MAX_FOLLOW_DISTANCE * GameManager.Instance.gameData.MONSTER_DETECTION_RANGE_MULTIPLIER;
+        bool isPlayerUnreachable = IsTargetPlayerUnreachable(disengageDistance, out var distanceToPlayer);
+        
+        if (isPlayerUnreachable)
+        {
+            ChangeState_ServerRpc((int) ServerStates.Idle);
+        }
+        else if (distanceToPlayer < MAX_ATTACK_DISTANCE)
         {
             ChangeState_ServerRpc((int) ServerStates.AttackingPlayer);
         }
         else
         {
-            transform.position = Vector3.Lerp(transform.position, _targetPlayer_s.transform.position, distanceToTravel/distanceTotal);
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(_targetPlayer_s.transform.position - transform.position), 0.3f);
-
+            SwimAtTargetPlayer();
         }
     }
 
     private void Attacking_OnEnter()
     {
-        
+        lastAttackTime_s = Time.time;
     }
     
     private void Attacking_OnUpdate()
     {
-        if (IsServer)
+        if (!IsServer) return;
+        
+        
+        bool isPlayerUnreachable = IsTargetPlayerUnreachable(MAX_ATTACK_DISTANCE, out var distanceToPlayer);
+        if (isPlayerUnreachable)
         {
-            NetworkObject player = FindPlayersInLOS(_raycastStartPoint.position, SIGHT_RADIUS, SIGHT_DISTANCE);
-            if (player == null)
-            {
-                ChangeState_ServerRpc((int) ServerStates.Idle);
-            }
+            ChangeState_ServerRpc((int) ServerStates.Following);
+        }
+        else
+        {
+            DefaultAttackBehaviour();
         }
     }
     

@@ -686,6 +686,12 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   _lootDroppedOnDeath_c: 01000000
+  MAX_FOLLOW_DISTANCE: 20
+  MAX_ATTACK_DISTANCE: 1.5
+  ATTACK_COOLDOWN_TIME: 2
+  SWIM_SPEED_IDLE: 3.5
+  SWIM_SPEED_CHASING: 6
+  AGRO_TIME: 2
   _raycastStartPoint: {fileID: 8008184920440141228}
 --- !u!1 &5662832735408310904
 GameObject:

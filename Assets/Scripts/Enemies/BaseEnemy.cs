@@ -37,11 +37,12 @@ public abstract class BaseEnemy : NetworkBehaviour, IDamagable
     protected PlayerStateData _targetPlayerState_s;
     protected Collider _currentWaterBody_s;
     
-    protected float MAX_FOLLOW_DISTANCE = 10.0f;
-    protected float MAX_ATTACK_DISTANCE = 1.0f;
-    protected float ATTACK_COOLDOWN_TIME = 2.0f;
-    protected float SWIM_SPEED_IDLE = 3.5f;
-    protected float SWIM_SPEED_CHASING = 6.0f;
+    [SerializeField] protected float MAX_FOLLOW_DISTANCE = 20.0f;
+    [SerializeField] protected float MAX_ATTACK_DISTANCE = 2.0f;
+    [SerializeField] protected float ATTACK_COOLDOWN_TIME = 2.0f;
+    [SerializeField] protected float SWIM_SPEED_IDLE = 3.5f;
+    [SerializeField] protected float SWIM_SPEED_CHASING = 6.0f;
+    [SerializeField] protected float AGRO_TIME = 2.0f;
     
     // Health
     protected NetworkVariable<int> _health = new NetworkVariable<int>(0);

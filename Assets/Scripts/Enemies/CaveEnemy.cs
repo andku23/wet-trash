@@ -9,8 +9,8 @@ public class CaveEnemy : BaseEnemy
     private CaveRoom _targetRoom_s;
 
     private float TRAVERSE_HEIGHT_OFFSET = 3.2f;
-    private float SIGHT_DISTANCE = 5.0f;
-    private float SIGHT_RADIUS = 1.5f;
+    private float SIGHT_DISTANCE = 10.0f;
+    private float SIGHT_RADIUS = 3.5f;
 
     [SerializeField] protected Transform _raycastStartPoint;
     
@@ -23,7 +23,8 @@ public class CaveEnemy : BaseEnemy
         Idle = 0,
         Following = 1,
         AttackingPlayer = 2,
-        Dead = 3
+        Dead = 3,
+        AgroAlert = 4
     }
     
     protected override IEnumerator DoDeath()
@@ -60,6 +61,9 @@ public class CaveEnemy : BaseEnemy
         
         BaseState dead = new BaseState(null, null, null);
         _stateMachine.AddState((int)ServerStates.Dead, dead);
+        
+        BaseState agro = new BaseState(AgroAlert_OnEnter, AgroAlert_OnUpdate, null);
+        _stateMachine.AddState((int)ServerStates.AgroAlert, agro);
     }
 
     private bool CreateRoomPath_S(CaveRoom destinationRoom)
@@ -142,9 +146,8 @@ public class CaveEnemy : BaseEnemy
         NetworkObject player = FindPlayersInLOS(_raycastStartPoint.position, SIGHT_RADIUS, SIGHT_DISTANCE);
         if (player != null)
         {
-            Debug.Log("found player");
             SetTargetPlayer(player);
-            ChangeState_ServerRpc((int) ServerStates.Following);
+            ChangeState_ServerRpc((int) ServerStates.AgroAlert);
         }
         // If we're at the destination room
         else if (roomPath_s.Count == 0)
@@ -161,6 +164,27 @@ public class CaveEnemy : BaseEnemy
                 CurrentRoom_S = roomPath_s[^1].SourceRoom;
                 roomPath_s.RemoveAt(roomPath_s.Count - 1);
                 ChangeNextDestination();
+            }
+        }
+    }
+
+    private void AgroAlert_OnEnter()
+    {
+        if (IsServer)
+        {
+            startTime_s = Time.time;
+        }
+        _animator_c.SetTrigger("DoAgro");
+        
+    }
+    
+    private void AgroAlert_OnUpdate()
+    {
+        if (IsServer)
+        {
+            if (Time.time - startTime_s >= AGRO_TIME)
+            {
+                ChangeState_ServerRpc((int) ServerStates.Following);
             }
         }
     }
